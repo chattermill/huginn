@@ -3,14 +3,13 @@ module Agents
     include WebRequestConcern
     include FormConfigurable
 
-    MIME_RE = /\A\w+\/.+\z/
     HTTP_METHOD = "post"
     PROTOCOLS = %w(http https)
     API_ENDPOINT = "/webhooks/responses"
     DOMAINS = [
       { text: "Production", id: "app.chattermill.xyz" },
       { text: "Staging", id: "staging.chattermill.xyz" },
-      { text: "Local (lvh.me)", id: "lvh.me:3000" },
+      { text: "Local (lvh.me:3000)", id: "lvh.me:3000" },
       { text: "localhost", id: "localhost:3000" }
     ]
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
@@ -19,54 +18,58 @@ module Agents
     no_bulk_receive!
     default_schedule "never"
 
+    before_validation :parse_json_options
+
     description do
       <<-MD
-        A Chattermill Response Agent receives events from other agents (or runs periodically), merges those events with the [Liquid-interpolated](https://github.com/cantino/huginn/wiki/Formatting-Events-using-Liquid) contents of `payload`, and sends the results as POST (or GET) requests to a specified url.  To skip merging in the incoming event, but still send the interpolated payload, set `no_merge` to `true`.
+        The Chattermill Response Agent receives events, build responses, and sends the results using the Chattermill API.
 
-        The `post_url` field must specify where you would like to send requests. Please include the URI scheme (`http` or `https`).
+        A Chattermill Response Agent can receives events from other agents or run periodically,
+        it builds Chattermill Responses with the [Liquid-interpolated](https://github.com/cantino/huginn/wiki/Formatting-Events-using-Liquid)
+        contents of `options`, and sends the results as Authenticated POST requests to a specified API instance.
 
-        The `method` used can be any of `get`, `post`, `put`, `patch`, and `delete`.
-
-        By default, non-GETs will be sent with form encoding (`application/x-www-form-urlencoded`).
-
-        Change `content_type` to `json` to send JSON instead.
-
-        Change `content_type` to `xml` to send XML, where the name of the root element may be specified using `xml_root`, defaulting to `post`.
-
-        When `content_type` contains a [MIME](https://en.wikipedia.org/wiki/Media_type) type, and `payload` is a string, its interpolated value will be sent as a string in the HTTP request's body and the request's `Content-Type` HTTP header will be set to `content_type`. When `payload` is a string `no_merge` has to be set to `true`.
-
-        If `emit_events` is set to `true`, the server response will be emitted as an Event and can be fed to a WebsiteAgent for parsing (using its `data_from_event` and `type` options). No data processing
+        If `emit_events` is set to `true`, the server response will be emitted as an Event and can be fed to a
+        WebsiteAgent for parsing (using its `data_from_event` and `type` options). No data processing
         will be attempted by this Agent, so the Event's "body" value will always be raw text.
         The Event will also have a "headers" hash and a "status" integer value.
-        Set `event_headers_style` to one of the following values to normalize the keys of "headers" for downstream agents' convenience:
+        Header names are capitalized; e.g. "Content-Type".
 
-          * `capitalized` (default) - Header names are capitalized; e.g. "Content-Type"
-          * `downcased` - Header names are downcased; e.g. "content-type"
-          * `snakecased` - Header names are snakecased; e.g. "content_type"
-          * `raw` - Backward compatibility option to leave them unmodified from what the underlying HTTP library returns.
+        Options:
 
-        Other Options:
-
-          * `headers` - When present, it should be a hash of headers to send with the request.
-          * `basic_auth` - Specify HTTP basic auth parameters: `"username:password"`, or `["username", "password"]`.
-          * `disable_ssl_verification` - Set to `true` to disable ssl verification.
-          * `user_agent` - A custom User-Agent name (default: "Faraday v#{Faraday::VERSION}").
+          * `protocol` - Select `http` or `https`. Normally, this should be set to `https`.
+          * `domain` - Select the API or Chattermill backend instance. Normally it should be `Production` that points to `app.chattermill.xyz`.
+          * `organization_subdomain` - Specify the subdomain for the target organization (e.g `moo` or `hellofresh`).
+          * `auth_token` - Specify the Auth0 token to be used for authentication. Please, DO NOT include the `Bearer` word, just the hash.
+          * `comment` - Specify the Liquid interpolated expresion to build the Response comment.
+          * `score` - Specify the Liquid interpolated expresion to build the Response score.
+          * `kind` - Specify the Liquid interpolated expresion to build the Response kind.
+          * `stream` - Specify the Liquid interpolated expresion to build the Response stream.
+          * `created_at` - Specify the Liquid interpolated expresion to build the Response created_at date.
+          * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
+          * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
+          * `extra_fields` - Specify the Liquid interpolated JSON to build additional fields for the Response, e.g: `{ approved: true }`.
+          * `emit_events` - Select `true` or `false`.
+          * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
     end
 
     event_description <<-MD
       Events look like this:
         {
-          "status": 200,
+          "status": 201,
           "headers": {
-            "Content-Type": "text/html",
+            "Content-Type": "'application/json",
             ...
           },
-          "body": "<html>Some data...</html>"
+          "body": "{...}"
         }
     MD
 
     def default_options
+      sample_hash = Utils.pretty_jsonify(
+        sample_id: { type: "text", name: "Sample Id", value: "{{data.sample_id}}" }
+      )
+
       {
         'protocol' => 'https',
         'domain' => 'app.chattermill.xyz',
@@ -74,10 +77,11 @@ module Agents
         'score' => '{{ data.score }}',
         'kind' => 'review',
         'created_at' => '{{ data.date }}',
-        'user_meta' => '{}',
-        'segments' => '{}',
+        'user_meta' => sample_hash,
+        'segments' => sample_hash,
         'extra_fields' => '{}',
-        'emit_events' => 'false'
+        'emit_events' => 'false',
+        'expected_receive_period_in_days' => '1'
       }
     end
 
@@ -98,10 +102,10 @@ module Agents
     form_configurable :kind
     form_configurable :stream
     form_configurable :created_at
-    form_configurable :user_meta, type: :text, ace: true
-    form_configurable :segments, type: :text, ace: true
-    form_configurable :extra_fields, type: :text, ace: true
-    form_configurable :emit_events, :array, values: %w(true false)
+    form_configurable :user_meta, type: :json, ace: { mode: 'json' }
+    form_configurable :segments, type: :json, ace: { mode: 'json' }
+    form_configurable :extra_fields, type: :json, ace: { mode: 'json' }
+    form_configurable :emit_events, type: :array, values: %w(true false)
     form_configurable :expected_receive_period_in_days
 
     def complete_domain
@@ -151,6 +155,18 @@ module Agents
     end
 
     private
+
+    def parse_json_options
+      parse_json_option('user_meta')
+      parse_json_option('segments')
+      parse_json_option('extra_fields')
+    end
+
+    def parse_json_option(key)
+      options[key] = JSON.parse(options[key])
+    rescue
+      errors.add(:base, "The '#{key}' option is an invalid JSON.")
+    end
 
     def normalize_response_headers(headers)
       case interpolated['event_headers_style']
