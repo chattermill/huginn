@@ -4,15 +4,13 @@ module Agents
     include FormConfigurable
 
     HTTP_METHOD = "post"
-    PROTOCOLS = %w(http https)
     API_ENDPOINT = "/webhooks/responses"
-    DOMAINS = [
-      { text: "Production", id: "app.chattermill.xyz" },
-      { text: "Staging", id: "staging.chattermill.xyz" },
-      { text: "Local (lvh.me:3000)", id: "lvh.me:3000" },
-      { text: "localhost", id: "localhost:3000" }
-    ]
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
+    DOMAINS = {
+      production: "app.chattermill.xyz",
+      development: "lvh.me:3000",
+      test: "localhost:3000"
+    }
 
     can_dry_run!
     no_bulk_receive!
@@ -27,6 +25,7 @@ module Agents
         A Chattermill Response Agent can receives events from other agents or run periodically,
         it builds Chattermill Responses with the [Liquid-interpolated](https://github.com/cantino/huginn/wiki/Formatting-Events-using-Liquid)
         contents of `options`, and sends the results as Authenticated POST requests to a specified API instance.
+        If the request fail, a notification to Slack will be sent.
 
         If `emit_events` is set to `true`, the server response will be emitted as an Event and can be fed to a
         WebsiteAgent for parsing (using its `data_from_event` and `type` options). No data processing
@@ -36,8 +35,6 @@ module Agents
 
         Options:
 
-          * `protocol` - Select `http` or `https`. Normally, this should be set to `https`.
-          * `domain` - Select the API or Chattermill backend instance. Normally it should be `Production` that points to `app.chattermill.xyz`.
           * `organization_subdomain` - Specify the subdomain for the target organization (e.g `moo` or `hellofresh`).
           * `auth_token` - Specify the Auth0 token to be used for authentication. Please, DO NOT include the `Bearer` word, just the hash.
           * `comment` - Specify the Liquid interpolated expresion to build the Response comment.
@@ -71,8 +68,6 @@ module Agents
       )
 
       {
-        'protocol' => 'https',
-        'domain' => 'app.chattermill.xyz',
         'comment' => '{{ data.comment }}',
         'score' => '{{ data.score }}',
         'kind' => 'review',
@@ -80,7 +75,7 @@ module Agents
         'user_meta' => sample_hash,
         'segments' => sample_hash,
         'extra_fields' => '{}',
-        'emit_events' => 'false',
+        'emit_events' => 'true',
         'expected_receive_period_in_days' => '1'
       }
     end
@@ -93,8 +88,6 @@ module Agents
       HTTP_METHOD
     end
 
-    form_configurable :protocol, type: :array, values: PROTOCOLS
-    form_configurable :domain, roles: :completable
     form_configurable :organization_subdomain
     form_configurable :auth_token
     form_configurable :comment
@@ -108,17 +101,7 @@ module Agents
     form_configurable :emit_events, type: :array, values: %w(true false)
     form_configurable :expected_receive_period_in_days
 
-    def complete_domain
-      DOMAINS
-    end
-
     def validate_options
-      if options['protocol'].blank? || !PROTOCOLS.include?(options['protocol'])
-        errors.add(:base, "The 'protocol' option is required and must be set to 'http' or 'https'")
-      end
-      if options['domain'].blank?
-        errors.add(:base, "The 'domain' option is required.")
-      end
       if options['organization_subdomain'].blank?
         errors.add(:base, "The 'organization_subdomain' option is required.")
       end
@@ -129,7 +112,7 @@ module Agents
         errors.add(:base, "The 'expected_receive_period_in_days' option is required.")
       end
 
-      if options.has_key?('emit_events') && boolify(options['emit_events']).nil?
+      if options.key?('emit_events') && boolify(options['emit_events']).nil?
         errors.add(:base, "if provided, emit_events must be true or false")
       end
 
@@ -193,8 +176,9 @@ module Agents
 
     def post_url(event = Event.new)
       event_options = interpolated(event.payload)
-      protocol = event_options['protocol']
-      host = "#{event_options['organization_subdomain']}.#{event_options['domain']}"
+      protocol = Rails.env.production? ? 'https' : 'http'
+      domain = DOMAINS[Rails.env.to_sym]
+      host = "#{event_options['organization_subdomain']}.#{domain}"
 
       "#{protocol}://#{host}#{API_ENDPOINT}"
     end
@@ -207,13 +191,28 @@ module Agents
       url = post_url(event)
       headers['Content-Type'] = 'application/json; charset=utf-8'
       body = data.to_json
-
+      logger.info(headers.inspect)
       response = faraday.run_request(http_method.to_sym, url, body, headers)
-      return unless boolify(interpolated['emit_events'])
+      send_slack_notification(response, event) unless response.status == 201
 
+      return unless boolify(interpolated['emit_events'])
       create_event(payload: { body: response.body,
                               headers: normalize_response_headers(response.headers),
                               status: response.status })
+    end
+
+    def send_slack_notification(response, event)
+      link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
+      parsed_body = JSON.parse(response.body)
+      description = "Hi! I'm reporting a problem with the Chattermill agent *#{name}*"
+      message = "#{description} - #{link}\n`HTTP Status: #{response.status}`\n```#{parsed_body}```"
+      slack_opts = { icon_emoji: ':fire:', channel: ENV['SLACK_CHANNEL'] }
+
+      slack_notifier.ping message, slack_opts
+    end
+
+    def slack_notifier
+      @slack_notifier ||= Slack::Notifier.new(ENV['SLACK_WEBHOOK_URL'], username: 'Hduginn')
     end
   end
 end
