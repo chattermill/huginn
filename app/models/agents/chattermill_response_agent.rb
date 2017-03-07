@@ -212,7 +212,7 @@ module Agents
     end
 
     def slack_notifier
-      @slack_notifier ||= Slack::Notifier.new(ENV['SLACK_WEBHOOK_URL'], username: 'Hduginn')
+      @slack_notifier ||= Slack::Notifier.new(ENV['SLACK_WEBHOOK_URL'], username: 'Huginn')
     end
   end
 end
