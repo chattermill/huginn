@@ -146,7 +146,7 @@ module Agents
     end
 
     def parse_json_option(key)
-      options[key] = JSON.parse(options[key])
+      options[key] = JSON.parse(options[key]) unless options[key].is_a?(Hash)
     rescue
       errors.add(:base, "The '#{key}' option is an invalid JSON.")
     end
@@ -203,7 +203,7 @@ module Agents
 
     def send_slack_notification(response, event)
       link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
-      parsed_body = JSON.parse(response.body)
+      parsed_body = JSON.parse(response.body) rescue ""
       description = "Hi! I'm reporting a problem with the Chattermill agent *#{name}*"
       message = "#{description} - #{link}\n`HTTP Status: #{response.status}`\n```#{parsed_body}```"
       slack_opts = { icon_emoji: ':fire:', channel: ENV['SLACK_CHANNEL'] }
