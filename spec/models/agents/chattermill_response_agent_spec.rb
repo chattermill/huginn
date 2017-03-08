@@ -11,10 +11,12 @@ describe Agents::ChattermillResponseAgent do
   end
 
   before do
+    stub.proxy(ENV).[](anything)
+    stub(ENV).[]('CHATTERMILL_AUTH_TOKEN') { 'token-123' }
+
     @valid_options = {
       'organization_subdomain' => 'foo',
       'expected_receive_period_in_days' => 1,
-      'auth_token' => 'token-123',
       'comment' => '{{ data.comment }}',
       'segments' => segments.to_json,
       'user_meta' => user_meta.to_json,
@@ -160,8 +162,7 @@ describe Agents::ChattermillResponseAgent do
 
     describe "slack notification" do
       before do
-        @checker.options['auth_token'] = 'invalid'
-        stub.proxy(ENV).[](anything)
+        stub(ENV).[]('CHATTERMILL_AUTH_TOKEN') { 'invalid' }
         stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
         stub(ENV).[]('SLACK_CHANNEL') { '#mychannel' }
       end
@@ -198,11 +199,6 @@ describe Agents::ChattermillResponseAgent do
 
     it "should validate presence of expected_receive_period_in_days" do
       @checker.options['expected_receive_period_in_days'] = ""
-      expect(@checker).not_to be_valid
-    end
-
-    it "should validate presence of auth_token" do
-      @checker.options['auth_token'] = ""
       expect(@checker).not_to be_valid
     end
 

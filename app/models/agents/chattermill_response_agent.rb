@@ -14,7 +14,7 @@ module Agents
 
     can_dry_run!
     no_bulk_receive!
-    default_schedule "never"
+    cannot_be_scheduled!
 
     before_validation :parse_json_options
 
@@ -36,7 +36,6 @@ module Agents
         Options:
 
           * `organization_subdomain` - Specify the subdomain for the target organization (e.g `moo` or `hellofresh`).
-          * `auth_token` - Specify the Auth0 token to be used for authentication. Please, DO NOT include the `Bearer` word, just the hash.
           * `comment` - Specify the Liquid interpolated expresion to build the Response comment.
           * `score` - Specify the Liquid interpolated expresion to build the Response score.
           * `kind` - Specify the Liquid interpolated expresion to build the Response kind.
@@ -70,7 +69,8 @@ module Agents
       {
         'comment' => '{{ data.comment }}',
         'score' => '{{ data.score }}',
-        'kind' => 'review',
+        'kind' => 'nps',
+        'stream' => 'nps_survey',
         'created_at' => '{{ data.date }}',
         'user_meta' => sample_hash,
         'segments' => sample_hash,
@@ -89,7 +89,6 @@ module Agents
     end
 
     form_configurable :organization_subdomain
-    form_configurable :auth_token
     form_configurable :comment
     form_configurable :score
     form_configurable :kind
@@ -104,9 +103,6 @@ module Agents
     def validate_options
       if options['organization_subdomain'].blank?
         errors.add(:base, "The 'organization_subdomain' option is required.")
-      end
-      if options['auth_token'].blank?
-        errors.add(:base, "The 'auth_token' option is required.")
       end
       if options['expected_receive_period_in_days'].blank?
         errors.add(:base, "The 'expected_receive_period_in_days' option is required.")
@@ -125,7 +121,7 @@ module Agents
           outgoing = interpolated.slice(*BASIC_OPTIONS)
           outgoing.merge!(interpolated['extra_fields'].presence || {})
 
-          handle outgoing, event, headers(auth_header(interpolated['auth_token']))
+          handle outgoing, event, headers(auth_header)
         end
       end
     end
@@ -134,7 +130,7 @@ module Agents
       outgoing = interpolated.slice(*BASIC_OPTIONS)
       outgoing.merge!(interpolated['extra_fields'].presence || {})
 
-      handle outgoing, headers(auth_header(interpolated['auth_token']))
+      handle outgoing, headers(auth_header)
     end
 
     private
@@ -183,15 +179,14 @@ module Agents
       "#{protocol}://#{host}#{API_ENDPOINT}"
     end
 
-    def auth_header(token)
-      { "Authorization" => "Bearer #{token}" }
+    def auth_header
+      { "Authorization" => "Bearer #{ENV['CHATTERMILL_AUTH_TOKEN']}" }
     end
 
     def handle(data, event = Event.new, headers)
       url = post_url(event)
       headers['Content-Type'] = 'application/json; charset=utf-8'
       body = data.to_json
-      logger.info(headers.inspect)
       response = faraday.run_request(http_method.to_sym, url, body, headers)
       send_slack_notification(response, event) unless response.status == 201
 
@@ -204,11 +199,12 @@ module Agents
     def send_slack_notification(response, event)
       link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
       parsed_body = JSON.parse(response.body) rescue ""
-      description = "Hi! I'm reporting a problem with the Chattermill agent *#{name}*"
-      message = "#{description} - #{link}\n`HTTP Status: #{response.status}`\n```#{parsed_body}```"
+      description = "Hi! I'm reporting a problem with the Chattermill agent *#{name}* - #{link}\n"
+      description << "Source Agent: *#{event.agent.name}*\n" unless event.agent.nil?
+      description << "`HTTP Status: #{response.status}`\n```#{parsed_body}```"
       slack_opts = { icon_emoji: ':fire:', channel: ENV['SLACK_CHANNEL'] }
 
-      slack_notifier.ping message, slack_opts
+      slack_notifier.ping(description, slack_opts)
     end
 
     def slack_notifier
