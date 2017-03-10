@@ -199,13 +199,13 @@ module Agents
     def send_slack_notification(response, event)
       link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
       parsed_body = JSON.parse(response.body) rescue ""
-      description = "There is a problem with *#{name}* - #{link}\n"
+      description = "Error `#{response.status}`\nparsed_body\n#{link}"
       slack_opts = {
         icon_emoji: ':fire:',
         channel: ENV['SLACK_CHANNEL'],
         attachments: [
           {
-            title: "Error: `#{response.status}`",
+            title: "Error on *#{name}*",
             author_name: event.agent&.name,
             color: "danger",
             fallback: description,
