@@ -206,7 +206,7 @@ module Agents
         attachments: [
           {
             title: "Error: `#{response.status}`",
-            author_name: event.agent.name,
+            author_name: event.agent&.name,
             color: "danger",
             fallback: description,
             text: description
