@@ -2,6 +2,17 @@ module Agents
   class AppfiguresReviewsAgent < WebsiteAgent
     include FormConfigurable
 
+    description <<-MD
+      The AppFigures Agent pulls reviews via [AppFigures API](http://docs.appfigures.com/api/reference/v2/reviews) either for all apps on a given account or
+      a reviews for predefined products using AppFigures Public Data API if `products` attribute is defined.
+
+      THe Public Data API uses paid credits and should thus only be used when other options are not available.
+
+      The 'filters' option is set up to fetch 500 reviews by default and convert them to English automatically. You can find the full list of available params [here](http://docs.appfigures.com/api/reference/v2/reviews).
+      `basic_auth` option is supposed to have your AppFigures Login and Password with a colon in between: `login:password`
+      `client_key` option has your AppFigures API Client Key, which you can obtain [here](https://appfigures.com/developers/keys)
+    MD
+
     EXTRACT = {
       'title' => {
         'path' => 'reviews[*].title'
