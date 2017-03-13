@@ -13,9 +13,54 @@ module Agents
 
     before_validation :build_default_options
 
+    description do
+      <<-MD
+        The Zendesk Satisfaction Ratings Agent search Zendesk satisfaction ratings using their API and emit events with each result.
+
+        A Zendesk Satisfaction Ratings can receives events from other agents, or run periodically,
+        search ratings using the Zendesk API and emit the result as an `event` with the Zendesk asignee or ticket expanded
+        if `retrieve_assiginee` or `retrieve_ticket` options are `true`.
+        If the request fails, a notification to Slack will be sent.
+
+        In the `on_change` mode, change is detected based on the resulted event payload after applying this option.
+        If you want to add some keys to each event but ignore any change in them, set `mode` to `all` and put a DeDuplicationAgent downstream.
+        If you specify `merge` for the `mode` option, Huginn will retain the old payload and update it with new values.
+
+        Options:
+
+          * `subdomain` - Specify the subdomain of the Zendesk client (e.g `moo` or `hellofresh`).
+          * `account_email` - Specify email to be used for Basic authentication.
+          * `api_token` - Specify the token (or password) to be used for Basic authentication.
+          * `filter` - Extra params to be used to filter satisfaction ratings (e.g. score, start_time, end_time).
+          * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
+          * `retrieve_assiginee` - If `true`, the agent wil use the `assiginee_id`s received and find the associated `assignee`s
+          * `retrieve_ticket` - If `true`, the agent wil use the `ticket_id`s received and find the associated `ticket`s
+          * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
+      MD
+    end
+
+    event_description <<-MD
+      Events look like this:
+      {
+        "id":              35436,
+        "url":             "https://company.zendesk.com/api/v2/satisfaction_ratings/35436.json",
+        "assignee_id":     135,
+        "group_id":        44,
+        "requester_id":    7881,
+        "ticket_id":       208,
+        "score":           "good",
+        "updated_at":      "2011-07-20T22:55:29Z",
+        "created_at":      "2011-07-20T22:55:29Z",
+        "comment":         "Awesome support!",
+        "asignee":         {...},
+        "ticket":          {...}
+      }
+    MD
+
     form_configurable :subdomain
+    form_configurable :account_email
+    form_configurable :api_token
     form_configurable :filter
-    form_configurable :auth_token
     form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :retrieve_assignee, type: :array, values: %w(true false)
     form_configurable :retrieve_ticket, type: :array, values: %w(true false)
@@ -25,7 +70,8 @@ module Agents
       {
         'subdomain' => 'myaccount',
         'filter' => 'sort_order=desc&score=received_with_comment',
-        'auth_token' => '{% credential ZendeskCredential %}',
+        'account_email' => '{% credential ZendeskEmail %}',
+        'api_token' => '{% credential ZendeskToken %}',
         'expected_update_period_in_days' => '2',
         'mode' => 'on_change',
         'retrieve_assignee' => 'true',
@@ -33,17 +79,29 @@ module Agents
       }
     end
 
+    def validate_options
+      super
+
+      %w(subdomain account_email api_token).each do |key|
+        errors.add(:base, "The '#{key}' option is required.") if options[key].blank?
+      end
+
+      if boolify(options['retrieve_assignee']).nil?
+        errors.add(:base, "The retrieve_assignee option must be true or false")
+      end
+
+      if boolify(options['retrieve_ticket']).nil?
+        errors.add(:base, "The retrieve_ticket option must be true or false")
+      end
+    end
+
     private
 
     def build_default_options
       options['url'] = "https://#{options['subdomain']}.#{DOMAIN}#{API_ENDPOINT}"
       options['url'] << "?#{options['filter']}" if options['filter'].present?
-      options['headers'] = auth_header(options['auth_token'])
+      options['basic_auth'] = "#{options['account_email']}/token:#{options['api_token']}"
       options['type'] = 'json'
-    end
-
-    def auth_header(token)
-      { "Authorization" => "Basic #{token}" }
     end
 
     def parse(data)
