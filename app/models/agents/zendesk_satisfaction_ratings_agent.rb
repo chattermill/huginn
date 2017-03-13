@@ -32,7 +32,6 @@ module Agents
         A Zendesk Satisfaction Ratings can receives events from other agents, or run periodically,
         search ratings using the Zendesk API and emit the result as an `event` with the Zendesk `user` or `ticket` expanded
         if `retrieve_assiginee` or `retrieve_ticket` options are `true`.
-        If the request fails, a notification to Slack will be sent.
 
         In the `on_change` mode, change is detected based on the resulted event payload after applying this option.
         If you want to add some keys to each event but ignore any change in them, set `mode` to `all` and put a DeDuplicationAgent downstream.
