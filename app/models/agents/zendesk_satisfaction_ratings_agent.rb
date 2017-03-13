@@ -4,6 +4,18 @@ module Agents
 
     API_ENDPOINT = "/api/v2/satisfaction_ratings.json"
     DOMAIN = "zendesk.com"
+    EXTRACT = {
+      'id' => { 'path' => 'satisfaction_ratings.[*].id' },
+      'url' => { 'path' => 'satisfaction_ratings.[*].url' },
+      'assignee_id' => { 'path' => 'satisfaction_ratings.[*].assignee_id' },
+      'group_id' => { 'path' => 'satisfaction_ratings.[*].group_id' },
+      'requester_id' => { 'path' => 'satisfaction_ratings.[*].requester_id' },
+      'ticket_id' => { 'path' => 'satisfaction_ratings.[*].ticket_id' },
+      'score' => { 'path' => 'satisfaction_ratings.[*].score' },
+      'updated_at' => { 'path' => 'satisfaction_ratings.[*].updated_at' },
+      'created_at' => { 'path' => 'satisfaction_ratings.[*].created_at' },
+      'comment' => { 'path' => 'satisfaction_ratings.[*].comment' }
+    }
 
     can_dry_run!
     can_order_created_events!
@@ -18,7 +30,7 @@ module Agents
         The Zendesk Satisfaction Ratings Agent search Zendesk satisfaction ratings using their API and emit events with each result.
 
         A Zendesk Satisfaction Ratings can receives events from other agents, or run periodically,
-        search ratings using the Zendesk API and emit the result as an `event` with the Zendesk asignee or ticket expanded
+        search ratings using the Zendesk API and emit the result as an `event` with the Zendesk `user` or `ticket` expanded
         if `retrieve_assiginee` or `retrieve_ticket` options are `true`.
         If the request fails, a notification to Slack will be sent.
 
@@ -52,7 +64,7 @@ module Agents
         "updated_at":      "2011-07-20T22:55:29Z",
         "created_at":      "2011-07-20T22:55:29Z",
         "comment":         "Awesome support!",
-        "asignee":         {...},
+        "user":            {...},
         "ticket":          {...}
       }
     MD
@@ -102,6 +114,15 @@ module Agents
       options['url'] << "?#{options['filter']}" if options['filter'].present?
       options['basic_auth'] = "#{options['account_email']}/token:#{options['api_token']}"
       options['type'] = 'json'
+      options['extract'] = EXTRACT
+
+      if boolify(options['retrieve_ticket'])
+        options['extract']['ticket'] = { 'path' => 'satisfaction_ratings.[*].ticket' }
+      end
+
+      if boolify(options['retrieve_assignee'])
+        options['extract']['user'] = { 'path' => 'satisfaction_ratings.[*].user' }
+      end
     end
 
     def parse(data)
@@ -141,7 +162,7 @@ module Agents
 
     def get_zendesk_resource(uri)
       response = faraday.get(uri)
-      return unless response.success?
+      return {} unless response.success?
 
       JSON.parse(response.body)
     end
