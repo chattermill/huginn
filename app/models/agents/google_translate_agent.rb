@@ -8,20 +8,65 @@ module Agents
     before_validation :parse_json_options
 
     description <<-MD
-      The Google Translate Agent will attempt to translate text between natural languages.
+      The Google Translate Agent will attempt to translate text between natural languages using Google Translate API.
 
-      Services are provided using Google Translate API.
+      This agent can translate several fields at once, see `content` option below.
+      You can use [Liquid](https://github.com/cantino/huginn/wiki/Formatting-Events-using-Liquid) with `from`, `to` and `content` options.
 
-      `to` must be filled with the destination language code. By default this is `en` for English.
-      `from` can be used to set the target language code. This is optional, so if empty, the translator service will try to guess the source language.
-       In both cases you can use [Liquid](https://github.com/cantino/huginn/wiki/Formatting-Events-using-Liquid).
+      Options:
 
-      Specify what you would like to translate using the `content` field, you can use [Liquid](https://github.com/cantino/huginn/wiki/Formatting-Events-using-Liquid) to specify which part of the payload you want to translate.
+      * `to` - Specify the destination language code. By default this is `en` for English.
+      * `from` - Specify the original language code. This is optional, so if empty, the translator service will try to guess the source language.
+      * `content` - Specify what you want to translate using JSON. Each field in the JSON object will be translated and the result will be emitted as an event. See examples below.
+       * `merge` - If `true` the translated `content` is added to the source event payload under the key `translated_content`, if it is `false` the resulting event will have the structure of `content` field.
+      * `expected_receive_period_in_days` is the maximum number of days you would allow to pass between events.
 
-       When `merge` is `true` translated `content` is added to the event payload under the key `translated_content`,
-       if it is `false` the resulting event will have the defined `content` structure.
+      ### Examples
 
-      `expected_receive_period_in_days` is the maximum number of days you would allow to pass between events.
+      Given the following event:
+
+          {
+            "data" => {
+              "comment" => "Hola Mundo",
+              "review" => "Excelente servicio!"
+            }
+          }
+
+      #### Example 1: Translate a single field without merge.
+
+      Value for `content`:
+
+          {
+            "comment" => "{{data.comment}}"
+          }
+
+      Output event:
+
+          {
+            "comment" => "Hello World"
+          }
+
+      #### Example 2: Translate multiple fields with merge `true`.
+
+      Value for `content`:
+
+          {
+            "comment" => "{{data.comment}}",
+            "feedback" => "{{data.review}}"
+          }
+
+      Output event:
+
+          {
+            "data" => {
+              "comment" => "Hola Mundo",
+              "review" => "Excelente servicio!"
+            },
+            "translated_content" => {
+              "comment" => "Hello World",
+              "feedback" => "Excellent service!"
+            }
+          }
     MD
 
     event_description "User defined"
@@ -38,8 +83,7 @@ module Agents
         'expected_receive_period_in_days' => 1,
         'merge' => 'true',
         'content' => {
-          'comment' => '{{data.comment}}',
-          'text' => '{{message.text}}'
+          'comment' => '{{data.comment}}'
         }
       }
     end
