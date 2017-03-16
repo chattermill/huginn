@@ -114,25 +114,34 @@ module Agents
       options['basic_auth'] = "#{options['account_email']}/token:#{options['api_token']}"
       options['type'] = 'json'
       options['extract'] = EXTRACT
-
-      if boolify(options['retrieve_ticket'])
-        options['extract']['ticket'] = { 'path' => 'satisfaction_ratings.[*].ticket' }
-      end
-
-      if boolify(options['retrieve_assignee'])
-        options['extract']['user'] = { 'path' => 'satisfaction_ratings.[*].user' }
-      end
     end
 
-    def parse(data)
-      parsed_data = JSON.parse(data)
-      parsed_data['satisfaction_ratings'].map! do |rating|
-        rating.merge!(get_assignee(rating['assignee_id'])) if retrieve_assignee?
-        rating.merge!(get_ticket(rating['ticket_id'])) if retrieve_ticket?
-        rating
-      end
+    def retrieve_details!(data)
+      data.merge!(get_assignee(data['assignee_id'])) if retrieve_assignee?
+      data.merge!(get_ticket(data['ticket_id'])) if retrieve_ticket?
+    end
 
-      parsed_data
+    # This method returns true if the result should be stored as a new event.
+    # If mode is set to 'on_change', this method may return false and update an
+    # existing event to expire further in the future.
+    # Also, it will retrive asignee and/or ticket if the event should be stored.
+    def store_payload!(old_events, result)
+      case interpolated['mode'].presence
+      when 'on_change'
+        found_event = old_events.find { |e| e.payload['id'] == result['id'] }
+        if found_event
+          found_event.update!(expires_at: new_event_expiration_date)
+          false
+        else
+          retrieve_details!(result)
+          true
+        end
+      when 'all', 'merge', ''
+        retrieve_details!(result)
+        true
+      else
+        raise "Illegal options[mode]: #{interpolated['mode']}"
+      end
     end
 
     def retrieve_assignee?
