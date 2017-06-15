@@ -7,7 +7,7 @@
 # jobs: bundle exec rails runner bin/threaded.rb
 
 # Old version with separate processes (use this if you have issues with the threaded version)
-web: bundle exec rails server
+web: bundle exec rails server -p ${PORT-3000} -b ${IP-0.0.0.0}
 schedule: bundle exec rails runner bin/schedule.rb
 sidekiq: bundle exec sidekiq
 # twitter: bundle exec rails runner bin/twitter_stream.rb
