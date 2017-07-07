@@ -5,6 +5,7 @@ services:
   - docker
   - mysql
   - postgresql
+  - redis-server
 env:
   global:
     - APP_SECRET_TOKEN=b2724973fd81c2f4ac0f92ac48eb3f0152c4a11824c122bcf783419a4c51d8b9bba81c8ba6a66c7de599677c7f486242cf819775c433908e77c739c5c8ae118d
@@ -19,11 +20,13 @@ env:
     - DOCKER_IMAGE=cantino/huginn-single-process DOCKERFILE=docker/single-process/Dockerfile
     - DOCKER_IMAGE=cantino/huginn DOCKERFILE=docker/multi-process/Dockerfile
     - RSPEC_TASK=spec:features
+    - BACKGROUND_JOB_PROCESSOR=sidekiq
 matrix:
   exclude:
     - env: DOCKER_IMAGE=cantino/huginn-single-process DOCKERFILE=docker/single-process/Dockerfile
     - env: DOCKER_IMAGE=cantino/huginn DOCKERFILE=docker/multi-process/Dockerfile
     - env: RSPEC_TASK=spec:features
+    - env: BACKGROUND_JOB_PROCESSOR=sidekiq
   include:
     - rvm: 2.3.1
       env: DATABASE_ADAPTER=mysql2 DOCKER_IMAGE=cantino/huginn-single-process DOCKERFILE=docker/single-process/Dockerfile
@@ -33,6 +36,10 @@ matrix:
       env: RSPEC_TASK=spec:features DATABASE_ADAPTER=mysql2
     - rvm: 2.3.1
       env: RSPEC_TASK=spec:features DATABASE_ADAPTER=postgresql DATABASE_USERNAME=postgres
+    - rvm: 2.3.1
+      env: BACKGROUND_JOB_PROCESSOR=sidekiq DATABASE_ADAPTER=mysql2
+    - rvm: 2.3.1
+      env: BACKGROUND_JOB_PROCESSOR=sidekiq DATABASE_ADAPTER=postgresql DATABASE_USERNAME=postgres
 rvm:
 - 2.2
 - 2.3.1

@@ -9,8 +9,8 @@ class SetCharsetForMysql < ActiveRecord::Migration
       ScenarioMembership,
       User,
       UserCredential,
-      Delayed::Job,
-    ]
+      defined?(Delayed) ? Delayed::Job : nil,
+    ].compact
   end
 
   def change
