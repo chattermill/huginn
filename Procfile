@@ -60,4 +60,4 @@ jobs: bundle exec rails runner bin/threaded.rb
 # 2. Configure BACKGROUND_JOB_PROCESSOR=sidekiq in your .env file
 # 3. If your redis server is not running locally configure REDIS_URL
 # 4. Uncomment this line:
-#sidekiq: bundle exec sidekiq
+sidekiq: bundle exec sidekiq
