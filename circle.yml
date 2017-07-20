@@ -6,6 +6,9 @@ machine:
     DATABASE_ADAPTER: postgresql
     BACKGROUND_JOB_PROCESSOR: sidekiq
 
+  ruby:
+    version: 2.3.1
+
   pre:
     # Start Postgres 9.6 since the default is 9.5.
     - sudo service postgresql stop
