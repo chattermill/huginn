@@ -6,6 +6,8 @@ machine:
     DATABASE_ADAPTER: postgresql
     BACKGROUND_JOB_PROCESSOR: sidekiq
 
+  services:
+    - redis
   ruby:
     version: 2.3.1
 
