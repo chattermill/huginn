@@ -14,7 +14,8 @@ module Agents
         'output' => 'event_per_row',
         'with_header' => 'true',
         'data_path' => '$.data',
-        'data_key' => 'data'
+        'data_key' => 'data',
+        'encoding' => ''
       }
     end
 
@@ -48,6 +49,8 @@ module Agents
 
         Set `with_header` to `true` to include a field header in the CSV.
 
+        Set `encoding` option if you need a specific encoding setup. For example `windows-1251:utf-8` if you are parsing an Excel file.
+
         Use [JSONPath](http://goessner.net/articles/JsonPath/) in `data_path` to select with part of the received events should be serialized.
       MD
     end
@@ -76,6 +79,7 @@ module Agents
     form_configurable :use_fields, type: :string
     form_configurable :output, type: :array, values: %w(event_per_row event_per_file)
     form_configurable :data_path, type: :string
+    form_configurable :encoding, type: :string
 
     def validate_options
       if options['with_header'].blank? || ![true, false].include?(boolify(options['with_header']))
@@ -166,6 +170,7 @@ module Agents
         col_sep: separator(mo),
         headers: boolify(mo['with_header']),
       }
+      options[:encoding] = interpolated['encoding'] if interpolated['encoding'].present
       options[:liberal_parsing] = true if CSV::DEFAULT_OPTIONS.key?(:liberal_parsing)
       options
     end
