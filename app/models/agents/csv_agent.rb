@@ -170,7 +170,7 @@ module Agents
         col_sep: separator(mo),
         headers: boolify(mo['with_header']),
       }
-      options[:encoding] = interpolated['encoding'] if interpolated['encoding'].present
+      options[:encoding] = interpolated['encoding'] if interpolated['encoding'].present?
       options[:liberal_parsing] = true if CSV::DEFAULT_OPTIONS.key?(:liberal_parsing)
       options
     end
