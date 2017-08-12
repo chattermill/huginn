@@ -205,10 +205,10 @@ GEM
     docile (1.1.5)
     domain_name (0.5.20170404)
       unf (>= 0.0.5, < 1.0.0)
-    dropbox-api (0.4.7)
-      hashie (~> 3.4.0)
-      multi_json (~> 1.10)
-      oauth (~> 0.4.7)
+    dropbox-api (0.4.2)
+      hashie
+      multi_json
+      oauth
     em-http-request (1.1.5)
       addressable (>= 2.3.4)
       cookiejar (!= 0.3.1)
@@ -278,7 +278,7 @@ GEM
       guard-compat (~> 1.1)
       rspec (>= 2.99.0, < 4.0)
     hashdiff (0.3.5)
-    hashie (3.4.6)
+    hashie (3.0.0)
     haversine (0.3.2)
     hipchat (1.2.0)
       httparty
@@ -362,7 +362,7 @@ GEM
     notiffany (0.1.1)
       nenv (~> 0.1)
       shellany (~> 0.0)
-    oauth (0.4.7)
+    oauth (0.5.3)
     oauth2 (1.4.0)
       faraday (>= 0.8, < 0.13)
       jwt (~> 1.0)
@@ -563,6 +563,10 @@ GEM
       builder (>= 2.1.2)
       jwt (>= 0.1.2)
       multi_json (>= 1.3.0)
+    typeform (0.0.2)
+      hashie (~> 3.0.0)
+      httparty
+      json
     typhoeus (0.6.9)
       ethon (>= 0.7.1)
     tzinfo (1.2.3)
@@ -701,6 +705,7 @@ DEPENDENCIES
   twilio-ruby (~> 3.11.5)
   twitter!
   twitter-stream!
+  typeform
   typhoeus (~> 0.6.3)
   tzinfo (>= 1.2.0)
   tzinfo-data
