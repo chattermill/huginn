@@ -19,6 +19,16 @@ GIT
       simple_oauth (~> 0.3.0)
 
 GIT
+  remote: https://github.com/chattermill/typeform.git
+  revision: 9786040d7c387ed1d3a59211bdd70e3f666bf8df
+  branch: md-usability-improvements
+  specs:
+    typeform (0.0.2)
+      hashie (~> 3.0.0)
+      httparty
+      json
+
+GIT
   remote: https://github.com/chattermill/usabilla_api.git
   revision: 16f42f6a4307ee0fec476149c6d571250b73ab01
   branch: md-usability-improvements
@@ -563,10 +573,6 @@ GEM
       builder (>= 2.1.2)
       jwt (>= 0.1.2)
       multi_json (>= 1.3.0)
-    typeform (0.0.2)
-      hashie (~> 3.0.0)
-      httparty
-      json
     typhoeus (0.6.9)
       ethon (>= 0.7.1)
     tzinfo (1.2.3)
@@ -705,7 +711,7 @@ DEPENDENCIES
   twilio-ruby (~> 3.11.5)
   twitter!
   twitter-stream!
-  typeform
+  typeform!
   typhoeus (~> 0.6.3)
   tzinfo (>= 1.2.0)
   tzinfo-data
