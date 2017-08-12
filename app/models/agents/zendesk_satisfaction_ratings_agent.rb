@@ -46,6 +46,7 @@ module Agents
           * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
           * `retrieve_assiginee` - If `true`, the agent wil use the `assiginee_id`s received and find the associated `assignee`s
           * `retrieve_ticket` - If `true`, the agent wil use the `ticket_id`s received and find the associated `ticket`s
+          * `retrieve_group` - If `true`, the agent wil use the `group_id`s received and find the associated `group`s
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
     end
@@ -75,6 +76,7 @@ module Agents
     form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :retrieve_assignee, type: :array, values: %w(true false)
     form_configurable :retrieve_ticket, type: :array, values: %w(true false)
+    form_configurable :retrieve_group, type: :array, values: %w(true false)
     form_configurable :expected_update_period_in_days
 
     def default_options
@@ -119,6 +121,7 @@ module Agents
     def retrieve_details!(data)
       data.merge!(get_assignee(data['assignee_id'])) if retrieve_assignee?
       data.merge!(get_ticket(data['ticket_id'])) if retrieve_ticket?
+      data.merge!(get_group(data['group_id'])) if retrieve_group?
     end
 
     # This method returns true if the result should be stored as a new event.
@@ -152,6 +155,10 @@ module Agents
       boolify(interpolated['retrieve_ticket'])
     end
 
+    def retrieve_group?
+      boolify(interpolated['retrieve_group'])
+    end
+
     def get_assignee(assignee_id)
       log "Fetching assiginee #{assignee_id}"
       uri = "#{zendesk_uri_base}/users/#{assignee_id}.json"
@@ -161,6 +168,12 @@ module Agents
     def get_ticket(ticket_id)
       log "Fetching ticket #{ticket_id}"
       uri = "#{zendesk_uri_base}/tickets/#{ticket_id}.json"
+      get_zendesk_resource(uri)
+    end
+
+    def get_group(group_id)
+      log "Fetching group #{group_id}"
+      uri = "#{zendesk_uri_base}/groups/#{group_id}.json"
       get_zendesk_resource(uri)
     end
 
