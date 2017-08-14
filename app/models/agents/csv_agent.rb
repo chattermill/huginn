@@ -170,13 +170,12 @@ module Agents
         col_sep: separator(mo),
         headers: boolify(mo['with_header']),
       }
-      options[:encoding] = interpolated['encoding'] if interpolated['encoding'].present?
       options[:liberal_parsing] = true if CSV::DEFAULT_OPTIONS.key?(:liberal_parsing)
       options
     end
 
     def parse_csv(io, mo, array = nil)
-      CSV.new(io, **parse_csv_options(mo)).each do |row|
+      CSV.new(encode(io), **parse_csv_options(mo)).each do |row|
         if block_given?
           yield get_payload(row, mo)
         else
@@ -204,6 +203,14 @@ module Agents
 
     def extract_options(mo)
       mo['use_fields'].split(',').map(&:strip)
+    end
+
+    def encode(io)
+      return io if interpolated['encoding'].blank?
+      string = io.respond_to?(:read) ? io.read : io
+      encodings = interpolated['encoding'].split(':').reverse
+      # We use src:dst for param, but #encode! uses dst:src
+      string.encode!(*encodings, invalid: :replace)
     end
   end
 end
