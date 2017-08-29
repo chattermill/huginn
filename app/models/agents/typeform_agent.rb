@@ -164,6 +164,7 @@ module Agents
     end
 
     def comment_from_response(response)
+      answer_keys = response.answers.keys
       comment_key = if boolify(interpolated['guess_mode'])
                       answer_keys.first { |k| k.match?(/textarea/) }
                     else
