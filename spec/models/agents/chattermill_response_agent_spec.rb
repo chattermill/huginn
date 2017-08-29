@@ -72,7 +72,7 @@ describe Agents::ChattermillResponseAgent do
     it "uses the correct URI" do
       @checker.check
       uri = @sent_requests[:post].first.uri.to_s
-      expect(uri).to eq("http://foo.localhost:3000/webhooks/responses/")
+      expect(uri).to eq("http://localhost:3000/webhooks/responses/")
     end
 
     it "generates the authorization header" do
@@ -80,25 +80,22 @@ describe Agents::ChattermillResponseAgent do
       auth_header = @sent_requests[:post].first.headers['Authorization']
       expect(auth_header).to eq("Bearer token-123")
     end
+
+    it "generates the organization header" do
+      @checker.check
+      org_header = @sent_requests[:post].first.headers['Organization']
+      expect(org_header).to eq('foo')
+    end
   end
 
   describe "#receive" do
     it "can handle events with id" do
-      event1 = Event.new
-      event1.agent = agents(:bob_weather_agent)
-      event1.payload = {
-        'xyz' => 'value1',
-        'data' => {
-          'segment' => 'My Segment',
-          'id' => 'id'
-        }
-      }
+      @checker.options['id'] = '123'
+      @checker.check
 
-      expect {
-        @checker.receive([@event, event1])
-      }.to change { @sent_requests[:patch].length }.by(1)
+      expect(@sent_requests[:patch].length).to eq(1)
       uri = @sent_requests[:patch].first.uri.to_s
-      expect(uri).to eq("http://foo.localhost:3000/webhooks/responses/id")
+      expect(uri).to eq("http://localhost:3000/webhooks/responses/123")
     end
 
     it "can handle multiple events" do
