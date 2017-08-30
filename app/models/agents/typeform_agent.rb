@@ -84,7 +84,7 @@ module Agents
         'guess_mode' => true,
         'expected_update_period_in_days' => '1',
         'mode' => 'on_change',
-        'limit' => 100
+        'limit' => 20
       }
     end
 
@@ -154,8 +154,9 @@ module Agents
 
     def score_from_response(response)
       answer_keys = response.answers.keys
+
       score_key = if boolify(interpolated['guess_mode'])
-                    answer_keys.first { |k| k.match?(/opinionscale/) }
+                    answer_keys.find { |k| k.match?(/opinionscale/) }
                   else
                     interpolated['score_question_ids'].split(',').first { |id| answer_keys.include?(id) }
                   end
@@ -166,7 +167,7 @@ module Agents
     def comment_from_response(response)
       answer_keys = response.answers.keys
       comment_key = if boolify(interpolated['guess_mode'])
-                      answer_keys.first { |k| k.match?(/textarea/) }
+                      answer_keys.find { |k| k.match?(/textarea/) }
                     else
                       interpolated['comment_question_ids'].split(',').first { |id| answer_keys.include?(id) }
                     end
