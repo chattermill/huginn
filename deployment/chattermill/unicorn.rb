@@ -1,7 +1,7 @@
 require "net/http"
 
 worker_processes Integer(ENV["WEB_CONCURRENCY"] || 2)
-timeout 15
+timeout Integer(ENV["WEB_TIMEOUT"] || 30)
 preload_app true
 
 before_fork do |server, worker|
