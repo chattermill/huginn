@@ -37,6 +37,8 @@ module Agents
         If you want to add some keys to each event but ignore any change in them, set `mode` to `all` and put a DeDuplicationAgent downstream.
         If you specify `merge` for the `mode` option, Huginn will retain the old payload and update it with new values.
 
+        **Dry Run Note:** To prevent timeouts, this agent will return only 3 objects for Dry Runs.
+
         Options:
 
           * `subdomain` - Specify the subdomain of the Zendesk client (e.g `moo` or `hellofresh`).
@@ -116,6 +118,15 @@ module Agents
       options['basic_auth'] = "#{options['account_email']}/token:#{options['api_token']}"
       options['type'] = 'json'
       options['extract'] = EXTRACT
+    end
+
+    # Override check method so we can handle dry_run and return
+    # only a few objects.
+    def check
+      url = interpolated['url']
+      url << "&per_page=3" if dry_run?
+
+      check_urls(url)
     end
 
     def retrieve_details!(data)
