@@ -154,25 +154,24 @@ module Agents
 
     def score_from_response(response)
       answer_keys = response.answers.keys
-
       score_key = if boolify(interpolated['guess_mode'])
-                    answer_keys.find { |k| k.match?(/opinionscale/) }
+                    answer_keys.find { |k| /opinionscale/.match?(k) }
                   else
-                    interpolated['score_question_ids'].split(',').first { |id| answer_keys.include?(id) }
+                    interpolated['score_question_ids'].split(',').find { |id| answer_keys.include?(id) }
                   end
 
-      response.answers[score_key]
+      response.answers[score_key] if score_key.present?
     end
 
     def comment_from_response(response)
       answer_keys = response.answers.keys
       comment_key = if boolify(interpolated['guess_mode'])
-                      answer_keys.find { |k| k.match?(/textarea/) }
+                      answer_keys.find { |k| /textarea/.match?(k) }
                     else
-                      interpolated['comment_question_ids'].split(',').first { |id| answer_keys.include?(id) }
+                      interpolated['comment_question_ids'].split(',').find { |id| answer_keys.include?(id) }
                     end
 
-      response.answers[comment_key]
+      response.answers[comment_key] if comment_key.present?
     end
 
     def params
