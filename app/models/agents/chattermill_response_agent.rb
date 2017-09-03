@@ -6,7 +6,7 @@ module Agents
     API_ENDPOINT = "/webhooks/responses"
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
     DOMAINS = {
-      production: "app.chattermill.xyz",
+      production: "dev.app.chattermill.xyz",
       development: "lvh.me:3000",
       test: "localhost:3000"
     }
