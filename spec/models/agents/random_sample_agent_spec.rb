@@ -3,23 +3,23 @@ require 'rails_helper'
 describe Agents::RandomSampleAgent do
   let(:agent) do
     _agent = Agents::RandomSampleAgent.new(name: 'My RandomSampleAgent')
-    _agent.options = _agent.default_options.merge('percent' => 30)
+    _agent.options = _agent.default_options.merge('percent' => 50)
     _agent.user = users(:bob)
     _agent.sources << agents(:bob_website_agent)
     _agent.save!
     _agent
   end
 
-  def create_event
-    _event = Event.new(payload: { random: rand })
+  def create_event(value)
+    _event = Event.new(payload: { key: value })
     _event.agent = agents(:bob_website_agent)
     _event.save!
     _event
   end
 
-  let(:first_event) { create_event }
-  let(:second_event) { create_event }
-  let(:third_event) { create_event }
+  let(:first_event) { create_event(1) }
+  let(:second_event) { create_event(2) }
+  let(:third_event) { create_event(3) }
 
   describe "#working?" do
     it "checks if events have been received within expected receive period" do
@@ -61,11 +61,12 @@ describe Agents::RandomSampleAgent do
   end
 
   describe "#receive" do
+    before { srand(123) }
+
     it "emits a random sample of events accordingly to percent option" do
-      agent.receive([first_event])
-      expect(agent.events.count).to eq 0
       agent.receive([first_event, second_event, third_event])
-      expect(agent.events.count).to eq 1
+      expect(agent.events.count).to eq 2
+      expect(agent.events.map(&:payload)).to eq [third_event.payload, second_event.payload]
     end
   end
 end

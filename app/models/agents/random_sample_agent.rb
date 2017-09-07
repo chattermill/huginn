@@ -33,10 +33,9 @@ module Agents
     end
 
     def receive(incoming_events)
-      max_items = (incoming_events.size * options['percent'].to_f/100).round
-
-      incoming_events.sample(max_items).each do |event|
-        create_event payload: event.payload
+      percent = options['percent'].to_f / 100
+      incoming_events.each do |event|
+        create_event payload: event.payload if rand < percent
       end
     end
 
