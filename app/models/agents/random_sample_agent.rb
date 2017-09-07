@@ -1,6 +1,9 @@
 module Agents
   class RandomSampleAgent < Agent
+    include FormConfigurable
+
     cannot_be_scheduled!
+    can_dry_run!
 
     description <<-MD
     The RandomSampleAgent takes events from other agents and passes on x% of them randomly sampled from each pull.
@@ -18,13 +21,16 @@ module Agents
       }
     end
 
+    form_configurable :percent
+    form_configurable :expected_receive_period_in_days
+
     def validate_options
       unless options['expected_receive_period_in_days'].present? && options['expected_receive_period_in_days'].to_i > 0
         errors.add(:base, "Please provide 'expected_receive_period_in_days' to indicate how many days can pass before this Agent is considered to be not working")
       end
 
       unless options['percent'].present? && options['percent'].to_i > 0 && options['percent'].to_i <= 100
-        errors.add(:base, "The 'percent' option is required and must be an integer between 0 and 100")
+        errors.add(:base, "The 'percent' option is required and must be an integer between 1 and 100")
       end
     end
 
