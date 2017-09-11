@@ -191,18 +191,23 @@ module Agents
       body = data.to_json
       method = http_method(event)
       response = faraday.run_request(method, url, body, headers)
+
       send_slack_notification(response, event) unless [200, 201].include?(response.status)
 
       return unless boolify(interpolated['emit_events'])
       create_event(payload: { body: response.body,
                               headers: normalize_response_headers(response.headers),
-                              status: response.status })
+                              status: response.status,
+                              source_event: event.id })
     end
 
     def send_slack_notification(response, event)
       link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
+      source_event_link = "<https://huginn.chattermill.xyz/events/#{event.id}|Source event>"
       parsed_body = JSON.parse(response.body) rescue ""
-      description = "```#{parsed_body}```\n#{link}"
+
+      description = "```#{parsed_body}```\n#{source_event_link} | #{link}"
+
       slack_opts = {
         icon_emoji: ':fire:',
         channel: ENV['SLACK_CHANNEL'],
