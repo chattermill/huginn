@@ -125,6 +125,45 @@ describe Agents::ChattermillResponseAgent do
       }
       expect(@sent_requests[:post][1].data).to eq(expected)
     end
+
+    describe "emitting events" do
+      context "when emit_events is not set to true" do
+        it "does not emit events" do
+          expect {
+            @checker.receive([@event])
+          }.not_to change { @checker.events.count }
+        end
+      end
+
+      context "when emit_events is set to true" do
+        before do
+          @checker.options['emit_events'] = 'true'
+        end
+
+        it "emits the response status" do
+          expect {
+            @checker.receive([@event])
+          }.to change { @checker.events.count }.by(1)
+          expect(@checker.events.last.payload['status']).to eq 201
+        end
+
+        it "emits the body" do
+          @checker.receive([@event])
+          expect(@checker.events.last.payload['body']).to eq '{}'
+        end
+
+        it "emits the response headers capitalized by default" do
+          @checker.receive([@event])
+          expect(@checker.events.last.payload['headers']).to eq({ 'Content-Type' => 'application/json' })
+        end
+
+        it "emits the source event" do
+          @checker.receive([@event])
+          expect(@checker.events.last.payload['source_event']).to eq @event.id
+        end
+
+      end
+    end
   end
 
   describe "#check" do
@@ -169,6 +208,11 @@ describe Agents::ChattermillResponseAgent do
         it "emits the response headers capitalized by default" do
           @checker.check
           expect(@checker.events.last.payload['headers']).to eq({ 'Content-Type' => 'application/json' })
+        end
+
+        it "emits the source event" do
+          @checker.check
+          expect(@checker.events.last.payload['source_event']).to be_nil
         end
       end
     end
