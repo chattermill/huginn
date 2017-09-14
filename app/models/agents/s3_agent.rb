@@ -167,7 +167,7 @@ module Agents
 
       new_memory = contents.dup
 
-      memory['seen_contents'].each do |key, etag|
+      (memory['seen_contents'] || {}).each do |key, etag|
         if contents[key].blank?
           create_event payload: get_file_pointer(key).merge(event_type: :removed)
         elsif contents[key] != etag
