@@ -30,6 +30,7 @@ module Agents
     event_description <<-MD
       Events look like this:
         {
+          "id": 123,
           "score": 9,
           "comment": "Love the concept and the food! Just a little too expensive.",
           "permalink": "https://delighted.com/r/hqt5a8UlaZ1Vie9vsdSCtpo3iJaLrZPX",
@@ -109,7 +110,7 @@ module Agents
     end
 
     def delighted_events
-      list_delighted_responses.map(&:to_h)
+      list_delighted_responses.map { |r| r.to_h.merge(id: r.id) }
     end
 
     def list_delighted_responses
