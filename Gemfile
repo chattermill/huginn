@@ -115,7 +115,7 @@ end
 
 gem 'devise', '~> 4.3.0'
 gem 'em-http-request', '~> 1.1.2'
-gem 'faraday', '~> 0.9'
+gem 'faraday', '~> 0.9', '< 0.12.2'
 gem 'faraday_middleware', github: 'lostisland/faraday_middleware', branch: 'master'  # '>= 0.10.1'
 gem 'feedjira', '~> 2.1'
 gem 'font-awesome-sass', '~> 4.7.0'
