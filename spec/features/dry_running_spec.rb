@@ -19,7 +19,7 @@ describe "Dry running an Agent", js: true do
   context 'successful dry runs' do
     before do
       stub_request(:get, "http://xkcd.com/").
-        with(:headers => {'Accept-Encoding'=>'gzip,deflate', 'User-Agent'=>'Huginn - https://github.com/huginn/huginn'}).
+        with(:headers => {'Accept-Encoding' => /deflate/, 'User-Agent' => 'Huginn - https://github.com/huginn/huginn'}).
         to_return(:status => 200, :body => File.read(Rails.root.join("spec/data_fixtures/xkcd.html")), :headers => {})
     end
 

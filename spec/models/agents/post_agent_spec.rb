@@ -159,7 +159,7 @@ describe Agents::PostAgent do
       WebMock.reset!
       stub_request(:post, "http://www.example.com/").
         with(headers: {
-               'Accept-Encoding' => 'gzip,deflate',
+               'Accept-Encoding' => /deflate/,
                'Content-Type' => /\Amultipart\/form-data; boundary=/,
                'User-Agent' => 'Huginn - https://github.com/huginn/huginn'
         }) { |request|
