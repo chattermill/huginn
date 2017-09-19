@@ -44,14 +44,12 @@ gem 'slack-notifier', '~> 1.0.0'  # SlackAgent
 gem 'hypdf', '~> 1.0.10'          # PDFInfoAgent
 
 # Weibo Agents
-# FIXME needs to loosen omniauth dependency
-gem 'weibo_2', github: 'dsander/weibo_2', branch: 'master'
+# FIXME needs to loosen omniauth dependency, add rest-client
+gem 'weibo_2', github: 'albertsun/weibo_2', branch: 'master'
 
-# GoogleCalendarPublishAgent and GoogleTranslationAgent
-gem 'google-api-client', '~> 0.8.2', require: 'google/api_client'
-
-# GoogleTranslateAgent (by Chattermill)
-gem 'google-cloud-translate', require: 'google/cloud/translate'
+# GoogleCalendarPublishAgent and GoogleTranslateAgent
+gem 'google-api-client', '~> 0.13'
+gem 'google-cloud-translate', '~> 1.0.0', require: 'google/cloud/translate'
 
 # Twitter Agents
 gem 'twitter', github: 'sferik/twitter' # Must to be loaded before cantino-twitter-stream.
@@ -59,7 +57,8 @@ gem 'twitter-stream', github: 'cantino/twitter-stream', branch: 'huginn'
 gem 'omniauth-twitter', '~> 1.3.0'
 
 # Tumblr Agents
-gem 'tumblr_client', github: 'tumblr/tumblr_client', branch: 'master', ref: '0c59b04e49f2a8c89860613b18cf4e8f978d8dc7'  # '>= 0.8.5'
+# until merge of https://github.com/tumblr/tumblr_client/pull/61
+gem 'tumblr_client', github: 'albertsun/tumblr_client', branch: 'master', ref: 'e046fe6e39291c173add0a49081630c7b60a36c7'
 gem 'omniauth-tumblr', '~> 1.2'
 
 # Dropbox Agents
@@ -116,13 +115,14 @@ end
 
 gem 'devise', '~> 4.3.0'
 gem 'em-http-request', '~> 1.1.2'
-gem 'faraday', '~> 0.9'
+gem 'faraday', '~> 0.9', '< 0.12.2'
 gem 'faraday_middleware', github: 'lostisland/faraday_middleware', branch: 'master'  # '>= 0.10.1'
 gem 'feedjira', '~> 2.1'
 gem 'font-awesome-sass', '~> 4.7.0'
 gem 'foreman', '~> 0.63.0'
 gem 'geokit', '~> 1.8.4'
 gem 'geokit-rails', '~> 2.2.0'
+gem 'hashie', '= 3.0.0'
 gem 'httparty', '~> 0.13'
 gem 'httmultiparty', '~> 0.3.16'
 gem 'jquery-rails', '~> 4.2.1'
@@ -168,8 +168,9 @@ group :development do
   end
 
   group :test do
-    gem 'coveralls', '~> 0.7.4', require: false
+    gem 'coveralls', '~> 0.8.12', require: false
     gem 'capybara', '~> 2.13.0'
+    gem 'capybara-screenshot'
     gem 'capybara-select2', require: false
     gem 'delorean'
     gem 'poltergeist'
@@ -218,7 +219,7 @@ if_true(ENV['DATABASE_ADAPTER'].strip == 'postgresql') do
 end
 
 if_true(ENV['DATABASE_ADAPTER'].strip == 'mysql2') do
-  gem 'mysql2', '~> 0.3.20'
+  gem 'mysql2', ">= 0.3.18", "< 0.5"
 end
 
 GemfileHelper.parse_each_agent_gem(ENV['ADDITIONAL_GEMS']) do |args|
