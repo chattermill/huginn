@@ -20,6 +20,8 @@ module Agents
       <<-MD
         Google Play Reviews Agent fetches reviews from the Google Play Console given client's JSON file for authentication and package name.
 
+        Please note that only reviews from last week will be returned, read about it [here](https://developers.google.com/android-publisher/api-ref/reviews/list).
+
         In the `on_change` mode, change is detected based on the resulted event payload after applying this option.
         If you want to add some keys to each event but ignore any change in them, set `mode` to `all` and put a DeDuplicationAgent downstream.
         If you specify `merge` for the `mode` option, Huginn will retain the old payload and update it with new values.
@@ -50,11 +52,11 @@ module Agents
 
         Options:
 
-          * `json_key` - Google Service authentication key. Copy and paste file content in JSON format.
+          * `service_account_json` - Google Service authentication key. Copy and paste file content in JSON format.
           * `package_name` - Unique identifier for the Android app for which we want reviews.
           * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
-          * `start_index`.
-          * `translation_language`.
+          * `max_results` - Limit the number of returned reviews (e.g. `1`, `10`).
+          * `translation_language` - Translate review comments to specified language (e.g. `es`, `fr`). Original comment will be available on `original_text` field.
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
     end
@@ -102,18 +104,18 @@ module Agents
       event_created_within?(options['expected_update_period_in_days']) && !recent_error_logs?
     end
 
-    form_configurable :json_key, type: :json, ace: { mode: 'json' }
+    form_configurable :service_account_json, type: :json, ace: { mode: 'json' }
     form_configurable :package_name
     form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :max_results
-    form_configurable :start_index
     form_configurable :translation_language
     form_configurable :expected_update_period_in_days
 
     def default_options
       {
-        'json_key' => '',
+        'service_account_json' => '',
         'package_name' => 'uk.co.my.app',
+        'translation_language' => 'en',
         'expected_update_period_in_days' => '1',
         'mode' => 'on_change'
       }
@@ -122,7 +124,7 @@ module Agents
     def validate_options
       super
 
-      validate_json_option('json_key')
+      validate_json_option('service_account_json')
 
       %w(package_name expected_update_period_in_days).each do |key|
         errors.add(:base, "The '#{key}' option is required.") if options[key].blank?
@@ -178,7 +180,6 @@ module Agents
     def retrieve_reviews
       params = {
         max_results: interpolated['max_results'].presence,
-        start_index: interpolated['start_index'].presence,
         translation_language: interpolated['translation_language'].presence
       }
 
@@ -194,15 +195,15 @@ module Agents
 
     def authorizer
       auth = Google::Auth::ServiceAccountCredentials.make_creds(
-        json_key_io: json_key_io, scope: AUTH_SCOPE
+        json_key_io: service_account_json_io, scope: AUTH_SCOPE
       )
 
       auth.fetch_access_token!
       auth
     end
 
-    def json_key_io
-      StringIO.new(interpolated['json_key'])
+    def service_account_json_io
+      StringIO.new(interpolated['service_account_json'])
     end
   end
 end
