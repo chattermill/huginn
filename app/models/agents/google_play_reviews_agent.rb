@@ -37,15 +37,15 @@ module Agents
         The JSON keyfile should look something like:
         <pre><code>{
           "type": "service_account",
-          "project_id": "huginn-123123",
-          "private_key_id": "6d6b476fc6ccdb31e0f171991e5528bb396ffbe4",
+          "project_id": project-123123",
+          "private_key_id": "1234567890123456789012345678901234567890",
           "private_key": "-----BEGIN PRIVATE KEY-----\\n...\\n-----END PRIVATE KEY-----\\n",
-          "client_email": "huginn-calendar@huginn-123123.iam.gserviceaccount.com",
+          "client_email": "project@project-123123.iam.gserviceaccount.com",
           "client_id": "123123...123123",
           "auth_uri": "https://accounts.google.com/o/oauth2/auth",
           "token_uri": "https://accounts.google.com/o/oauth2/token",
           "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-          "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/huginn-calendar%40huginn-123123.iam.gserviceaccount.com"
+          "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/project%project-123123.iam.gserviceaccount.com"
         }</code></pre>
 
         Options:
@@ -87,14 +87,14 @@ module Agents
               },
               "reviewer_language": "en_DE",
               "star_rating": 2,
-              "text": "\tToo many features I will probably never use, and no useful ones... All I want is a more polished version of the old one.",
+              "text": "This is a sample comment.",
               "thumbs_down_count": 0,
               "thumbs_up_count": 0,
               "android_os_version": 24
             }
           }
         ],
-        "review_id": "gp:AOqpTOEL8YmeZrwzmtI6KIgneZl8rHpMQs6TWMj7n2BG_w1I7UZXPb6ONQj0X_r0QO1LoQABmtA1QJHBfneKUWE"
+        "review_id": "gp:SomeVeryLONgIdxxxxxxx"
       }
     MD
 
