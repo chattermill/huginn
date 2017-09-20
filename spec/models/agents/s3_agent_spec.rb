@@ -143,11 +143,72 @@ describe Agents::S3Agent do
           expect { @checker.check }.to change(Event, :count).by(1)
           expect(Event.last.payload).to eq({"file_pointer" => {"file" => "test2", "agent_id"=> @checker.id}, "event_type" => "modified"})
         end
+
         it "emits events for added files" do
           contents = {"test"=>"231232", "test2"=>"4564545", "test3" => "31231231"}
           mock(@checker).get_bucket_contents { contents }
           expect { @checker.check }.to change(Event, :count).by(1)
           expect(Event.last.payload).to eq({"file_pointer" => {"file" => "test3", "agent_id"=> @checker.id}, "event_type" => "added"})
+        end
+
+        context "with added event type filter" do
+          it "emits only added files" do
+            @checker.options['event_type_filter'] = 'added'
+            contents = { "test2" => "changed", "test3" => "31231231" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "test3", "agent_id" => @checker.id }, "event_type" => "added" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with modified event type filter" do
+          it "emits only modified files" do
+            @checker.options['event_type_filter'] = 'modified'
+            contents = { "test" => "231232", "test2" => "changed", "test3" => "31231231" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "test2", "agent_id" => @checker.id }, "event_type" => "modified" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with removed event type filter" do
+          it "emits only removed files" do
+            @checker.options['event_type_filter'] = 'removed'
+            contents = { "test2" => "changed", "test3" => "31231231" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "test", "agent_id" => @checker.id }, "event_type" => "removed" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with prefix filter" do
+          it "emits events for matching files" do
+            @checker.options['prefix_filter'] = 'data'
+            contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "data_export", "agent_id" => @checker.id }, "event_type" => "added" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with suffix filter" do
+          it "emits events for matching files" do
+            @checker.options['suffix_filter'] = 'export'
+            contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "data_export", "agent_id" => @checker.id }, "event_type" => "added" }
+            expect(Event.last.payload).to eq(expected)
+          end
         end
       end
 
