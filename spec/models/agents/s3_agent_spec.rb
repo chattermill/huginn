@@ -61,6 +61,20 @@ describe Agents::S3Agent do
       @checker.options['data'] = ''
       expect(@checker).not_to be_valid
     end
+
+    it "requires event_type_filter to be empty, 'added', 'modified' or 'removed'" do
+      @checker.options['watch'] = 'true'
+      @checker.options['event_type_filter'] = ''
+      expect(@checker).to be_valid
+
+      %w[added modified removed].each do |type|
+        @checker.options['event_type_filter'] = type
+        expect(@checker).to be_valid
+      end
+
+      @checker.options['event_type_filter'] = 'invalid'
+      expect(@checker).not_to be_valid
+    end
   end
 
   describe "#validating" do
