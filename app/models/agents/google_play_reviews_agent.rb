@@ -135,7 +135,7 @@ module Agents
       retrieve_reviews.each do |review|
         if store_payload!(previous_payloads(1), review)
           log "Storing new result for '#{name}': #{review.inspect}"
-          create_event payload: review.to_h
+          create_event payload: prepare_event(review)
         end
       end
     end
@@ -175,6 +175,20 @@ module Agents
       else
         raise "Illegal options[mode]: #{interpolated['mode']}"
       end
+    end
+
+    def prepare_event(review)
+      comment = review.comments.first.user_comment
+      {
+        author_name: review.author_name,
+        review_id: review.review_id,
+        comment: comment.text,
+        original_comment: comment&.original_text,
+        score: comment.star_rating,
+        language: comment.reviewer_language,
+        updated_at: Time.at(comment.last_modified.seconds).utc,
+        comments_raw_data: review.comments.map(&:to_h)
+      }
     end
 
     def retrieve_reviews
