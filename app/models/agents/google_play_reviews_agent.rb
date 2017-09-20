@@ -65,38 +65,45 @@ module Agents
       Events look like this:
 
       {
-        "author_name": "The user",
-        "comments": [
+        "author_name": "Test User",
+        "review_id": "gpAeVeryLArgRIDxxxxxxxxxx",
+        "comment": "\tSo much better. Much more intuitive.",
+        "original_comment": null,
+        "score": 4,
+        "language": "en_GB",
+        "updated_at": "2017-09-19 23:00:59 UTC",
+        "comments_raw_data": [
           {
             "user_comment": {
-              "device": "F3111",
+              "android_os_version": 24,
+              "app_version_code": 108060046,
+              "app_version_name": "1.8.6",
+              "device": "hero2lte",
               "device_metadata": {
-                "product_name": "F3111 (Xperia XA)",
-                "cpu_make": "Mediatek",
-                "cpu_model": "MT6755",
+                "cpu_make": "Samsung",
+                "cpu_model": "Exynos 8890",
                 "device_class": "phone",
-                "gl_es_version": 196608,
-                "manufacturer": "Sony",
+                "gl_es_version": 196609,
+                "manufacturer": "Samsung",
                 "native_platform": "armeabi-v7a,armeabi,arm64-v8a",
-                "ram_mb": 2048,
-                "screen_density_dpi": 320,
-                "screen_height_px": 1280,
-                "screen_width_px": 720
+                "product_name": "hero2lte (Galaxy S7 Edge)",
+                "ram_mb": 4096,
+                "screen_density_dpi": 640,
+                "screen_height_px": 2560,
+                "screen_width_px": 1440
               },
               "last_modified": {
-                "nanos": 375000000,
-                "seconds": 1505743886
+                "nanos": 244000000,
+                "seconds": 1505862059
               },
-              "reviewer_language": "en_DE",
-              "star_rating": 2,
-              "text": "This is a sample comment.",
+              "reviewer_language": "en_GB",
+              "star_rating": 4,
+              "text": "\tSo much better. Much more intuitive.",
               "thumbs_down_count": 0,
-              "thumbs_up_count": 0,
-              "android_os_version": 24
+              "thumbs_up_count": 0
             }
           }
-        ],
-        "review_id": "gp:SomeVeryLONgIdxxxxxxx"
+        ]
       }
     MD
 
