@@ -29,11 +29,11 @@ module Agents
         ### Reading
 
         When `watch` is set to `true` the S3Agent will watch the specified `bucket` for changes. An event will be emitted for every detected change.
-        If an `event_type_filter` option is selected, S3Agent will emit only that type of detected change (`added`, `modified`, or `removed`), it can
+        If an `event_type` option is selected, S3Agent will emit only that type of detected change (`added`, `modified`, or `removed`), it can
         be left in blank to emit all.
 
-        Also you can watch files that match a prefix or suffix by setting values for `prefix_filter` or `suffix_filter` options. For example
-        you can set `prefix_filter` with `Data2017` and S3Agent will only watch file names that begin with that expresion
+        Also you can watch files that match a `prefix` or `suffix`. For example
+        you can set `prefix` with `Data2017` and S3Agent will only watch file names that begin with that expresion
         (e.g. `Data2017January.csv` will be watched but `Data2015May.csv` won't)
 
         When `watch` is set to `false` the agent will emit an event for every file in the bucket on each sheduled run.
@@ -74,7 +74,7 @@ module Agents
         'access_key_secret' => '',
         'watch' => 'true',
         'bucket' => "",
-        'event_type_filter' => 'added',
+        'event_type' => 'added',
         'data' => '{{ data }}'
       }
     end
@@ -85,9 +85,9 @@ module Agents
     form_configurable :region, type: :array, values: %w(us-east-1 us-west-1 us-west-2 eu-west-1 eu-central-1 ap-southeast-1 ap-southeast-2 ap-northeast-1 ap-northeast-2 sa-east-1)
     form_configurable :watch, type: :array, values: %w(true false)
     form_configurable :bucket, roles: :completable
-    form_configurable :prefix_filter
-    form_configurable :suffix_filter
-    form_configurable :event_type_filter, type: :array, values: EVENT_TYPES
+    form_configurable :prefix
+    form_configurable :suffix
+    form_configurable :event_type, type: :array, values: EVENT_TYPES
     form_configurable :filename
     form_configurable :data
 
@@ -108,8 +108,8 @@ module Agents
           errors.add(:base, "The 'watch' option is required and must be set to 'true' or 'false'")
         end
 
-        if options['event_type_filter'].present? && !options['event_type_filter'].in?(EVENT_TYPES)
-          errors.add(:base, "The 'event_type_filter' option must be set to 'added, 'modified' or 'removed'")
+        if options['event_type'].present? && !options['event_type'].in?(EVENT_TYPES)
+          errors.add(:base, "The 'event_type' option must be set to 'added, 'modified' or 'removed'")
         end
       when 'write'
         if options['filename'].blank?
@@ -226,7 +226,7 @@ module Agents
     end
 
     def emit_event?(event_type)
-      event_filter = interpolated['event_type_filter']
+      event_filter = interpolated['event_type']
       return true if event_filter.blank?
 
       event_filter == event_type.to_s
@@ -238,17 +238,17 @@ module Agents
     end
 
     def prefix_match?(file_name)
-      prefix = interpolated['prefix_filter']
+      prefix = interpolated['prefix']
       prefix.present? && file_name.starts_with?(prefix)
     end
 
     def suffix_match?(file_name)
-      suffix = interpolated['suffix_filter']
+      suffix = interpolated['suffix']
       suffix.present? && file_name.ends_with?(suffix)
     end
 
     def filename_filter_present?
-      interpolated['prefix_filter'].present? || interpolated['suffix_filter'].present?
+      interpolated['prefix'].present? || interpolated['suffix'].present?
     end
   end
 end

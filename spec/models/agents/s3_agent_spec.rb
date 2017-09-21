@@ -62,17 +62,17 @@ describe Agents::S3Agent do
       expect(@checker).not_to be_valid
     end
 
-    it "requires event_type_filter to be empty, 'added', 'modified' or 'removed'" do
+    it "requires event_type to be empty, 'added', 'modified' or 'removed'" do
       @checker.options['watch'] = 'true'
-      @checker.options['event_type_filter'] = ''
+      @checker.options['event_type'] = ''
       expect(@checker).to be_valid
 
       %w[added modified removed].each do |type|
-        @checker.options['event_type_filter'] = type
+        @checker.options['event_type'] = type
         expect(@checker).to be_valid
       end
 
-      @checker.options['event_type_filter'] = 'invalid'
+      @checker.options['event_type'] = 'invalid'
       expect(@checker).not_to be_valid
     end
   end
@@ -153,7 +153,7 @@ describe Agents::S3Agent do
 
         context "with added event type filter" do
           it "emits only added files" do
-            @checker.options['event_type_filter'] = 'added'
+            @checker.options['event_type'] = 'added'
             contents = { "test2" => "changed", "test3" => "31231231" }
             mock(@checker).get_bucket_contents { contents }
             expect { @checker.check }.to change(Event, :count).by(1)
@@ -165,7 +165,7 @@ describe Agents::S3Agent do
 
         context "with modified event type filter" do
           it "emits only modified files" do
-            @checker.options['event_type_filter'] = 'modified'
+            @checker.options['event_type'] = 'modified'
             contents = { "test" => "231232", "test2" => "changed", "test3" => "31231231" }
             mock(@checker).get_bucket_contents { contents }
             expect { @checker.check }.to change(Event, :count).by(1)
@@ -177,7 +177,7 @@ describe Agents::S3Agent do
 
         context "with removed event type filter" do
           it "emits only removed files" do
-            @checker.options['event_type_filter'] = 'removed'
+            @checker.options['event_type'] = 'removed'
             contents = { "test2" => "changed", "test3" => "31231231" }
             mock(@checker).get_bucket_contents { contents }
             expect { @checker.check }.to change(Event, :count).by(1)
@@ -189,7 +189,7 @@ describe Agents::S3Agent do
 
         context "with prefix filter" do
           it "emits events for matching files" do
-            @checker.options['prefix_filter'] = 'data'
+            @checker.options['prefix'] = 'data'
             contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
             mock(@checker).get_bucket_contents { contents }
             expect { @checker.check }.to change(Event, :count).by(1)
@@ -201,7 +201,7 @@ describe Agents::S3Agent do
 
         context "with suffix filter" do
           it "emits events for matching files" do
-            @checker.options['suffix_filter'] = 'export'
+            @checker.options['suffix'] = 'export'
             contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
             mock(@checker).get_bucket_contents { contents }
             expect { @checker.check }.to change(Event, :count).by(1)
