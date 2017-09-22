@@ -3,6 +3,8 @@ module Agents
     include FormConfigurable
     include FileHandling
 
+    EVENT_TYPES = %w[added modified removed].freeze
+
     emits_file_pointer!
     no_bulk_receive!
 
@@ -27,6 +29,12 @@ module Agents
         ### Reading
 
         When `watch` is set to `true` the S3Agent will watch the specified `bucket` for changes. An event will be emitted for every detected change.
+        If an `event_type` option is selected, S3Agent will emit only that type of detected change (`added`, `modified`, or `removed`), it can
+        be left in blank to emit all.
+
+        Also you can watch files that match a `prefix` or `suffix`. For example
+        you can set `prefix` with `Data2017` and S3Agent will only watch file names that begin with that expresion
+        (e.g. `Data2017January.csv` will be watched but `Data2015May.csv` won't)
 
         When `watch` is set to `false` the agent will emit an event for every file in the bucket on each sheduled run.
 
@@ -66,6 +74,7 @@ module Agents
         'access_key_secret' => '',
         'watch' => 'true',
         'bucket' => "",
+        'event_type' => 'added',
         'data' => '{{ data }}'
       }
     end
@@ -76,6 +85,9 @@ module Agents
     form_configurable :region, type: :array, values: %w(us-east-1 us-west-1 us-west-2 eu-west-1 eu-central-1 ap-southeast-1 ap-southeast-2 ap-northeast-1 ap-northeast-2 sa-east-1)
     form_configurable :watch, type: :array, values: %w(true false)
     form_configurable :bucket, roles: :completable
+    form_configurable :prefix
+    form_configurable :suffix
+    form_configurable :event_type, type: :array, values: EVENT_TYPES
     form_configurable :filename
     form_configurable :data
 
@@ -94,6 +106,10 @@ module Agents
       when 'read'
         if options['watch'].blank? || ![true, false].include?(boolify(options['watch']))
           errors.add(:base, "The 'watch' option is required and must be set to 'true' or 'false'")
+        end
+
+        if options['event_type'].present? && !options['event_type'].in?(EVENT_TYPES)
+          errors.add(:base, "The 'event_type' option must be set to 'added, 'modified' or 'removed'")
         end
       when 'write'
         if options['filename'].blank?
@@ -168,15 +184,21 @@ module Agents
       new_memory = contents.dup
 
       (memory['seen_contents'] || {}).each do |key, etag|
-        if contents[key].blank?
+        next unless process_file?(key)
+
+        if contents[key].blank? && emit_event?(:removed)
           create_event payload: get_file_pointer(key).merge(event_type: :removed)
-        elsif contents[key] != etag
+        elsif contents[key] != etag && emit_event?(:modified)
           create_event payload: get_file_pointer(key).merge(event_type: :modified)
         end
         contents.delete(key)
       end
-      contents.each do |key, etag|
-        create_event payload: get_file_pointer(key).merge(event_type: :added)
+
+      if emit_event?(:added)
+        contents.each do |key, etag|
+          next unless process_file?(key)
+          create_event payload: get_file_pointer(key).merge(event_type: :added)
+        end
       end
 
       self.memory['seen_contents'] = new_memory
@@ -201,6 +223,32 @@ module Agents
       @buckets ||= client.list_buckets.buckets
     rescue Aws::S3::Errors::ServiceError => e
       false
+    end
+
+    def emit_event?(event_type)
+      event_filter = interpolated['event_type']
+      return true if event_filter.blank?
+
+      event_filter == event_type.to_s
+    end
+
+    def process_file?(file_name)
+      return true unless filename_filter_present?
+      prefix_match?(file_name) || suffix_match?(file_name)
+    end
+
+    def prefix_match?(file_name)
+      prefix = interpolated['prefix']
+      prefix.present? && file_name.starts_with?(prefix)
+    end
+
+    def suffix_match?(file_name)
+      suffix = interpolated['suffix']
+      suffix.present? && file_name.ends_with?(suffix)
+    end
+
+    def filename_filter_present?
+      interpolated['prefix'].present? || interpolated['suffix'].present?
     end
   end
 end

@@ -61,6 +61,20 @@ describe Agents::S3Agent do
       @checker.options['data'] = ''
       expect(@checker).not_to be_valid
     end
+
+    it "requires event_type to be empty, 'added', 'modified' or 'removed'" do
+      @checker.options['watch'] = 'true'
+      @checker.options['event_type'] = ''
+      expect(@checker).to be_valid
+
+      %w[added modified removed].each do |type|
+        @checker.options['event_type'] = type
+        expect(@checker).to be_valid
+      end
+
+      @checker.options['event_type'] = 'invalid'
+      expect(@checker).not_to be_valid
+    end
   end
 
   describe "#validating" do
@@ -129,11 +143,72 @@ describe Agents::S3Agent do
           expect { @checker.check }.to change(Event, :count).by(1)
           expect(Event.last.payload).to eq({"file_pointer" => {"file" => "test2", "agent_id"=> @checker.id}, "event_type" => "modified"})
         end
+
         it "emits events for added files" do
           contents = {"test"=>"231232", "test2"=>"4564545", "test3" => "31231231"}
           mock(@checker).get_bucket_contents { contents }
           expect { @checker.check }.to change(Event, :count).by(1)
           expect(Event.last.payload).to eq({"file_pointer" => {"file" => "test3", "agent_id"=> @checker.id}, "event_type" => "added"})
+        end
+
+        context "with added event type filter" do
+          it "emits only added files" do
+            @checker.options['event_type'] = 'added'
+            contents = { "test2" => "changed", "test3" => "31231231" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "test3", "agent_id" => @checker.id }, "event_type" => "added" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with modified event type filter" do
+          it "emits only modified files" do
+            @checker.options['event_type'] = 'modified'
+            contents = { "test" => "231232", "test2" => "changed", "test3" => "31231231" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "test2", "agent_id" => @checker.id }, "event_type" => "modified" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with removed event type filter" do
+          it "emits only removed files" do
+            @checker.options['event_type'] = 'removed'
+            contents = { "test2" => "changed", "test3" => "31231231" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "test", "agent_id" => @checker.id }, "event_type" => "removed" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with prefix filter" do
+          it "emits events for matching files" do
+            @checker.options['prefix'] = 'data'
+            contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "data_export", "agent_id" => @checker.id }, "event_type" => "added" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with suffix filter" do
+          it "emits events for matching files" do
+            @checker.options['suffix'] = 'export'
+            contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "data_export", "agent_id" => @checker.id }, "event_type" => "added" }
+            expect(Event.last.payload).to eq(expected)
+          end
         end
       end
 
