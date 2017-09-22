@@ -206,7 +206,7 @@ module Agents
 
     def valid_payload?(data, event)
       validator = ResponseValidator.new(data)
-      log(validator.errors.merge(source_event: event.id)) unless validator.valid?
+      error(validator.errors.messages.merge(source_event: event.id).to_json) unless validator.valid?
 
       validator.valid?
     end
@@ -229,7 +229,7 @@ module Agents
             text: description,
             fallback: description,
             mrkdwn_in: [
-                "text"
+              "text"
             ]
           }
         ]
@@ -254,11 +254,11 @@ module Agents
       end
 
       def data_type
-        @data['data_type']
+        data['kind']
       end
 
       def score
-        @data['score']
+        data['score']
       end
 
       private
