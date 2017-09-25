@@ -100,6 +100,7 @@ end
 gem 'ace-rails-ap', '~> 4.1.0'
 gem 'bootstrap-kaminari-views', '~> 0.0.3'
 gem 'bundler', '>= 1.5.0'
+gem 'chronic', require: false
 gem 'coffee-rails', '~> 4.2'
 gem 'daemons', '~> 1.1.9'
 

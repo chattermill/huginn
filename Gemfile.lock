@@ -686,6 +686,7 @@ DEPENDENCIES
   capybara (~> 2.13.0)
   capybara-screenshot
   capybara-select2
+  chronic
   coffee-rails (~> 4.2)
   coveralls (~> 0.8.12)
   daemons (~> 1.1.9)
