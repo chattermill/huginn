@@ -46,6 +46,12 @@ module Agents
       },
       'app' => {
         'path' => 'reviews[*].product_name'
+      },
+      'product_id' => {
+        'path' => 'reviews[*].product_id'
+      },
+      'vendor_id' => {
+        'path' => 'reviews[*].vendor_id'
       }
     }.freeze
 
