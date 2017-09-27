@@ -161,7 +161,67 @@ describe Agents::ChattermillResponseAgent do
           @checker.receive([@event])
           expect(@checker.events.last.payload['source_event']).to eq @event.id
         end
+      end
 
+      describe "whith valid kind and score" do
+        before do
+          options = @valid_options.merge(
+            'score' => '{{ data.score }}',
+            'kind' => 'csat',
+            'emit_events' => true
+          )
+
+          @checker = Agents::ChattermillResponseAgent.create(
+            name: 'valid',
+            options: options,
+            user: users(:jane)
+          )
+        end
+
+        it "emits event" do
+          @event.payload['data']['score'] = '10'
+
+          expect {
+            @checker.receive([@event])
+          }.to change { @checker.events.count }.by(1)
+        end
+      end
+
+      describe "when payload validation fails" do
+        before do
+          options = @valid_options.merge(
+            'score' => '{{ data.score }}',
+            'kind' => 'nps',
+            'emit_events' => true
+          )
+
+          @checker = Agents::ChattermillResponseAgent.create(
+            name: 'invalid',
+            options: options,
+            user: users(:jane)
+          )
+        end
+
+        it "doesn't emit events" do
+          @event.payload['data']['score'] = ''
+
+          expect {
+            @checker.receive([@event])
+          }.not_to change { @checker.events.count }
+        end
+
+        it "logs a message with validation error" do
+          @event.payload['data']['score'] = ''
+          @event.save
+
+          expect {
+            @checker.receive([@event])
+          }.to change { @checker.logs.count }.by(1)
+
+          error = JSON.parse(@checker.logs.last.message)
+          expected = { "score" => ["can't be blank", "is not a number"], "source_event" => @event.id }
+          expect(error).to eq(expected)
+        end
       end
     end
   end

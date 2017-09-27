@@ -188,6 +188,8 @@ module Agents
     end
 
     def handle(data, event = Event.new, headers)
+      return unless valid_payload?(data, event)
+
       url = request_url(event)
       headers['Content-Type'] = 'application/json; charset=utf-8'
       body = data.to_json
@@ -200,6 +202,13 @@ module Agents
                               headers: normalize_response_headers(response.headers),
                               status: response.status,
                               source_event: event.id })
+    end
+
+    def valid_payload?(data, event)
+      validator = ResponseValidator.new(data)
+      error(validator.errors.messages.merge(source_event: event.id).to_json) unless validator.valid?
+
+      validator.valid?
     end
 
     def send_slack_notification(response, event)
@@ -220,7 +229,7 @@ module Agents
             text: description,
             fallback: description,
             mrkdwn_in: [
-                "text"
+              "text"
             ]
           }
         ]
@@ -231,6 +240,32 @@ module Agents
 
     def slack_notifier
       @slack_notifier ||= Slack::Notifier.new(ENV['SLACK_WEBHOOK_URL'], username: 'Huginn')
+    end
+
+    class ResponseValidator
+      include ActiveModel::Validations
+
+      attr_reader :data
+
+      validates :score, presence: true, numericality: true, if: :validate_score?
+
+      def initialize(data)
+        @data = data
+      end
+
+      def data_type
+        data['kind']
+      end
+
+      def score
+        data['score']
+      end
+
+      private
+
+      def validate_score?
+        data_type.in?(%w[nps review csat])
+      end
     end
   end
 end
