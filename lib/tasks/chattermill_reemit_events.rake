@@ -3,15 +3,20 @@
 require 'chronic'
 
 namespace :chattermill do
-  desc 'Re-emit source events for ChattermillResponseAgent. Use FROM and TO vars to indicate time range, e.g. FROM="2 hours ago" TO="10 minutes ago"'
+  desc 'Re-emit source events for ChattermillResponseAgent. Use FROM and TO vars to indicate time range, e.g. FROM="2_hours_ago" TO="10_minutes_ago"'
   task reemit_failed_events: :environment do
     raise 'Please specify FROM and TO params.' if ENV['FROM'].blank? || ENV['TO'].blank?
 
-    from = Chronic.parse(ENV['FROM'])
+    Time.zone = "UTC"
+    Chronic.time_class = Time.zone
+
+    from = Chronic.parse(ENV['FROM'].tr('_', ' '))
     raise 'Invalid FROM param' if from.nil?
 
-    to = Chronic.parse(ENV['TO'])
+    to = Chronic.parse(ENV['TO'].tr('_', ' '))
     raise 'Invalid TO param' if to.nil?
+
+    puts "Searching failed events between #{from} and #{to}"
 
     statuses = ['%502 Bad Gateway%', '%504 Gateway Time-out%']
 
