@@ -36,7 +36,7 @@ elsif Rails.configuration.active_job.queue_adapter == :sidekiq
   Sidekiq.configure_server do |config|
     config.redis = { url: ENV['REDIS_URL'].presence || 'redis://localhost:6379/1' }
     config.failures_max_count = (ENV['FAILED_JOBS_TO_KEEP'].presence || 100).to_i
-    config.failures_default_mode = :exhausted
+    config.failures_default_mode = :all
   end
 
   Sidekiq.configure_client do |config|
