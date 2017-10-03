@@ -3,7 +3,8 @@ module Agents
     include WebRequestConcern
     include FormConfigurable
 
-    API_ENDPOINT = "/webhooks/responses"
+    API_SINGLE_ENDPOINT = "/webhooks/responses"
+    API_BATCH_ENDPOINT = "/webhooks/responses/list"
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
     DOMAINS = {
       production: "dev.app.chattermill.xyz",
@@ -13,7 +14,6 @@ module Agents
 
     can_dry_run!
     no_bulk_receive!
-    cannot_be_scheduled!
 
     before_validation :parse_json_options
 
@@ -32,6 +32,9 @@ module Agents
         The Event will also have a "headers" hash and a "status" integer value.
         Header names are capitalized; e.g. "Content-Type".
 
+        If `send_batch_events` is set to `true`, the agent collects any events sent to it and sends them all later on reaching the number setted
+        in `max_events_on_buffer`.
+
         Options:
 
           * `organization_subdomain` - Specify the subdomain for the target organization (e.g `moo` or `hellofresh`).
@@ -45,6 +48,9 @@ module Agents
           * `extra_fields` - Specify the Liquid interpolated JSON to build additional fields for the Response, e.g: `{ approved: true }`.
           * `emit_events` - Select `true` or `false`.
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
+          * `send_batch_events` - Select `true` or `false`.
+          * `max_events_on_buffer` - Specify the maximum number of events that you'd like to hold in the buffer. When this number is
+            reached, all events will be emitted.
       MD
     end
 
@@ -75,7 +81,9 @@ module Agents
         'segments' => sample_hash,
         'extra_fields' => '{}',
         'emit_events' => 'true',
-        'expected_receive_period_in_days' => '1'
+        'expected_receive_period_in_days' => '1',
+        'send_batch_events' => 'false',
+        'max_events_on_buffer' => 100
       }
     end
 
@@ -99,6 +107,8 @@ module Agents
     form_configurable :extra_fields, type: :json, ace: { mode: 'json' }
     form_configurable :emit_events, type: :boolean
     form_configurable :expected_receive_period_in_days
+    form_configurable :send_batch_events, type: :boolean
+    form_configurable :max_events_on_buffer
 
     def validate_options
       if options['organization_subdomain'].blank?
@@ -116,24 +126,59 @@ module Agents
     end
 
     def receive(incoming_events)
-      incoming_events.each do |event|
-        interpolate_with(event) do
-          outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
-          outgoing.merge!(interpolated['extra_fields'].presence || {})
+      if boolify(interpolated['send_batch_events'])
+        save_events_in_buffer(incoming_events)
 
-          handle outgoing, event, headers(auth_header)
+        if memory['events'] && memory['events'].length >= interpolated['max_events_on_buffer'].to_i
+          handle_batch batch_events_payload, headers(auth_header)
+          memory['events'] = []
+        end
+      else
+        incoming_events.each do |event|
+          interpolate_with(event) do
+            handle outgoing_data, event, headers(auth_header)
+          end
         end
       end
     end
 
     def check
-      outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
-      outgoing.merge!(interpolated['extra_fields'].presence || {})
-
-      handle outgoing, headers(auth_header)
+      if boolify(interpolated['send_batch_events'])
+        if memory['events'] && memory['events'].length.positive?
+          handle_batch batch_events_payload, headers(auth_header)
+          memory['events'] = []
+        end
+      else
+        handle outgoing_data, headers(auth_header)
+      end
     end
 
     private
+
+    def outgoing_data
+      outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
+      outgoing.merge!(interpolated['extra_fields'].presence || {})
+    end
+
+    def batch_events_payload
+      payloads = []
+      buffered_events = received_events.where(id: memory['events']).order(id: :asc)
+      buffered_events.each do |event|
+        interpolate_with(event) do
+          data = outgoing_data
+          payloads.push(data) if valid_payload?(data, event)
+        end
+      end
+      { events: payloads }
+    end
+
+    def save_events_in_buffer(incoming_events)
+      memory['events'] ||= []
+
+      incoming_events.each do |event|
+        memory['events'] << event.id
+      end
+    end
 
     def parse_json_options
       parse_json_option('user_meta')
@@ -170,10 +215,11 @@ module Agents
       }
     end
 
-    def request_url(event = Event.new)
+    def request_url(event = Event.new, batch: false)
       protocol = Rails.env.production? ? 'https' : 'http'
       domain = DOMAINS[Rails.env.to_sym]
-      "#{protocol}://#{domain}#{API_ENDPOINT}/#{interpolated['id']}"
+      endpoint = batch ? API_BATCH_ENDPOINT : API_SINGLE_ENDPOINT
+      "#{protocol}://#{domain}#{API_SINGLE_ENDPOINT}/#{interpolated['id']}"
     end
 
     def has_id?
@@ -202,6 +248,18 @@ module Agents
                               headers: normalize_response_headers(response.headers),
                               status: response.status,
                               source_event: event.id })
+    end
+
+    def handle_batch(data, headers)
+      url = request_url(batch: true)
+      headers['Content-Type'] = 'application/json; charset=utf-8'
+      body = data.to_json
+      response = faraday.run_request(http_method, url, body, headers)
+
+      return unless boolify(interpolated['emit_events'])
+      create_event(payload: { body: response.body,
+                              headers: normalize_response_headers(response.headers),
+                              status: response.status })
     end
 
     def valid_payload?(data, event)
