@@ -20,7 +20,9 @@ describe Agents::ChattermillResponseAgent do
       'comment' => '{{ data.comment }}',
       'segments' => segments.to_json,
       'user_meta' => user_meta.to_json,
-      'extra_fields' => '{}'
+      'extra_fields' => '{}',
+      'send_batch_events' => 'false',
+      'max_events_on_buffer' => 2
     }
     @valid_params = {
       name: "somename",
@@ -62,29 +64,88 @@ describe Agents::ChattermillResponseAgent do
   end
 
   describe "making requests" do
-    it "makes POST requests" do
-      expect(@checker).to be_valid
-      @checker.check
-      expect(@requests).to eq(1)
-      expect(@sent_requests[:post].length).to eq(1)
+    context 'when send_batch_events is false' do
+      it "makes POST requests" do
+        expect(@checker).to be_valid
+        @checker.check
+        expect(@requests).to eq(1)
+        expect(@sent_requests[:post].length).to eq(1)
+      end
+
+      it "uses the correct URI" do
+        @checker.check
+        uri = @sent_requests[:post].first.uri.to_s
+        expect(uri).to eq("http://localhost:3000/webhooks/responses/")
+      end
+
+      it "generates the authorization header" do
+        @checker.check
+        auth_header = @sent_requests[:post].first.headers['Authorization']
+        expect(auth_header).to eq("Bearer token-123")
+      end
+
+      it "generates the organization header" do
+        @checker.check
+        org_header = @sent_requests[:post].first.headers['Organization']
+        expect(org_header).to eq('foo')
+      end
     end
 
-    it "uses the correct URI" do
-      @checker.check
-      uri = @sent_requests[:post].first.uri.to_s
-      expect(uri).to eq("http://localhost:3000/webhooks/responses/")
-    end
+    context 'when send_batch_events is true' do
+      before do
+        @valid_options.merge!('send_batch_events' => 'true')
 
-    it "generates the authorization header" do
-      @checker.check
-      auth_header = @sent_requests[:post].first.headers['Authorization']
-      expect(auth_header).to eq("Bearer token-123")
-    end
+        @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
+                                                          options: @valid_options })
+        @checker.user = users(:jane)
+        @checker.save!
+      end
 
-    it "generates the organization header" do
-      @checker.check
-      org_header = @sent_requests[:post].first.headers['Organization']
-      expect(org_header).to eq('foo')
+      context 'when memory is empty' do
+        it "doesn't make POST requests" do
+          expect(@checker).to be_valid
+          @checker.check
+          expect(@requests).to eq(0)
+          expect(@sent_requests[:post].length).to eq(0)
+          expect(@checker.memory.key?('events')).to be false
+        end
+      end
+
+      context 'when memory is not empty' do
+        before do
+          @checker.memory['events'] = [@event.id]
+        end
+
+        it "makes POST requests" do
+          expect(@checker).to be_valid
+          @checker.check
+          expect(@requests).to eq(1)
+          expect(@sent_requests[:post].length).to eq(1)
+        end
+
+        it "uses the correct URI" do
+          @checker.check
+          uri = @sent_requests[:post].first.uri.to_s
+          expect(uri).to eq("http://localhost:3000/webhooks/responses/list")
+        end
+
+        it "generates the authorization header" do
+          @checker.check
+          auth_header = @sent_requests[:post].first.headers['Authorization']
+          expect(auth_header).to eq("Bearer token-123")
+        end
+
+        it "generates the organization header" do
+          @checker.check
+          org_header = @sent_requests[:post].first.headers['Organization']
+          expect(org_header).to eq('foo')
+        end
+
+        it 'clean memory' do
+          @checker.check
+          expect(@checker.memory['events']).to be_empty
+        end
+      end
     end
   end
 
@@ -381,6 +442,37 @@ describe Agents::ChattermillResponseAgent do
       expect(@checker).to be_valid
 
       @checker.options['emit_events'] = true
+      expect(@checker).to be_valid
+    end
+
+    it "requires send_batch_events to be true or false" do
+      @checker.options['max_events_on_buffer'] = "10"
+      @checker.options['send_batch_events'] = 'what?'
+      expect(@checker).not_to be_valid
+
+      @checker.options.delete('send_batch_events')
+      expect(@checker).to be_valid
+
+      @checker.options['send_batch_events'] = 'true'
+      expect(@checker).to be_valid
+
+      @checker.options['send_batch_events'] = 'false'
+      expect(@checker).to be_valid
+
+      @checker.options['send_batch_events'] = true
+      expect(@checker).to be_valid
+    end
+
+    it "should validate max_events_on_buffer" do
+      @checker.options.delete('max_events_on_buffer')
+      expect(@checker).to be_valid
+      @checker.options['send_batch_events'] = true
+      expect(@checker).not_to be_valid
+      @checker.options['max_events_on_buffer'] = ""
+      expect(@checker).not_to be_valid
+      @checker.options['max_events_on_buffer'] = "0"
+      expect(@checker).not_to be_valid
+      @checker.options['max_events_on_buffer'] = "10"
       expect(@checker).to be_valid
     end
   end

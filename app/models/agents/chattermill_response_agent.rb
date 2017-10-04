@@ -3,6 +3,8 @@ module Agents
     include WebRequestConcern
     include FormConfigurable
 
+    default_schedule "never"
+
     API_SINGLE_ENDPOINT = "/webhooks/responses"
     API_BATCH_ENDPOINT = "/webhooks/responses/list"
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
@@ -122,6 +124,14 @@ module Agents
         errors.add(:base, "if provided, emit_events must be true or false")
       end
 
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']).nil?
+        errors.add(:base, "if provided, send_batch_events must be true or false")
+      end
+
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (options['max_events_on_buffer'].blank? || !options['max_events_on_buffer']&.to_i&.positive? )
+        errors.add(:base, "The 'max_events_on_buffer' option is required and must be an integer greater than 0")
+      end
+
       validate_web_request_options!
     end
 
@@ -218,8 +228,11 @@ module Agents
     def request_url(event = Event.new, batch: false)
       protocol = Rails.env.production? ? 'https' : 'http'
       domain = DOMAINS[Rails.env.to_sym]
-      endpoint = batch ? API_BATCH_ENDPOINT : API_SINGLE_ENDPOINT
-      "#{protocol}://#{domain}#{API_SINGLE_ENDPOINT}/#{interpolated['id']}"
+      if batch
+        "#{protocol}://#{domain}#{API_BATCH_ENDPOINT}"
+      else
+        "#{protocol}://#{domain}#{API_SINGLE_ENDPOINT}/#{interpolated['id']}"
+      end
     end
 
     def has_id?
