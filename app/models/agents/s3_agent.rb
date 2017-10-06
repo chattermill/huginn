@@ -238,16 +238,12 @@ module Agents
 
     def prefix_match?(file_name)
       prefix = interpolated['prefix']
-      return true if prefix.blank?
-
-      prefix.present? && file_name.starts_with?(prefix)
+      prefix.blank? || file_name.starts_with?(prefix)
     end
 
     def suffix_match?(file_name)
       suffix = interpolated['suffix']
-      return true if suffix.blank?
-
-      suffix.present? && file_name.ends_with?(suffix)
+      suffix.blank? || file_name.ends_with?(suffix)
     end
   end
 end
