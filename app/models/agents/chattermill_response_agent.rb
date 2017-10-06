@@ -139,7 +139,6 @@ module Agents
         save_events_in_buffer(incoming_events)
         if memory['events'] && memory['events'].length >= interpolated['max_events_on_buffer'].to_i
           handle_batch batch_events_payload, headers(auth_header)
-          memory['events'] = []
         end
       else
         incoming_events.each do |event|
@@ -154,7 +153,6 @@ module Agents
       if boolify(interpolated['send_batch_events'])
         if memory['events'] && memory['events'].length.positive?
           handle_batch batch_events_payload, headers(auth_header)
-          memory['events'] = []
         end
       else
         handle outgoing_data, headers(auth_header)
@@ -272,8 +270,9 @@ module Agents
 
       if [200, 201].include?(response.status)
         responses = JSON.parse(response.body)
+        events_ids = memory['events'].clone
         responses.each_with_index do |r, i|
-          event = source_events.detect{ |e| e.id == memory['events'][i] }
+          event = source_events.detect{ |e| e.id == events_ids[i] }
           resp = OpenStruct.new(r)
           send_slack_notification(resp, event) unless [200, 201].include?(resp.status)
 
@@ -281,6 +280,7 @@ module Agents
                                   headers: headers,
                                   status: resp.status,
                                   source_event: event.id })
+          memory['events'].delete(event.id)
         end
       else
         send_slack_notification(response, source_events.last) unless [200, 201].include?(response.status)

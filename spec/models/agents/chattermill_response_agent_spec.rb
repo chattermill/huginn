@@ -149,12 +149,6 @@ describe Agents::ChattermillResponseAgent do
           org_header = @sent_requests[:post].first.headers['Organization']
           expect(org_header).to eq('foo')
         end
-
-        it 'clean memory' do
-          expect(@checker.memory['events'].length).to eq(2)
-          @checker.check
-          expect(@checker.memory['events']).to be_empty
-        end
       end
     end
   end
@@ -359,7 +353,6 @@ describe Agents::ChattermillResponseAgent do
           @checker.receive([event2])
         }.to change { @sent_requests[:post].length }.by(1)
 
-        expect(@checker.memory['events'].length).to eq(0)
       end
     end
   end
@@ -466,11 +459,35 @@ describe Agents::ChattermillResponseAgent do
         expect {
           @checker.check
         }.to change { @sent_requests[:post].length }.by(1)
-
-        expect(@checker.memory['events'].length).to eq(0)
       end
 
+      it "clean memory for only created events" do
+        event1 = Event.new
+        event1.agent = agents(:bob_weather_agent)
+        event1.payload = {
+          'xyz' => 'value1',
+          'data' => {
+            'segment' => 'My Segment'
+          }
+        }
+        event1.save
 
+        @checker1 = Agents::ChattermillResponseAgent.find(@checker.id)
+
+        expect(@checker.memory['events']).to be_nil
+        expect(@checker1.memory['events']).to be_nil
+        @checker.receive([@event])
+        @checker1.receive([event1])
+        expect(@checker.memory['events']).to eq([@event.id])
+        expect(@checker1.memory['events']).to eq([event1.id])
+
+        @checker.check
+        @checker.save
+
+        @checker1.save
+
+        expect(@checker.reload.memory['events']).to eq([event1.id])
+      end
     end
   end
 
