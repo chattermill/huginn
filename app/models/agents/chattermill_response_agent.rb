@@ -5,12 +5,11 @@ module Agents
 
     default_schedule "never"
 
-    API_SINGLE_ENDPOINT = "/webhooks/responses"
-    API_BATCH_ENDPOINT = "/webhooks/responses/list"
+    API_ENDPOINT = "/webhooks/responses"
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
     DOMAINS = {
       production: "dev.app.chattermill.xyz",
-      development: "lvh.me:3000",
+      development: "localhost:3000",
       test: "localhost:3000"
     }
 
@@ -138,7 +137,6 @@ module Agents
     def receive(incoming_events)
       if boolify(interpolated['send_batch_events'])
         save_events_in_buffer(incoming_events)
-
         if memory['events'] && memory['events'].length >= interpolated['max_events_on_buffer'].to_i
           handle_batch batch_events_payload, headers(auth_header)
           memory['events'] = []
@@ -172,14 +170,14 @@ module Agents
 
     def batch_events_payload
       payloads = []
-      buffered_events = received_events.where(id: memory['events']).order(id: :asc)
+      buffered_events = received_events.where(id: memory['events']).reorder(id: :asc)
       buffered_events.each do |event|
         interpolate_with(event) do
           data = outgoing_data
           payloads.push(data) if valid_payload?(data, event)
         end
       end
-      { events: payloads }
+      { responses: payloads }
     end
 
     def save_events_in_buffer(incoming_events)
@@ -229,9 +227,9 @@ module Agents
       protocol = Rails.env.production? ? 'https' : 'http'
       domain = DOMAINS[Rails.env.to_sym]
       if batch
-        "#{protocol}://#{domain}#{API_BATCH_ENDPOINT}"
+        "#{protocol}://#{domain}#{API_ENDPOINT}/bulk"
       else
-        "#{protocol}://#{domain}#{API_SINGLE_ENDPOINT}/#{interpolated['id']}"
+        "#{protocol}://#{domain}#{API_ENDPOINT}/#{interpolated['id']}"
       end
     end
 
@@ -266,13 +264,31 @@ module Agents
     def handle_batch(data, headers)
       url = request_url(batch: true)
       headers['Content-Type'] = 'application/json; charset=utf-8'
-      body = data.to_json
-      response = faraday.run_request(http_method, url, body, headers)
+      response = faraday.run_request(:post, url, data.to_json, headers)
 
       return unless boolify(interpolated['emit_events'])
-      create_event(payload: { body: response.body,
-                              headers: normalize_response_headers(response.headers),
-                              status: response.status })
+      headers = normalize_response_headers(response.headers)
+      source_events = received_events.where(id: memory['events'])
+
+      if [200, 201].include?(response.status)
+        responses = JSON.parse(response.body)
+        responses.each_with_index do |r, i|
+          event = source_events.detect{ |e| e.id == memory['events'][i] }
+          resp = OpenStruct.new(r)
+          send_slack_notification(resp, event) unless [200, 201].include?(resp.status)
+
+          create_event(payload: { body: resp.body,
+                                  headers: headers,
+                                  status: resp.status,
+                                  source_event: event.id })
+        end
+      else
+        send_slack_notification(response, source_events.last) unless [200, 201].include?(response.status)
+        create_event(payload: { body: response.body,
+                                headers: headers,
+                                status: response.status,
+                                source_event: memory['events'] })
+      end
     end
 
     def valid_payload?(data, event)

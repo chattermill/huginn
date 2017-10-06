@@ -22,7 +22,7 @@ describe Agents::ChattermillResponseAgent do
       'user_meta' => user_meta.to_json,
       'extra_fields' => '{}',
       'send_batch_events' => 'false',
-      'max_events_on_buffer' => 2
+      'max_events_on_buffer' => 3
     }
     @valid_params = {
       name: "somename",
@@ -113,11 +113,20 @@ describe Agents::ChattermillResponseAgent do
 
       context 'when memory is not empty' do
         before do
-          @checker.memory['events'] = [@event.id]
+          other_event = Event.new
+          other_event.agent = agents(:jane_weather_agent)
+          other_event.payload = {
+            'somekey' => 'somevalue',
+            'data' => {
+              'comment' => 'Test Comment 2'
+            }
+          }
+          @checker.memory['events'] = [@event.id, other_event.id]
         end
 
         it "makes POST requests" do
           expect(@checker).to be_valid
+          expect(@checker.memory['events'].length).to eq(2)
           @checker.check
           expect(@requests).to eq(1)
           expect(@sent_requests[:post].length).to eq(1)
@@ -126,7 +135,7 @@ describe Agents::ChattermillResponseAgent do
         it "uses the correct URI" do
           @checker.check
           uri = @sent_requests[:post].first.uri.to_s
-          expect(uri).to eq("http://localhost:3000/webhooks/responses/list")
+          expect(uri).to eq("http://localhost:3000/webhooks/responses/bulk")
         end
 
         it "generates the authorization header" do
@@ -142,6 +151,7 @@ describe Agents::ChattermillResponseAgent do
         end
 
         it 'clean memory' do
+          expect(@checker.memory['events'].length).to eq(2)
           @checker.check
           expect(@checker.memory['events']).to be_empty
         end
@@ -150,207 +160,317 @@ describe Agents::ChattermillResponseAgent do
   end
 
   describe "#receive" do
-    it "can handle events with id" do
-      @checker.options['id'] = '123'
-      @checker.check
+    context 'when send_batch_events is false' do
+      it "can handle events with id" do
+        @checker.options['id'] = '123'
+        @checker.check
 
-      expect(@sent_requests[:patch].length).to eq(1)
-      uri = @sent_requests[:patch].first.uri.to_s
-      expect(uri).to eq("http://localhost:3000/webhooks/responses/123")
-    end
+        expect(@sent_requests[:patch].length).to eq(1)
+        uri = @sent_requests[:patch].first.uri.to_s
+        expect(uri).to eq("http://localhost:3000/webhooks/responses/123")
+      end
 
-    it "can handle multiple events" do
-      event1 = Event.new
-      event1.agent = agents(:bob_weather_agent)
-      event1.payload = {
-        'xyz' => 'value1',
-        'data' => {
-          'segment' => 'My Segment'
+      it "can handle multiple events" do
+        event1 = Event.new
+        event1.agent = agents(:bob_weather_agent)
+        event1.payload = {
+          'xyz' => 'value1',
+          'data' => {
+            'segment' => 'My Segment'
+          }
         }
-      }
 
-      expect {
-        @checker.receive([@event, event1])
-      }.to change { @sent_requests[:post].length }.by(2)
+        expect {
+          @checker.receive([@event, event1])
+        }.to change { @sent_requests[:post].length }.by(2)
 
-      expected = {
-        'comment' => 'Test Comment',
-        'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
-        'user_meta' => user_meta
-      }
-      expect(@sent_requests[:post][0].data).to eq(expected)
+        expected = {
+          'comment' => 'Test Comment',
+          'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
+          'user_meta' => user_meta
+        }
+        expect(@sent_requests[:post][0].data).to eq(expected)
 
-      expected = {
-        'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => 'My Segment' } },
-        'user_meta' => user_meta
-      }
-      expect(@sent_requests[:post][1].data).to eq(expected)
+        expected = {
+          'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => 'My Segment' } },
+          'user_meta' => user_meta
+        }
+        expect(@sent_requests[:post][1].data).to eq(expected)
+      end
+
+      describe "emitting events" do
+        context "when emit_events is not set to true" do
+          it "does not emit events" do
+            expect {
+              @checker.receive([@event])
+            }.not_to change { @checker.events.count }
+          end
+        end
+
+        context "when emit_events is set to true" do
+          before do
+            @checker.options['emit_events'] = 'true'
+          end
+
+          it "emits the response status" do
+            expect {
+              @checker.receive([@event])
+            }.to change { @checker.events.count }.by(1)
+            expect(@checker.events.last.payload['status']).to eq 201
+          end
+
+          it "emits the body" do
+            @checker.receive([@event])
+            expect(@checker.events.last.payload['body']).to eq '{}'
+          end
+
+          it "emits the response headers capitalized by default" do
+            @checker.receive([@event])
+            expect(@checker.events.last.payload['headers']).to eq({ 'Content-Type' => 'application/json' })
+          end
+
+          it "emits the source event" do
+            @checker.receive([@event])
+            expect(@checker.events.last.payload['source_event']).to eq @event.id
+          end
+        end
+
+        describe "whith valid kind and score" do
+          before do
+            options = @valid_options.merge(
+              'score' => '{{ data.score }}',
+              'kind' => 'csat',
+              'emit_events' => true
+            )
+
+            @checker = Agents::ChattermillResponseAgent.create(
+              name: 'valid',
+              options: options,
+              user: users(:jane)
+            )
+          end
+
+          it "emits event" do
+            @event.payload['data']['score'] = '10'
+
+            expect {
+              @checker.receive([@event])
+            }.to change { @checker.events.count }.by(1)
+          end
+        end
+
+        describe "when payload validation fails" do
+          before do
+            options = @valid_options.merge(
+              'score' => '{{ data.score }}',
+              'kind' => 'nps',
+              'emit_events' => true
+            )
+
+            @checker = Agents::ChattermillResponseAgent.create(
+              name: 'invalid',
+              options: options,
+              user: users(:jane)
+            )
+          end
+
+          it "doesn't emit events" do
+            @event.payload['data']['score'] = ''
+
+            expect {
+              @checker.receive([@event])
+            }.not_to change { @checker.events.count }
+          end
+
+          it "logs a message with validation error" do
+            @event.payload['data']['score'] = ''
+            @event.save
+
+            expect {
+              @checker.receive([@event])
+            }.to change { @checker.logs.count }.by(1)
+
+            error = JSON.parse(@checker.logs.last.message)
+            expected = { "score" => ["can't be blank", "is not a number"], "source_event" => @event.id }
+            expect(error).to eq(expected)
+          end
+        end
+      end
     end
 
-    describe "emitting events" do
-      context "when emit_events is not set to true" do
-        it "does not emit events" do
-          expect {
-            @checker.receive([@event])
-          }.not_to change { @checker.events.count }
-        end
+    context 'when send_batch_events is true' do
+      before do
+        @valid_options.merge!('send_batch_events' => 'true')
+
+        @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
+                                                          options: @valid_options })
+        @checker.user = users(:jane)
+        @checker.save!
       end
 
-      context "when emit_events is set to true" do
-        before do
-          @checker.options['emit_events'] = 'true'
-        end
-
-        it "emits the response status" do
-          expect {
-            @checker.receive([@event])
-          }.to change { @checker.events.count }.by(1)
-          expect(@checker.events.last.payload['status']).to eq 201
-        end
-
-        it "emits the body" do
+      it "save events in buffer" do
+        expect {
           @checker.receive([@event])
-          expect(@checker.events.last.payload['body']).to eq '{}'
-        end
+        }.to change { @sent_requests[:post].length }.by(0)
 
-        it "emits the response headers capitalized by default" do
-          @checker.receive([@event])
-          expect(@checker.events.last.payload['headers']).to eq({ 'Content-Type' => 'application/json' })
-        end
-
-        it "emits the source event" do
-          @checker.receive([@event])
-          expect(@checker.events.last.payload['source_event']).to eq @event.id
-        end
+        expect(@checker.memory['events'].length).to eq(1)
+        expect(@checker.memory['events']).to eq([@event.id])
       end
 
-      describe "whith valid kind and score" do
-        before do
-          options = @valid_options.merge(
-            'score' => '{{ data.score }}',
-            'kind' => 'csat',
-            'emit_events' => true
-          )
+      it "can handle multiple events" do
+        event1 = Event.new
+        event1.agent = agents(:bob_weather_agent)
+        event1.payload = {
+          'xyz' => 'value1',
+          'data' => {
+            'segment' => 'My Segment'
+          }
+        }
 
-          @checker = Agents::ChattermillResponseAgent.create(
-            name: 'valid',
-            options: options,
-            user: users(:jane)
-          )
-        end
+        expect {
+          @checker.receive([@event, event1])
+        }.to change { @sent_requests[:post].length }.by(0)
 
-        it "emits event" do
-          @event.payload['data']['score'] = '10'
-
-          expect {
-            @checker.receive([@event])
-          }.to change { @checker.events.count }.by(1)
-        end
+        expect(@checker.memory['events'].length).to eq(2)
       end
 
-      describe "when payload validation fails" do
-        before do
-          options = @valid_options.merge(
-            'score' => '{{ data.score }}',
-            'kind' => 'nps',
-            'emit_events' => true
-          )
+      it "emit events when max events in buffer is reached" do
+        event1 = Event.new
+        event1.agent = agents(:bob_weather_agent)
+        event1.payload = {
+          'xyz' => 'value1',
+          'data' => {
+            'segment' => 'My Segment'
+          }
+        }
+        event2 = Event.new
+        event2.agent = agents(:bob_weather_agent)
+        event2.payload = {
+          'abc' => 'value1',
+          'data' => {
+            'comment' => 'Hello'
+          }
+        }
 
-          @checker = Agents::ChattermillResponseAgent.create(
-            name: 'invalid',
-            options: options,
-            user: users(:jane)
-          )
-        end
+        @checker.receive([@event, event1])
 
-        it "doesn't emit events" do
-          @event.payload['data']['score'] = ''
+        expect(@checker.memory['events'].length).to eq(2)
+        expect {
+          @checker.receive([event2])
+        }.to change { @sent_requests[:post].length }.by(1)
 
-          expect {
-            @checker.receive([@event])
-          }.not_to change { @checker.events.count }
-        end
-
-        it "logs a message with validation error" do
-          @event.payload['data']['score'] = ''
-          @event.save
-
-          expect {
-            @checker.receive([@event])
-          }.to change { @checker.logs.count }.by(1)
-
-          error = JSON.parse(@checker.logs.last.message)
-          expected = { "score" => ["can't be blank", "is not a number"], "source_event" => @event.id }
-          expect(error).to eq(expected)
-        end
+        expect(@checker.memory['events'].length).to eq(0)
       end
     end
   end
 
   describe "#check" do
-    it "sends data as a POST request" do
-      expect {
-        @checker.check
-      }.to change { @sent_requests[:post].length }.by(1)
+    context 'when send_batch_events is false' do
+      it "sends data as a POST request" do
+        expect {
+          @checker.check
+        }.to change { @sent_requests[:post].length }.by(1)
 
-      expected = {
-        'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
-        'user_meta' => user_meta
-      }
-      expect(@sent_requests[:post][0].data).to eq(expected)
-    end
+        expected = {
+          'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
+          'user_meta' => user_meta
+        }
+        expect(@sent_requests[:post][0].data).to eq(expected)
+      end
 
-    describe "emitting events" do
-      context "when emit_events is not set to true" do
-        it "does not emit events" do
-          expect {
+      describe "emitting events" do
+        context "when emit_events is not set to true" do
+          it "does not emit events" do
+            expect {
+              @checker.check
+            }.not_to change { @checker.events.count }
+          end
+        end
+
+        context "when emit_events is set to true" do
+          before do
+            @checker.options['emit_events'] = 'true'
+          end
+
+          it "emits the response status" do
+            expect {
+              @checker.check
+            }.to change { @checker.events.count }.by(1)
+            expect(@checker.events.last.payload['status']).to eq 201
+          end
+
+          it "emits the body" do
             @checker.check
-          }.not_to change { @checker.events.count }
+            expect(@checker.events.last.payload['body']).to eq '{}'
+          end
+
+          it "emits the response headers capitalized by default" do
+            @checker.check
+            expect(@checker.events.last.payload['headers']).to eq({ 'Content-Type' => 'application/json' })
+          end
+
+          it "emits the source event" do
+            @checker.check
+            expect(@checker.events.last.payload['source_event']).to be_nil
+          end
         end
       end
 
-      context "when emit_events is set to true" do
+      describe "slack notification" do
         before do
-          @checker.options['emit_events'] = 'true'
+          stub(ENV).[]('CHATTERMILL_AUTH_TOKEN') { 'invalid' }
+          stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
+          stub(ENV).[]('SLACK_CHANNEL') { '#mychannel' }
         end
 
-        it "emits the response status" do
-          expect {
-            @checker.check
-          }.to change { @checker.events.count }.by(1)
-          expect(@checker.events.last.payload['status']).to eq 201
-        end
-
-        it "emits the body" do
+        it "sends a slack notification" do
+          slack = mock
+          mock(slack).ping('', hash_including({ icon_emoji: ':fire:', channel: '#mychannel' })) { true }
+          mock(Slack::Notifier).new('http://slack.webhook/abc', { username: 'Huginn' }) { slack }
           @checker.check
-          expect(@checker.events.last.payload['body']).to eq '{}'
-        end
-
-        it "emits the response headers capitalized by default" do
-          @checker.check
-          expect(@checker.events.last.payload['headers']).to eq({ 'Content-Type' => 'application/json' })
-        end
-
-        it "emits the source event" do
-          @checker.check
-          expect(@checker.events.last.payload['source_event']).to be_nil
         end
       end
     end
 
-    describe "slack notification" do
+    context 'when send_batch_events is true' do
       before do
-        stub(ENV).[]('CHATTERMILL_AUTH_TOKEN') { 'invalid' }
-        stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
-        stub(ENV).[]('SLACK_CHANNEL') { '#mychannel' }
+        @valid_options.merge!('send_batch_events' => 'true', 'max_events_on_buffer' => 2)
+
+        @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
+                                                          options: @valid_options })
+        @checker.user = users(:jane)
+        @checker.save!
       end
 
-      it "sends a slack notification" do
-        slack = mock
-        mock(slack).ping('', hash_including({ icon_emoji: ':fire:', channel: '#mychannel' })) { true }
-        mock(Slack::Notifier).new('http://slack.webhook/abc', { username: 'Huginn' }) { slack }
-        @checker.check
+      it 'does not emit events if max events in buffer is not reached' do
+        @checker.receive([@event])
+
+        expect {
+          @checker.check
+        }.not_to change { @checker.events.count }
       end
+
+      it "sends data as a POST request" do
+        event1 = Event.new
+        event1.agent = agents(:bob_weather_agent)
+        event1.payload = {
+          'xyz' => 'value1',
+          'data' => {
+            'segment' => 'My Segment'
+          }
+        }
+        event1.save
+
+        @checker.memory['events'] = [@event.id, event1.id]
+
+        expect {
+          @checker.check
+        }.to change { @sent_requests[:post].length }.by(1)
+
+        expect(@checker.memory['events'].length).to eq(0)
+      end
+
+
     end
   end
 
