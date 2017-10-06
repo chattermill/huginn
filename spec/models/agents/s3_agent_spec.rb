@@ -190,7 +190,7 @@ describe Agents::S3Agent do
         context "with prefix filter" do
           it "emits events for matching files" do
             @checker.options['prefix'] = 'data'
-            contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
+            contents = { "test2" => "changed", "test3_data" => "31231231", "data_export" => "11111111" }
             mock(@checker).get_bucket_contents { contents }
             expect { @checker.check }.to change(Event, :count).by(1)
 
@@ -202,11 +202,31 @@ describe Agents::S3Agent do
         context "with suffix filter" do
           it "emits events for matching files" do
             @checker.options['suffix'] = 'export'
-            contents = { "test2" => "changed", "test3" => "31231231", "data_export" => "11111111" }
+            contents = { "test2" => "changed", "export_test3" => "31231231", "data_export" => "11111111" }
             mock(@checker).get_bucket_contents { contents }
             expect { @checker.check }.to change(Event, :count).by(1)
 
             expected = { "file_pointer" => { "file" => "data_export", "agent_id" => @checker.id }, "event_type" => "added" }
+            expect(Event.last.payload).to eq(expected)
+          end
+        end
+
+        context "with prefix and suffix filter" do
+          it "emits events for matching files" do
+            @checker.options['prefix'] = 'folder/data'
+            @checker.options['suffix'] = '.csv'
+            contents = {
+              "test2" => "changed",
+              "test.csv" => "31231231",
+              "folder/data_export.csv" => "11111111",
+              "folder/data" => "222",
+              "folder/export_data.csv" => "333"
+            }
+
+            mock(@checker).get_bucket_contents { contents }
+            expect { @checker.check }.to change(Event, :count).by(1)
+
+            expected = { "file_pointer" => { "file" => "folder/data_export.csv", "agent_id" => @checker.id }, "event_type" => "added" }
             expect(Event.last.payload).to eq(expected)
           end
         end
