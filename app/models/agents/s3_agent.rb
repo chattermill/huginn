@@ -234,7 +234,12 @@ module Agents
 
     def process_file?(file_name)
       return true unless filename_filter_present?
-      prefix_match?(file_name) || suffix_match?(file_name)
+
+      if both_filename_filters_present?
+        prefix_match?(file_name) && suffix_match?(file_name)
+      else
+        prefix_match?(file_name) || suffix_match?(file_name)
+      end
     end
 
     def prefix_match?(file_name)
@@ -249,6 +254,10 @@ module Agents
 
     def filename_filter_present?
       interpolated['prefix'].present? || interpolated['suffix'].present?
+    end
+
+    def both_filename_filters_present?
+      interpolated['prefix'].present? && interpolated['suffix'].present?
     end
   end
 end
