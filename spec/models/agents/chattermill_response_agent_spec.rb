@@ -294,6 +294,7 @@ describe Agents::ChattermillResponseAgent do
 
     context 'when send_batch_events is true' do
       before do
+        stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
         stub.any_instance_of(Slack::Notifier).ping { true }
 
         @valid_options.merge!('send_batch_events' => 'true', 'emit_events' => 'true')
@@ -374,7 +375,6 @@ describe Agents::ChattermillResponseAgent do
         expect(@checker.events.second.payload["body"]).to eq("error")
         expect(@checker.events.last.payload["body"]).to eq("error")
         expect(@checker.memory['events'].length).to eq(0)
-
       end
     end
   end
@@ -449,7 +449,7 @@ describe Agents::ChattermillResponseAgent do
 
     context 'when send_batch_events is true' do
       before do
-        @valid_options.merge!('send_batch_events' => 'true', 'max_events_on_buffer' => 2)
+        @valid_options.merge!('emit_events' => 'true', 'send_batch_events' => 'true', 'max_events_on_buffer' => 2)
 
         @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
                                                           options: @valid_options })
