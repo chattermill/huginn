@@ -294,12 +294,25 @@ describe Agents::ChattermillResponseAgent do
 
     context 'when send_batch_events is true' do
       before do
-        @valid_options.merge!('send_batch_events' => 'true')
+        stub.any_instance_of(Slack::Notifier).ping { true }
+
+        @valid_options.merge!('send_batch_events' => 'true', 'emit_events' => 'true')
 
         @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
                                                           options: @valid_options })
         @checker.user = users(:jane)
         @checker.save!
+
+        @event.save
+        @event1 = Event.new
+        @event1.agent = agents(:bob_weather_agent)
+        @event1.payload = {
+          'xyz' => 'value1',
+          'data' => {
+            'segment' => 'My Segment'
+          }
+        }
+        @event1.save
       end
 
       it "save events in buffer" do
@@ -312,31 +325,14 @@ describe Agents::ChattermillResponseAgent do
       end
 
       it "can handle multiple events" do
-        event1 = Event.new
-        event1.agent = agents(:bob_weather_agent)
-        event1.payload = {
-          'xyz' => 'value1',
-          'data' => {
-            'segment' => 'My Segment'
-          }
-        }
-
         expect {
-          @checker.receive([@event, event1])
+          @checker.receive([@event, @event1])
         }.to change { @sent_requests[:post].length }.by(0)
 
         expect(@checker.memory['events'].length).to eq(2)
       end
 
       it "emit events when max events in buffer is reached" do
-        event1 = Event.new
-        event1.agent = agents(:bob_weather_agent)
-        event1.payload = {
-          'xyz' => 'value1',
-          'data' => {
-            'segment' => 'My Segment'
-          }
-        }
         event2 = Event.new
         event2.agent = agents(:bob_weather_agent)
         event2.payload = {
@@ -345,13 +341,39 @@ describe Agents::ChattermillResponseAgent do
             'comment' => 'Hello'
           }
         }
+        event2.save
 
-        @checker.receive([@event, event1])
+        @checker.receive([@event, @event1])
 
         expect(@checker.memory['events'].length).to eq(2)
         expect {
           @checker.receive([event2])
         }.to change { @sent_requests[:post].length }.by(1)
+
+      end
+
+      it "emit events with error in case of status 500" do
+        stub_request(:post, "http://localhost:3000/webhooks/responses/bulk").to_return({ status: 500, body: 'error', headers: { 'Content-type' => 'application/json' } })
+
+        event2 = Event.new
+        event2.agent = agents(:bob_weather_agent)
+        event2.payload = {
+          'abc' => 'value1',
+          'data' => {
+            'comment' => 'Hello'
+          }
+        }
+        event2.save
+
+        expect(@checker.events.count).to eq(0)
+        @checker.receive([@event, @event1, event2])
+        @checker.save
+
+        expect(@checker.events.count).to eq(3)
+        expect(@checker.events.first.payload["body"]).to eq("error")
+        expect(@checker.events.second.payload["body"]).to eq("error")
+        expect(@checker.events.last.payload["body"]).to eq("error")
+        expect(@checker.memory['events'].length).to eq(0)
 
       end
     end

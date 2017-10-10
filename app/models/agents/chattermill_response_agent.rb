@@ -253,10 +253,7 @@ module Agents
       send_slack_notification(response, event) unless [200, 201].include?(response.status)
 
       return unless boolify(interpolated['emit_events'])
-      create_event(payload: { body: response.body,
-                              headers: normalize_response_headers(response.headers),
-                              status: response.status,
-                              source_event: event.id })
+      create_event(event_payload(response, response.headers, event))
     end
 
     def handle_batch(data, headers)
@@ -266,29 +263,33 @@ module Agents
 
       return unless boolify(interpolated['emit_events'])
       headers = normalize_response_headers(response.headers)
-      source_events = received_events.where(id: memory['events'])
+      source_events = Event.where(id: memory['events'])
+      events_ids = memory['events'].clone
 
       if [200, 201].include?(response.status)
         responses = JSON.parse(response.body)
-        events_ids = memory['events'].clone
         responses.each_with_index do |r, i|
           event = source_events.detect{ |e| e.id == events_ids[i] }
-          resp = OpenStruct.new(r)
-          send_slack_notification(resp, event) unless [200, 201].include?(resp.status)
+          event_response = OpenStruct.new(r)
+          send_slack_notification(event_response, event) unless [200, 201].include?(event_response.status)
 
-          create_event(payload: { body: resp.body,
-                                  headers: headers,
-                                  status: resp.status,
-                                  source_event: event.id })
+          create_event(event_payload(event_response, headers, event))
           memory['events'].delete(event.id)
         end
       else
-        send_slack_notification(response, source_events.last) unless [200, 201].include?(response.status)
-        create_event(payload: { body: response.body,
-                                headers: headers,
-                                status: response.status,
-                                source_event: memory['events'] })
+        source_events.each do |event|
+          send_slack_notification(response, event)
+          create_event(event_payload(response, headers, event))
+          memory['events'].delete(event.id)
+        end
       end
+    end
+
+    def event_payload(response, headers, event)
+      { payload: { body: response.body,
+                   headers: normalize_response_headers(headers),
+                   status: response.status,
+                   source_event: event.id } }
     end
 
     def valid_payload?(data, event)
