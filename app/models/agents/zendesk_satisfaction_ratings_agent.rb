@@ -125,12 +125,12 @@ module Agents
     def check
       url = interpolated['url']
       url << "&per_page=3" if dry_run?
+      url << "&include=users" if retrieve_assignee?
 
       check_urls(url)
     end
 
     def retrieve_details!(data)
-      data.merge!(get_assignee(data['assignee_id'])) if retrieve_assignee?
       data.merge!(get_ticket(data['ticket_id'])) if retrieve_ticket?
       data.merge!(get_group(data['group_id'])) if retrieve_group?
     end
@@ -158,6 +158,20 @@ module Agents
       end
     end
 
+    def extract_json(doc)
+      satisfaction_ratings = super(doc) # Agents::WebsiteAgent::Output
+      assignees = []
+
+      if retrieve_assignee?
+        satisfaction_ratings.each do |r|
+          assignees << doc['users'].find { |u| u['id'] == r['assignee_id'] }
+        end
+        satisfaction_ratings['user'] = assignees
+      end
+
+      satisfaction_ratings
+    end
+
     def retrieve_assignee?
       boolify(interpolated['retrieve_assignee'])
     end
@@ -168,12 +182,6 @@ module Agents
 
     def retrieve_group?
       boolify(interpolated['retrieve_group'])
-    end
-
-    def get_assignee(assignee_id)
-      log "Fetching assiginee #{assignee_id}"
-      uri = "#{zendesk_uri_base}/users/#{assignee_id}.json"
-      get_zendesk_resource(uri)
     end
 
     def get_ticket(ticket_id)
