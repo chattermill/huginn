@@ -90,7 +90,8 @@ module Agents
         'expected_update_period_in_days' => '2',
         'mode' => 'on_change',
         'retrieve_assignee' => 'true',
-        'retrieve_ticket' => 'true'
+        'retrieve_ticket' => 'true',
+        'retrieve_group' => 'false'
       }
     end
 
@@ -118,6 +119,18 @@ module Agents
       options['basic_auth'] = "#{options['account_email']}/token:#{options['api_token']}"
       options['type'] = 'json'
       options['extract'] = EXTRACT
+
+      if boolify(options['retrieve_assignee'])
+        options['extract']['user'] = { 'path' => 'satisfaction_ratings.[*].user' }
+      end
+
+      if boolify(options['retrieve_ticket'])
+        options['extract']['ticket'] = { 'path' => 'satisfaction_ratings.[*].ticket' }
+      end
+
+      if boolify(options['retrieve_group'])
+        options['extract']['group'] = { 'path' => 'satisfaction_ratings.[*].group' }
+      end
     end
 
     # Override check method so we can handle dry_run and return
@@ -125,14 +138,9 @@ module Agents
     def check
       url = interpolated['url']
       url << "&per_page=3" if dry_run?
+      url << "&include=users" if retrieve_assignee?
 
       check_urls(url)
-    end
-
-    def retrieve_details!(data)
-      data.merge!(get_assignee(data['assignee_id'])) if retrieve_assignee?
-      data.merge!(get_ticket(data['ticket_id'])) if retrieve_ticket?
-      data.merge!(get_group(data['group_id'])) if retrieve_group?
     end
 
     # This method returns true if the result should be stored as a new event.
@@ -147,15 +155,28 @@ module Agents
           found_event.update!(expires_at: new_event_expiration_date)
           false
         else
-          retrieve_details!(result)
           true
         end
       when 'all', 'merge', ''
-        retrieve_details!(result)
         true
       else
         raise "Illegal options[mode]: #{interpolated['mode']}"
       end
+    end
+
+    def extract_json(doc)
+      if enrich_data?
+        fetch_tickets(doc) if retrieve_ticket?
+        fetch_groups(doc) if retrieve_group?
+
+        doc['satisfaction_ratings'].each do |r|
+          r['user']   = doc['users'].find  { |u| u['id'] == r['assignee_id'] } if retrieve_assignee?
+          r['group']  = doc['groups'].find { |g| g['id'] == r['group_id'] } if retrieve_group?
+          r['ticket'] = doc['tickets'].find { |t| t['id'] == r['ticket_id'] } if retrieve_ticket?
+        end
+      end
+
+      super(doc)
     end
 
     def retrieve_assignee?
@@ -170,22 +191,23 @@ module Agents
       boolify(interpolated['retrieve_group'])
     end
 
-    def get_assignee(assignee_id)
-      log "Fetching assiginee #{assignee_id}"
-      uri = "#{zendesk_uri_base}/users/#{assignee_id}.json"
-      get_zendesk_resource(uri)
+    def enrich_data?
+      retrieve_assignee? || retrieve_ticket? || retrieve_group?
     end
 
-    def get_ticket(ticket_id)
-      log "Fetching ticket #{ticket_id}"
-      uri = "#{zendesk_uri_base}/tickets/#{ticket_id}.json"
-      get_zendesk_resource(uri)
+    def fetch_tickets(doc)
+      ids = doc["satisfaction_ratings"].map { |r| r["ticket_id"] }.compact.uniq
+      uri = "#{zendesk_uri_base}/tickets/show_many.json?ids=#{ids.join(',')}"
+
+      log "Fetching tickets #{ids}"
+      doc.merge!(get_zendesk_resource(uri))
     end
 
-    def get_group(group_id)
-      log "Fetching group #{group_id}"
-      uri = "#{zendesk_uri_base}/groups/#{group_id}.json"
-      get_zendesk_resource(uri)
+    def fetch_groups(doc)
+      uri = "#{zendesk_uri_base}/groups.json"
+
+      log "Fetching groups"
+      doc.merge!(get_zendesk_resource(uri))
     end
 
     def zendesk_uri_base
