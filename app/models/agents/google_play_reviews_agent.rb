@@ -140,9 +140,11 @@ module Agents
 
     def check
       retrieve_reviews.each do |review|
-        if store_payload!(previous_payloads(1), review)
+        payload = prepare_event(review)
+
+        if store_payload!(previous_payloads(1), payload)
           log "Storing new result for '#{name}': #{review.inspect}"
-          create_event payload: prepare_event(review)
+          create_event payload: payload
         end
       end
     end
@@ -170,8 +172,7 @@ module Agents
     def store_payload!(old_events, result)
       case interpolated['mode'].presence
       when 'on_change'
-        result_json = result.to_json
-        if found = old_events.find { |event| event.payload.to_json == result_json }
+        if found = old_events.find { |event| event.payload.to_json == result.to_json }
           found.update!(expires_at: new_event_expiration_date)
           false
         else
@@ -193,7 +194,7 @@ module Agents
         original_comment: comment&.original_text,
         score: comment.star_rating,
         language: comment.reviewer_language,
-        updated_at: Time.at(comment.last_modified.seconds).utc,
+        updated_at: Time.at(comment.last_modified.seconds).utc.as_json,
         comments_raw_data: review.comments.map(&:to_h)
       }
     end
