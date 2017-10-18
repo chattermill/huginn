@@ -172,7 +172,7 @@ module Agents
     def store_payload!(old_events, result)
       case interpolated['mode'].presence
       when 'on_change'
-        if found = old_events.find { |event| events_equal?(event.payload, result) }
+        if found = old_events.find { |event| event.payload.to_json == result.to_json }
           found.update!(expires_at: new_event_expiration_date)
           false
         else
@@ -194,13 +194,9 @@ module Agents
         original_comment: comment&.original_text,
         score: comment.star_rating,
         language: comment.reviewer_language,
-        updated_at: Time.at(comment.last_modified.seconds).utc,
+        updated_at: Time.at(comment.last_modified.seconds).utc.as_json,
         comments_raw_data: review.comments.map(&:to_h)
       }
-    end
-
-    def events_equal?(event1, event2)
-      event1.except(:updated_at).to_json == event2.except(:updated_at).to_json
     end
 
     def retrieve_reviews
