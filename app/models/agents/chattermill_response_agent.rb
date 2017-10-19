@@ -3,15 +3,17 @@ module Agents
     include WebRequestConcern
     include FormConfigurable
 
-    default_schedule "never"
+    default_schedule "every_5m"
 
     API_ENDPOINT = "/webhooks/responses"
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
+    MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "dev.app.chattermill.xyz",
-      development: "localhost:3000",
+      development: "lvh.me:3000",
       test: "localhost:3000"
     }
+
 
     can_dry_run!
     no_bulk_receive!
@@ -33,8 +35,8 @@ module Agents
         The Event will also have a "headers" hash and a "status" integer value.
         Header names are capitalized; e.g. "Content-Type".
 
-        If `send_batch_events` is set to `true`, the agent collects any events sent to it and sends them all later on reaching the number setted
-        in `max_events_on_buffer`.
+        If `send_batch_events` is set to `true`, the agent collects any events sent to it and sends them in batch of number setted
+        in `max_events_per_batch`.
 
         Options:
 
@@ -50,8 +52,7 @@ module Agents
           * `emit_events` - Select `true` or `false`.
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
           * `send_batch_events` - Select `true` or `false`.
-          * `max_events_on_buffer` - Specify the maximum number of events that you'd like to hold in the buffer. When this number is
-            reached, all events will be emitted.
+          * `max_events_per_batch` - Specify the maximum number of events that you'd like to send per batch.
       MD
     end
 
@@ -83,8 +84,8 @@ module Agents
         'extra_fields' => '{}',
         'emit_events' => 'true',
         'expected_receive_period_in_days' => '1',
-        'send_batch_events' => 'false',
-        'max_events_on_buffer' => 100
+        'send_batch_events' => 'true',
+        'max_events_per_batch' => 30
       }
     end
 
@@ -109,7 +110,7 @@ module Agents
     form_configurable :emit_events, type: :boolean
     form_configurable :expected_receive_period_in_days
     form_configurable :send_batch_events, type: :boolean
-    form_configurable :max_events_on_buffer
+    form_configurable :max_events_per_batch
 
     def validate_options
       if options['organization_subdomain'].blank?
@@ -127,8 +128,8 @@ module Agents
         errors.add(:base, "if provided, send_batch_events must be true or false")
       end
 
-      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (options['max_events_on_buffer'].blank? || !options['max_events_on_buffer']&.to_i&.positive? )
-        errors.add(:base, "The 'max_events_on_buffer' option is required and must be an integer greater than 0")
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (options['max_events_per_batch'].blank? || !options['max_events_per_batch']&.to_i&.positive? )
+        errors.add(:base, "The 'max_events_per_batch' option is required and must be an integer greater than 0")
       end
 
       validate_web_request_options!
@@ -137,9 +138,6 @@ module Agents
     def receive(incoming_events)
       if boolify(interpolated['send_batch_events'])
         save_events_in_buffer(incoming_events)
-        if memory['events'] && memory['events'].length >= interpolated['max_events_on_buffer'].to_i
-          handle_batch batch_events_payload, headers(auth_header)
-        end
       else
         incoming_events.each do |event|
           interpolate_with(event) do
@@ -151,8 +149,11 @@ module Agents
 
     def check
       if boolify(interpolated['send_batch_events'])
-        if memory['events'] && memory['events'].length.positive?
+        if process_queue?
+          process_queue!
           handle_batch batch_events_payload, headers(auth_header)
+        elsif !queue_in_process? && memory['events']&.length&.positive?
+          memory['check_counter'] = (memory['check_counter']&.to_i || 0) + 1
         end
       else
         handle outgoing_data, headers(auth_header)
@@ -168,7 +169,7 @@ module Agents
 
     def batch_events_payload
       payloads = []
-      buffered_events = received_events.where(id: memory['events']).reorder(id: :asc)
+      buffered_events = received_events.where(id: events_ids).reorder(id: :asc)
       buffered_events.each do |event|
         interpolate_with(event) do
           data = outgoing_data
@@ -263,9 +264,7 @@ module Agents
 
       return unless boolify(interpolated['emit_events'])
       headers = normalize_response_headers(response.headers)
-      source_events = Event.where(id: memory['events'])
-      events_ids = memory['events'].clone
-
+      source_events = Event.where(id: events_ids)
       if [200, 201].include?(response.status)
         responses = JSON.parse(response.body)
         responses.each_with_index do |r, i|
@@ -283,6 +282,8 @@ module Agents
           memory['events'].delete(event.id)
         end
       end
+      memory['in_process'] = false
+      memory['check_counter'] = 0
     end
 
     def event_payload(response, headers, event)
@@ -297,6 +298,32 @@ module Agents
       error(validator.errors.messages.merge(source_event: event.id).to_json) unless validator.valid?
 
       validator.valid?
+    end
+
+    def queue_in_process?
+      boolify(memory['in_process']) == true
+    end
+
+    def process_queue!
+      memory['in_process'] = true
+      save!
+    end
+
+    def process_queue?
+      !queue_in_process? && ( batch_ready? || batch_expired? )
+    end
+
+    def batch_ready?
+      memory['events'] && memory['events'].length >= interpolated['max_events_per_batch'].to_i
+    end
+
+    def batch_expired?
+      counter = memory['check_counter']&.to_i || 0
+      memory['events'] && memory['events'].length.positive? && counter >= MAX_COUNTER_TO_EXPIRE_BATCH
+    end
+
+    def events_ids
+      @events_ids ||= memory['events'].shift(interpolated['max_events_per_batch'].to_i)
     end
 
     def send_slack_notification(response, event)
