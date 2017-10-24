@@ -42,6 +42,7 @@ module Agents
           * `retrieve_buttons` - If `true`, the agent wil retrieve feedback for buttons from the `buttons_to_retrieve` list
           * `retrieve_emails` - If `true`, the agent wil retrieve feedback for emails from the `emails_to_retrieve` list
           * `retrieve_apps` - If `true`, the agent wil retrieve feedback for apps from the `apps_to_retrieve` list
+          * `retireve_campaigns` - If `true` the agent will retrieve for campaigns from the `campaigns_to_retrieve` list
           * `days_ago` - How many days to look back, you won't be able to go too many due to API only fetching up to 100 items for each call
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
@@ -76,6 +77,8 @@ module Agents
     form_configurable :apps_to_retrieve
     form_configurable :retrieve_emails, type: :array, values: %w(true false)
     form_configurable :emails_to_retrieve
+    form_configurable :retrieve_campaigns, type: :array, values: %w(true false)
+    form_configurable :campaigns_to_retrieve
     form_configurable :days_ago
     form_configurable :expected_update_period_in_days
 
@@ -88,9 +91,11 @@ module Agents
         'retrieve_buttons' => 'false',
         'retrieve_apps' => 'false',
         'retrieve_emails' => 'false',
+        'retrieve_campaigns' => 'false',
         'buttons_to_retrieve' => '*',
         'emails_to_retrieve' => '*',
         'apps_to_retrieve' => '*',
+        'campaigns_to_retrieve' => '*',
         'days_ago' => '1'
       }
     end
@@ -113,6 +118,10 @@ module Agents
       if boolify(options['retrieve_emails']).nil?
         errors.add(:base, 'The retrieve_emails option must be true or false')
       end
+
+      if boolify(options['retrieve_campaigns']).nil?
+        errors.add(:base, 'The retrieve_campaigns option must be true or false')
+      end
     end
 
     def check
@@ -120,6 +129,7 @@ module Agents
       events += retrieve_buttons if retrieve_buttons?
       events += retrieve_apps if retrieve_apps?
       events += retrieve_emails if retrieve_emails?
+      events += retrieve_campaigns if retrieve_campaigns?
 
       payload = events.map { |e| usabilla_response_to_event(e) }
 
@@ -174,6 +184,10 @@ module Agents
       boolify(interpolated['retrieve_emails'])
     end
 
+    def retrieve_campaigns?
+      boolify(interpolated['retrieve_campaigns'])
+    end
+
     def retrieve_buttons
       ids = interpolated['buttons_to_retrieve'].split(',')
       ids.map do |id|
@@ -216,6 +230,20 @@ module Agents
       end.flatten
     end
 
+    def retrieve_campaigns
+      ids = interpolated['campaigns_to_retrieve'].split(',')
+      ids.map do |id|
+        usabilla_api
+          .websites_campaign_results
+          .retrieve(
+            id: id,
+            access_key: interpolated['access_key'],
+            secret_key: interpolated['secret_key'],
+            days_ago: interpolated['days_ago']
+          ).items
+      end.flatten
+    end
+
     def usabilla_response_to_event(r)
       {
         comment: extract_comment(r),
@@ -233,12 +261,12 @@ module Agents
 
     def extract_comment(response)
       return response.comment if response.respond_to?(:comment)
-      response.data[:comment] if response.respond_to?(:data)
+      response.data[:comment] if response.respond_to?(:data) && response.data.is_a?(Hash)
     end
 
     def extract_score(response)
       return response.rating if response.respond_to?(:rating)
-      response.data[:mood] || response.data[:nps] if response.respond_to?(:data)
+      response.data[:mood] || response.data[:nps] if response.respond_to?(:data) && response.data.is_a?(Hash)
     end
 
     def extract_if_present(attr_name, response)
