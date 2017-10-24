@@ -3,17 +3,20 @@ module Agents
     include WebRequestConcern
     include FormConfigurable
 
+    default_schedule "every_5m"
+
     API_ENDPOINT = "/webhooks/responses"
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
+    MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "dev.app.chattermill.xyz",
       development: "lvh.me:3000",
       test: "localhost:3000"
     }
 
+
     can_dry_run!
     no_bulk_receive!
-    cannot_be_scheduled!
 
     before_validation :parse_json_options
 
@@ -32,6 +35,9 @@ module Agents
         The Event will also have a "headers" hash and a "status" integer value.
         Header names are capitalized; e.g. "Content-Type".
 
+        If `send_batch_events` is set to `true`, the agent collects any events sent to it and sends them in batch of number setted
+        in `max_events_per_batch`.
+
         Options:
 
           * `organization_subdomain` - Specify the subdomain for the target organization (e.g `moo` or `hellofresh`).
@@ -45,6 +51,8 @@ module Agents
           * `extra_fields` - Specify the Liquid interpolated JSON to build additional fields for the Response, e.g: `{ approved: true }`.
           * `emit_events` - Select `true` or `false`.
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
+          * `send_batch_events` - Select `true` or `false`.
+          * `max_events_per_batch` - Specify the maximum number of events that you'd like to send per batch.
       MD
     end
 
@@ -75,7 +83,9 @@ module Agents
         'segments' => sample_hash,
         'extra_fields' => '{}',
         'emit_events' => 'true',
-        'expected_receive_period_in_days' => '1'
+        'expected_receive_period_in_days' => '1',
+        'send_batch_events' => 'true',
+        'max_events_per_batch' => 30
       }
     end
 
@@ -99,6 +109,8 @@ module Agents
     form_configurable :extra_fields, type: :json, ace: { mode: 'json' }
     form_configurable :emit_events, type: :boolean
     form_configurable :expected_receive_period_in_days
+    form_configurable :send_batch_events, type: :boolean
+    form_configurable :max_events_per_batch
 
     def validate_options
       if options['organization_subdomain'].blank?
@@ -112,28 +124,68 @@ module Agents
         errors.add(:base, "if provided, emit_events must be true or false")
       end
 
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']).nil?
+        errors.add(:base, "if provided, send_batch_events must be true or false")
+      end
+
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (options['max_events_per_batch'].blank? || !options['max_events_per_batch']&.to_i&.positive? )
+        errors.add(:base, "The 'max_events_per_batch' option is required and must be an integer greater than 0")
+      end
+
       validate_web_request_options!
     end
 
     def receive(incoming_events)
-      incoming_events.each do |event|
-        interpolate_with(event) do
-          outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
-          outgoing.merge!(interpolated['extra_fields'].presence || {})
-
-          handle outgoing, event, headers(auth_header)
+      if boolify(interpolated['send_batch_events'])
+        save_events_in_buffer(incoming_events)
+      else
+        incoming_events.each do |event|
+          interpolate_with(event) do
+            handle outgoing_data, event, headers(auth_header)
+          end
         end
       end
     end
 
     def check
-      outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
-      outgoing.merge!(interpolated['extra_fields'].presence || {})
-
-      handle outgoing, headers(auth_header)
+      if boolify(interpolated['send_batch_events'])
+        if process_queue?
+          process_queue!
+          handle_batch batch_events_payload, headers(auth_header)
+        elsif !queue_in_process? && memory['events']&.length&.positive?
+          memory['check_counter'] = (memory['check_counter']&.to_i || 0) + 1
+        end
+      else
+        handle outgoing_data, headers(auth_header)
+      end
     end
 
     private
+
+    def outgoing_data
+      outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
+      outgoing.merge!(interpolated['extra_fields'].presence || {})
+    end
+
+    def batch_events_payload
+      payloads = []
+      buffered_events = received_events.where(id: events_ids).reorder(id: :asc)
+      buffered_events.each do |event|
+        interpolate_with(event) do
+          data = outgoing_data
+          payloads.push(data) if valid_payload?(data, event)
+        end
+      end
+      { responses: payloads }
+    end
+
+    def save_events_in_buffer(incoming_events)
+      memory['events'] ||= []
+
+      incoming_events.each do |event|
+        memory['events'] << event.id
+      end
+    end
 
     def parse_json_options
       parse_json_option('user_meta')
@@ -170,10 +222,14 @@ module Agents
       }
     end
 
-    def request_url(event = Event.new)
+    def request_url(event = Event.new, batch: false)
       protocol = Rails.env.production? ? 'https' : 'http'
       domain = DOMAINS[Rails.env.to_sym]
-      "#{protocol}://#{domain}#{API_ENDPOINT}/#{interpolated['id']}"
+      if batch
+        "#{protocol}://#{domain}#{API_ENDPOINT}/bulk"
+      else
+        "#{protocol}://#{domain}#{API_ENDPOINT}/#{interpolated['id']}"
+      end
     end
 
     def has_id?
@@ -198,10 +254,43 @@ module Agents
       send_slack_notification(response, event) unless [200, 201].include?(response.status)
 
       return unless boolify(interpolated['emit_events'])
-      create_event(payload: { body: response.body,
-                              headers: normalize_response_headers(response.headers),
-                              status: response.status,
-                              source_event: event.id })
+      create_event(event_payload(response, response.headers, event))
+    end
+
+    def handle_batch(data, headers)
+      url = request_url(batch: true)
+      headers['Content-Type'] = 'application/json; charset=utf-8'
+      response = faraday.run_request(:post, url, data.to_json, headers)
+
+      return unless boolify(interpolated['emit_events'])
+      headers = normalize_response_headers(response.headers)
+      source_events = Event.where(id: events_ids)
+      if [200, 201].include?(response.status)
+        responses = JSON.parse(response.body)
+        responses.each_with_index do |r, i|
+          event = source_events.detect{ |e| e.id == events_ids[i] }
+          event_response = OpenStruct.new(r)
+          send_slack_notification(event_response, event) unless [200, 201].include?(event_response.status)
+
+          create_event(event_payload(event_response, headers, event))
+          memory['events'].delete(event.id)
+        end
+      else
+        source_events.each do |event|
+          send_slack_notification(response, event)
+          create_event(event_payload(response, headers, event))
+          memory['events'].delete(event.id)
+        end
+      end
+      memory['in_process'] = false
+      memory['check_counter'] = 0
+    end
+
+    def event_payload(response, headers, event)
+      { payload: { body: response.body,
+                   headers: normalize_response_headers(headers),
+                   status: response.status,
+                   source_event: event.id } }
     end
 
     def valid_payload?(data, event)
@@ -209,6 +298,32 @@ module Agents
       error(validator.errors.messages.merge(source_event: event.id).to_json) unless validator.valid?
 
       validator.valid?
+    end
+
+    def queue_in_process?
+      boolify(memory['in_process']) == true
+    end
+
+    def process_queue!
+      memory['in_process'] = true
+      save!
+    end
+
+    def process_queue?
+      !queue_in_process? && ( batch_ready? || batch_expired? )
+    end
+
+    def batch_ready?
+      memory['events'] && memory['events'].length >= interpolated['max_events_per_batch'].to_i
+    end
+
+    def batch_expired?
+      counter = memory['check_counter']&.to_i || 0
+      memory['events'] && memory['events'].length.positive? && counter >= MAX_COUNTER_TO_EXPIRE_BATCH
+    end
+
+    def events_ids
+      @events_ids ||= memory['events'].shift(interpolated['max_events_per_batch'].to_i)
     end
 
     def send_slack_notification(response, event)
