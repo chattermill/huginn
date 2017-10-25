@@ -67,25 +67,25 @@ describe Agents::ChattermillResponseAgent do
     context 'when send_batch_events is false' do
       it "makes POST requests" do
         expect(@checker).to be_valid
-        @checker.check
+        @checker.receive([@event])
         expect(@requests).to eq(1)
         expect(@sent_requests[:post].length).to eq(1)
       end
 
       it "uses the correct URI" do
-        @checker.check
+        @checker.receive([@event])
         uri = @sent_requests[:post].first.uri.to_s
         expect(uri).to eq("http://localhost:3000/webhooks/responses/")
       end
 
       it "generates the authorization header" do
-        @checker.check
+        @checker.receive([@event])
         auth_header = @sent_requests[:post].first.headers['Authorization']
         expect(auth_header).to eq("Bearer token-123")
       end
 
       it "generates the organization header" do
-        @checker.check
+        @checker.receive([@event])
         org_header = @sent_requests[:post].first.headers['Organization']
         expect(org_header).to eq('foo')
       end
@@ -97,6 +97,7 @@ describe Agents::ChattermillResponseAgent do
 
         @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
                                                           options: @valid_options })
+        @checker.schedule = "every_5m"
         @checker.user = users(:jane)
         @checker.save!
       end
@@ -157,7 +158,7 @@ describe Agents::ChattermillResponseAgent do
     context 'when send_batch_events is false' do
       it "can handle events with id" do
         @checker.options['id'] = '123'
-        @checker.check
+        @checker.receive([@event])
 
         expect(@sent_requests[:patch].length).to eq(1)
         uri = @sent_requests[:patch].first.uri.to_s
@@ -288,6 +289,7 @@ describe Agents::ChattermillResponseAgent do
             expected = { "score" => ["can't be blank", "is not a number"], "source_event" => @event.id }
             expect(error).to eq(expected)
           end
+
         end
       end
     end
@@ -298,6 +300,7 @@ describe Agents::ChattermillResponseAgent do
 
         @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
                                                           options: @valid_options })
+        @checker.schedule = "every_5m"
         @checker.user = users(:jane)
         @checker.save!
 
@@ -333,69 +336,10 @@ describe Agents::ChattermillResponseAgent do
 
   describe "#check" do
     context 'when send_batch_events is false' do
-      it "sends data as a POST request" do
+      it "does not sends data as a POST request" do
         expect {
           @checker.check
-        }.to change { @sent_requests[:post].length }.by(1)
-
-        expected = {
-          'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
-          'user_meta' => user_meta
-        }
-        expect(@sent_requests[:post][0].data).to eq(expected)
-      end
-
-      describe "emitting events" do
-        context "when emit_events is not set to true" do
-          it "does not emit events" do
-            expect {
-              @checker.check
-            }.not_to change { @checker.events.count }
-          end
-        end
-
-        context "when emit_events is set to true" do
-          before do
-            @checker.options['emit_events'] = 'true'
-          end
-
-          it "emits the response status" do
-            expect {
-              @checker.check
-            }.to change { @checker.events.count }.by(1)
-            expect(@checker.events.last.payload['status']).to eq 201
-          end
-
-          it "emits the body" do
-            @checker.check
-            expect(@checker.events.last.payload['body']).to eq '{}'
-          end
-
-          it "emits the response headers capitalized by default" do
-            @checker.check
-            expect(@checker.events.last.payload['headers']).to eq({ 'Content-Type' => 'application/json' })
-          end
-
-          it "emits the source event" do
-            @checker.check
-            expect(@checker.events.last.payload['source_event']).to be_nil
-          end
-        end
-      end
-
-      describe "slack notification" do
-        before do
-          stub(ENV).[]('CHATTERMILL_AUTH_TOKEN') { 'invalid' }
-          stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
-          stub(ENV).[]('SLACK_CHANNEL') { '#mychannel' }
-        end
-
-        it "sends a slack notification" do
-          slack = mock
-          mock(slack).ping('', hash_including({ icon_emoji: ':fire:', channel: '#mychannel' })) { true }
-          mock(Slack::Notifier).new('http://slack.webhook/abc', { username: 'Huginn' }) { slack }
-          @checker.check
-        end
+        }.to change { @sent_requests[:post].length }.by(0)
       end
     end
 
@@ -405,6 +349,7 @@ describe Agents::ChattermillResponseAgent do
 
         @checker = Agents::ChattermillResponseAgent.new({ name: "othername",
                                                           options: @valid_options })
+        @checker.schedule = "every_5m"
         @checker.user = users(:jane)
         @checker.save!
 
@@ -595,25 +540,30 @@ describe Agents::ChattermillResponseAgent do
     it "requires send_batch_events to be true or false" do
       @checker.options['max_events_per_batch'] = "10"
       @checker.options['send_batch_events'] = 'what?'
+      @checker.schedule = "never"
       expect(@checker).not_to be_valid
 
       @checker.options.delete('send_batch_events')
       expect(@checker).to be_valid
 
-      @checker.options['send_batch_events'] = 'true'
+      @checker.options['send_batch_events'] = 'false'
       expect(@checker).to be_valid
 
-      @checker.options['send_batch_events'] = 'false'
+      @checker.schedule = "every_5m"
+      @checker.options['send_batch_events'] = 'true'
       expect(@checker).to be_valid
 
       @checker.options['send_batch_events'] = true
       expect(@checker).to be_valid
+
+
     end
 
     it "should validate max_events_per_batch" do
       @checker.options.delete('max_events_per_batch')
       expect(@checker).to be_valid
       @checker.options['send_batch_events'] = true
+      @checker.schedule = "every_5m"
       expect(@checker).not_to be_valid
       @checker.options['max_events_per_batch'] = ""
       expect(@checker).not_to be_valid
@@ -621,6 +571,17 @@ describe Agents::ChattermillResponseAgent do
       expect(@checker).not_to be_valid
       @checker.options['max_events_per_batch'] = "10"
       expect(@checker).to be_valid
+    end
+
+    it "should validate schedule" do
+      expect(@checker).to be_valid
+      expect(@checker.schedule).to eq("never")
+      @checker.options['send_batch_events'] = 'true'
+      expect(@checker).not_to be_valid
+      @checker.schedule = 'midnight'
+      expect(@checker).to be_valid
+      @checker.options['send_batch_events'] = 'false'
+      expect(@checker).not_to be_valid
     end
   end
 end

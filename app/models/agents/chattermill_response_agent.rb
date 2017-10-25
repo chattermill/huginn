@@ -3,7 +3,7 @@ module Agents
     include WebRequestConcern
     include FormConfigurable
 
-    default_schedule "every_5m"
+    default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
@@ -128,6 +128,14 @@ module Agents
         errors.add(:base, "if provided, send_batch_events must be true or false")
       end
 
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (schedule.blank? || schedule == 'never' )
+        errors.add(:base, "Set a schedule value different than 'Never'")
+      end
+
+      if options.key?('send_batch_events') && !boolify(options['send_batch_events']) && (schedule != 'never' )
+        errors.add(:base, "Schedule must be 'Never'")
+      end
+
       if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (options['max_events_per_batch'].blank? || !options['max_events_per_batch']&.to_i&.positive? )
         errors.add(:base, "The 'max_events_per_batch' option is required and must be an integer greater than 0")
       end
@@ -155,8 +163,6 @@ module Agents
         elsif !queue_in_process? && memory['events']&.length&.positive?
           memory['check_counter'] = (memory['check_counter']&.to_i || 0) + 1
         end
-      else
-        handle outgoing_data, headers(auth_header)
       end
     end
 
