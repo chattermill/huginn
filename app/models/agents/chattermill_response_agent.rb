@@ -128,7 +128,7 @@ module Agents
         errors.add(:base, "if provided, send_batch_events must be true or false")
       end
 
-      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (schedule.blank? || schedule == 'never' )
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && schedule == 'never'
         errors.add(:base, "Set a schedule value different than 'Never'")
       end
 
