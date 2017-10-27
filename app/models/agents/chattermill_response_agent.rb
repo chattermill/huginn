@@ -6,7 +6,7 @@ module Agents
     default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
-    BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
+    BASIC_OPTIONS = %w(comment score data_type data_source created_at user_meta segments)
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "dev.app.chattermill.xyz",
@@ -43,8 +43,8 @@ module Agents
           * `organization_subdomain` - Specify the subdomain for the target organization (e.g `moo` or `hellofresh`).
           * `comment` - Specify the Liquid interpolated expresion to build the Response comment.
           * `score` - Specify the Liquid interpolated expresion to build the Response score.
-          * `kind` - Specify the Liquid interpolated expresion to build the Response kind.
-          * `stream` - Specify the Liquid interpolated expresion to build the Response stream.
+          * `data_type` - Specify the Liquid interpolated expresion to build the Response data_type.
+          * `data_source` - Specify the Liquid interpolated expresion to build the Response data_source.
           * `created_at` - Specify the Liquid interpolated expresion to build the Response created_at date.
           * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
           * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
@@ -76,8 +76,8 @@ module Agents
       {
         'comment' => '{{ data.comment }}',
         'score' => '{{ data.score }}',
-        'kind' => 'nps',
-        'stream' => 'nps_survey',
+        'data_type' => 'nps',
+        'data_source' => 'nps_survey',
         'created_at' => '{{ data.date }}',
         'user_meta' => sample_hash,
         'segments' => sample_hash,
@@ -101,8 +101,8 @@ module Agents
     form_configurable :id
     form_configurable :comment
     form_configurable :score
-    form_configurable :kind
-    form_configurable :stream
+    form_configurable :data_type
+    form_configurable :data_source
     form_configurable :created_at
     form_configurable :user_meta, type: :json, ace: { mode: 'json' }
     form_configurable :segments, type: :json, ace: { mode: 'json' }
@@ -375,7 +375,7 @@ module Agents
       end
 
       def data_type
-        data['kind']
+        data['data_type']
       end
 
       def score

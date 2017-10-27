@@ -230,11 +230,11 @@ describe Agents::ChattermillResponseAgent do
           end
         end
 
-        describe "whith valid kind and score" do
+        describe "whith valid data_type and score" do
           before do
             options = @valid_options.merge(
               'score' => '{{ data.score }}',
-              'kind' => 'csat',
+              'data_type' => 'csat',
               'emit_events' => true
             )
 
@@ -258,7 +258,7 @@ describe Agents::ChattermillResponseAgent do
           before do
             options = @valid_options.merge(
               'score' => '{{ data.score }}',
-              'kind' => 'nps',
+              'data_type' => 'nps',
               'emit_events' => true
             )
 
