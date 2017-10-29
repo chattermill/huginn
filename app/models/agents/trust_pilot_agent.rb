@@ -8,7 +8,7 @@ module Agents
     UNIQUENESS_LOOK_BACK = 500
 
     can_dry_run!
-    no_bulk_receive!
+    cannot_receive_events!
 
     default_schedule 'every_1d'
 
@@ -67,8 +67,6 @@ module Agents
     end
 
     def validate_options
-      super
-
       %w[api_key api_secret].each do |key|
         errors.add(:base, "The '#{key}' option is required.") if options[key].blank?
       end
@@ -76,6 +74,12 @@ module Agents
       if options['business_units_ids'].blank?
         errors.add(:base, "The 'business_units_ids' option is required.")
       end
+
+      if options['expected_update_period_in_days'].blank?
+        errors.add(:base, "The 'expected_update_period_in_days' option is required.")
+      end
+
+      validate_web_request_options!
     end
 
     def check
