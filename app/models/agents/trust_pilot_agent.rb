@@ -5,6 +5,7 @@ module Agents
 
     HTTP_METHOD = "get"
     TRUSTPILOT_URL_BASE = "https://api.trustpilot.com/v1"
+    UNIQUENESS_LOOK_BACK = 500
 
     can_dry_run!
     no_bulk_receive!
@@ -20,6 +21,7 @@ module Agents
           * `api_key` - TrustPilot Api Key.
           * `api_secret` - TrustPilot Api Secret.
           * `business_units_ids` - Specify the list of Business Units IDs for which Huginn will retrieve reviews.
+          * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
           * `expected_update_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
     end
@@ -48,6 +50,7 @@ module Agents
     form_configurable :api_key
     form_configurable :api_secret
     form_configurable :business_units_ids
+    form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :expected_update_period_in_days
 
     def working?
@@ -58,6 +61,7 @@ module Agents
       {
         'api_key' => '{% credential TrustPilotApiKey %}',
         'api_secret' => '{% credential TrustPilotApiSecret %}',
+        'mode' => 'on_change',
         'expected_update_period_in_days' => '1'
       }
     end
@@ -77,8 +81,10 @@ module Agents
     def check
       reviews = business_units.map(&:parse_reviews).flatten
       reviews.each do |review|
-        log "Storing new result for '#{name}': #{review.inspect}"
-        create_event payload: review
+        if store_payload!(review)
+          log "Storing new result for '#{name}': #{review.inspect}"
+          create_event payload: review
+        end
       end
     end
 
@@ -86,6 +92,26 @@ module Agents
 
     def headers(_ = {})
       { "apikey" => "#{interpolated['api_key']}" }
+    end
+
+    def store_payload!(review)
+      case interpolated['mode'].presence
+      when 'on_change'
+        review_id = review["id"]
+        if  old_events.find { |event| event.payload["id"] == review_id }
+          false
+        else
+          true
+        end
+      when 'all', 'merge', ''
+        true
+      else
+        raise "Illegal options[mode]: #{interpolated['mode']}"
+      end
+    end
+
+    def old_events
+      @old_events ||= events.order('id desc').limit(UNIQUENESS_LOOK_BACK)
     end
 
     def business_units
@@ -112,6 +138,5 @@ module Agents
 
       JSON.parse(response.body)
     end
-
   end
 end
