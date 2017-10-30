@@ -261,7 +261,10 @@ module Agents
 
     def extract_comment(response)
       return response.comment if response.respond_to?(:comment)
-      response.data[:comment] if response.respond_to?(:data) && response.data.is_a?(Hash)
+
+      if response.respond_to?(:data) && response.data.is_a?(Hash)
+        response.data.find { |k, v| k.to_s.start_with?('comment') && v.present? }&.last
+      end
     end
 
     def extract_score(response)
