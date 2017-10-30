@@ -38,7 +38,7 @@ class SurveyMonkeyParser
     attr_reader :data
 
     def questions
-      @questions ||= data['pages'].map { |page| page['questions'] }.flatten
+      @questions ||= (data['pages'] || []).map { |page| page['questions'] }.flatten
     end
   end
 
