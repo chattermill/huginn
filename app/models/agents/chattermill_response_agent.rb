@@ -45,6 +45,7 @@ module Agents
           * `score` - Specify the Liquid interpolated expresion to build the Response score.
           * `kind` - Specify the Liquid interpolated expresion to build the Response kind.
           * `stream` - Specify the Liquid interpolated expresion to build the Response stream.
+          * `dataset_id` - Specify the Liquid interpolated expresion to build the Response dataset_id.
           * `created_at` - Specify the Liquid interpolated expresion to build the Response created_at date.
           * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
           * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
@@ -103,6 +104,7 @@ module Agents
     form_configurable :score
     form_configurable :kind
     form_configurable :stream
+    form_configurable :dataset_id
     form_configurable :created_at
     form_configurable :user_meta, type: :json, ace: { mode: 'json' }
     form_configurable :segments, type: :json, ace: { mode: 'json' }
