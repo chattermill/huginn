@@ -22,8 +22,10 @@ describe Agents::ChattermillResponseAgent do
       'user_meta' => user_meta.to_json,
       'extra_fields' => '{}',
       'send_batch_events' => 'false',
-      'max_events_per_batch' => 2
+      'max_events_per_batch' => 2,
+      'dataset_id' => 1
     }
+
     @valid_params = {
       name: "somename",
       options: @valid_options
@@ -182,13 +184,15 @@ describe Agents::ChattermillResponseAgent do
         expected = {
           'comment' => 'Test Comment',
           'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
-          'user_meta' => user_meta
+          'user_meta' => user_meta,
+          'dataset_id' => 1
         }
         expect(@sent_requests[:post][0].data).to eq(expected)
 
         expected = {
           'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => 'My Segment' } },
-          'user_meta' => user_meta
+          'user_meta' => user_meta,
+          'dataset_id' => 1
         }
         expect(@sent_requests[:post][1].data).to eq(expected)
       end
@@ -462,9 +466,18 @@ describe Agents::ChattermillResponseAgent do
       expect(@checker).to be_valid
     end
 
-    it "should validate presence of post_url" do
+    it "should validate presence of subdomain" do
       @checker.options['organization_subdomain'] = ""
       expect(@checker).not_to be_valid
+    end
+
+    it "should validate presence of dataset_id for new agents" do
+      agent = Agents::ChattermillResponseAgent.new(@valid_params)
+      agent.options['dataset_id'] = ""
+      expect(agent).not_to be_valid
+
+      @checker.options['dataset_id'] = ""
+      expect(@checker).to be_valid
     end
 
     it "should validate presence of expected_receive_period_in_days" do
@@ -555,8 +568,6 @@ describe Agents::ChattermillResponseAgent do
 
       @checker.options['send_batch_events'] = true
       expect(@checker).to be_valid
-
-
     end
 
     it "should validate max_events_per_batch" do

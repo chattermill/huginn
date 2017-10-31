@@ -118,6 +118,11 @@ module Agents
       if options['organization_subdomain'].blank?
         errors.add(:base, "The 'organization_subdomain' option is required.")
       end
+
+      if options['dataset_id'].blank? && new_record?
+        errors.add(:base, "The 'dataset_id' option is required.")
+      end
+
       if options['expected_receive_period_in_days'].blank?
         errors.add(:base, "The 'expected_receive_period_in_days' option is required.")
       end
