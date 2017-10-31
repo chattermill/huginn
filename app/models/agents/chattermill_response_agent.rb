@@ -6,7 +6,7 @@ module Agents
     default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
-    BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
+    BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments dataset_id)
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "dev.app.chattermill.xyz",
@@ -45,6 +45,7 @@ module Agents
           * `score` - Specify the Liquid interpolated expresion to build the Response score.
           * `kind` - Specify the Liquid interpolated expresion to build the Response kind.
           * `stream` - Specify the Liquid interpolated expresion to build the Response stream.
+          * `dataset_id` - Specify the Liquid interpolated expresion to build the Response dataset_id. This takes precedence over `kind` and `stream`.
           * `created_at` - Specify the Liquid interpolated expresion to build the Response created_at date.
           * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
           * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
@@ -103,6 +104,7 @@ module Agents
     form_configurable :score
     form_configurable :kind
     form_configurable :stream
+    form_configurable :dataset_id
     form_configurable :created_at
     form_configurable :user_meta, type: :json, ace: { mode: 'json' }
     form_configurable :segments, type: :json, ace: { mode: 'json' }
@@ -116,6 +118,11 @@ module Agents
       if options['organization_subdomain'].blank?
         errors.add(:base, "The 'organization_subdomain' option is required.")
       end
+
+      if options['dataset_id'].blank? && new_record?
+        errors.add(:base, "The 'dataset_id' option is required.")
+      end
+
       if options['expected_receive_period_in_days'].blank?
         errors.add(:base, "The 'expected_receive_period_in_days' option is required.")
       end
