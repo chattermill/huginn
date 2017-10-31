@@ -6,7 +6,7 @@ module Agents
     default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
-    BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments)
+    BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments dataset_id)
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "dev.app.chattermill.xyz",
@@ -45,7 +45,7 @@ module Agents
           * `score` - Specify the Liquid interpolated expresion to build the Response score.
           * `kind` - Specify the Liquid interpolated expresion to build the Response kind.
           * `stream` - Specify the Liquid interpolated expresion to build the Response stream.
-          * `dataset_id` - Specify the Liquid interpolated expresion to build the Response dataset_id.
+          * `dataset_id` - Specify the Liquid interpolated expresion to build the Response dataset_id. This takes precedence over `kind` and `stream`.
           * `created_at` - Specify the Liquid interpolated expresion to build the Response created_at date.
           * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
           * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
