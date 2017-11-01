@@ -13,7 +13,7 @@ module Agents
 
     description do
       <<-MD
-        TrustPilot Agent fetches reviews from the TrustPilot API given client's access details and a list of Business Unit.
+        TrustPilot Agent fetches reviews from the TrustPilot API private reviews endpoint, given client's access details and a list of Business Unit.
 
         Options:
 
@@ -21,6 +21,9 @@ module Agents
           * `api_secret` - TrustPilot Api Secret.
           * `business_units_ids` - Specify the list of Business Units IDs for which Huginn will retrieve reviews.
           * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
+          * `access_token` - Specify the TrustPilot access token.
+          * `refresh_token` - Specify the TrustPilot refresh token.
+          * `expires_at` - Specify refresh token expiration datetime.
           * `expected_update_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
     end
@@ -28,9 +31,9 @@ module Agents
     event_description <<-MD
       Events look like this:
         {
-          "id": "59883aebfba87f08a8274e07",
-          "stars": 5,
-          "text": "Hello World",
+          "response_id": "59883aebfba87f08a8274e07",
+          "score": 5,
+          "comment": "Hello World",
           "title": "Hello World …",
           "language": "en",
           "created_at": "2017-08-07T10:03:23Z",
@@ -42,7 +45,9 @@ module Agents
           "report_data": nil,
           "compliance_labels": [],
           "consumer_name": "Jeffry Taraca",
-          "consumer_location": "Kirkeby, DK"
+          "consumer_location": "Kirkeby, DK",
+          "email": "jhon@email.com",
+          "user_reference_id": "123"
         }
     MD
 
@@ -64,6 +69,7 @@ module Agents
         'api_key' => '{% credential TrustPilotApiKey %}',
         'api_secret' => '{% credential TrustPilotApiSecret %}',
         'mode' => 'on_change',
+        'expires_at' => Time.now.iso8601,
         'expected_update_period_in_days' => '1'
       }
     end
@@ -146,7 +152,7 @@ module Agents
       body = { grant_type: 'refresh_token',
                refresh_token: interpolated['refresh_token'] }
       response = faraday.run_request(:post, refresh_token_url, body, basic_auth_headers)
-      
+
       if response.status == 200
         data = JSON.parse(response.body)
         expires_at = (Time.now + data['expires_in'].to_i).iso8601
