@@ -12,9 +12,9 @@ class TrustPilotParser
   end
 
   class ReviewParser
-    ATTRIBUTES = %w[id stars text title language created_at updated_at company_reply
+    ATTRIBUTES = %w[response_id score comment title language created_at updated_at company_reply
                     is_verified number_of_likes status report_data compliance_labels
-                    consumer_name consumer_location].freeze
+                    consumer_name consumer_location email user_reference_id].freeze
     attr_reader :data
 
     def initialize(data)
@@ -34,6 +34,26 @@ class TrustPilotParser
       else
         send(key)
       end
+    end
+
+    def response_id
+      data['id']
+    end
+
+    def score
+      data['stars']
+    end
+
+    def comment
+      data['text']
+    end
+
+    def email
+      data['referralEmail']
+    end
+
+    def user_reference_id
+      data['referenceId']
     end
 
     def consumer_name

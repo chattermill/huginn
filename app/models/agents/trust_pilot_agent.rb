@@ -3,9 +3,7 @@ module Agents
     include WebRequestConcern
     include FormConfigurable
 
-    CHATTERMILL_HUGINN_DOMAIN = "https://huginn.chattermill.xyz"
     TRUSTPILOT_URL_BASE = "https://api.trustpilot.com/v1"
-    TRUSTPILOT_URL_AUTHENTICATE = "https://authenticate.trustpilot.com"
     UNIQUENESS_LOOK_BACK = 500
 
     can_dry_run!
@@ -52,10 +50,9 @@ module Agents
     form_configurable :api_secret
     form_configurable :business_units_ids
     form_configurable :mode, type: :array, values: %w(all on_change merge)
-    form_configurable :secret
     form_configurable :access_token
     form_configurable :refresh_token
-    form_configurable :access_token_expires_at
+    form_configurable :expires_at
     form_configurable :expected_update_period_in_days
 
     def working?
@@ -67,57 +64,26 @@ module Agents
         'api_key' => '{% credential TrustPilotApiKey %}',
         'api_secret' => '{% credential TrustPilotApiSecret %}',
         'mode' => 'on_change',
-        'secret' => SecureRandom.hex(12),
         'expected_update_period_in_days' => '1'
       }
     end
 
     def validate_options
-      %w[api_key api_secret].each do |key|
+      %w[api_key api_secret access_token refresh_token expires_at business_units_ids mode expected_update_period_in_days].each do |key|
         errors.add(:base, "The '#{key}' option is required.") if options[key].blank?
-      end
-
-      if options['secret'].blank?
-        errors.add(:base, "Must specify a secret for 'Authenticating' requests")
-      end
-
-      if options['business_units_ids'].blank?
-        errors.add(:base, "The 'business_units_ids' option is required.")
-      end
-
-      if options['expected_update_period_in_days'].blank?
-        errors.add(:base, "The 'expected_update_period_in_days' option is required.")
       end
 
       validate_web_request_options!
     end
 
-    def headers(_ = {})
-      { "Authorization" => "Bearer #{access_token}"}
-    end
-
     def check
       prepare_request!
-      if authorized?
-        reviews = business_units.map(&:parse_reviews).flatten
-        reviews.each do |review|
-          if store_payload!(review)
-            log "Storing new result for '#{name}': #{review.inspect}"
-            create_event payload: review
-          end
+      reviews = business_units.map(&:parse_reviews).flatten
+      reviews.each do |review|
+        if store_payload!(review)
+          create_event payload: review
         end
-      else
-        log "Not Authorized"
       end
-    end
-
-    def receive_web_request(params, method, format)
-      log "Params: #{params} | Method: #{method} | format: #{format}"
-
-      secret = params.delete('secret')
-      return ["Not Authorized", 401] unless secret == interpolated['secret']
-
-      # TODO get access_token, refresh_token and expires_at
     end
 
     private
@@ -134,13 +100,13 @@ module Agents
     end
 
     def fetch_reviews(business_unit_id)
-      log "Fetching business unit: ##{business_unit_id} private reviews"
       url = "#{TRUSTPILOT_URL_BASE}/private/business-units/#{business_unit_id}/reviews"
       fetch_resource(url)
     end
 
     def fetch_resource(uri)
-      response = faraday.get(uri)
+      response = faraday.run_request(:get, uri, nil, auth_headers)
+
       unless response.success?
         log "Fetch reviews Failed (#{response.status}) #{response.body}"
         return {}
@@ -170,42 +136,32 @@ module Agents
     end
 
     def prepare_request!
-      if authorized?
-        expires_at = interpolated['access_token_expires_at']
-        if expires_at && Time.now > expires_at.to_datetime
-          refresh_token!
-        end
-      else
-        trustpilot_authenticate!
+      expires_at = interpolated['expires_at']
+      if expires_at && Time.now > expires_at.to_datetime
+        refresh_token!
       end
     end
 
     def refresh_token!
-      log "Refresh token"
       body = { grant_type: 'refresh_token',
                refresh_token: interpolated['refresh_token'] }
       response = faraday.run_request(:post, refresh_token_url, body, basic_auth_headers)
-
-      data = JSON.parse(response.body)
+      
       if response.status == 200
+        data = JSON.parse(response.body)
         expires_at = (Time.now + data['expires_in'].to_i).iso8601
-        new_options = options.merge(access_token_expires_at: expires_at,
-                                    access_token: data['access_token'],
-                                    refresh_token: data['refresh_token'])
+        options.merge!(expires_at: expires_at,
+                       access_token: data['access_token'],
+                       refresh_token: data['refresh_token'])
 
-        update(options: new_options)
+        save!
       else
         log "Refresh token failed (#{response.status}) - #{response.body}"
       end
     end
 
-    def trustpilot_authenticate!
-      response = faraday.get(authenticate_url, authenticate_options)
-      log "Failed authenticate (#{response.status}) #{response.body}" unless response.status == 200
-    end
-
-    def authorized?
-      interpolated['access_token'].present?
+    def auth_headers
+      { "Authorization" => "Bearer #{access_token}"}
     end
 
     def basic_auth_headers
@@ -217,24 +173,8 @@ module Agents
       Base64.strict_encode64("#{api_key}:#{api_secret}")
     end
 
-    def authenticate_options
-      {
-        client_id: api_key,
-        redirect_uri: webhook_redirect_url,
-        response_type: 'code'
-      }
-    end
-
-    def authenticate_url
-      TRUSTPILOT_URL_AUTHENTICATE
-    end
-
     def refresh_token_url
       "#{TRUSTPILOT_URL_BASE}/oauth/oauth-business-users-for-applications/refresh"
-    end
-
-    def webhook_redirect_url
-      "#{CHATTERMILL_HUGINN_DOMAIN}/users/#{user_id}/web_requests/#{id}/#{interpolated['secret']}"
     end
 
     def access_token

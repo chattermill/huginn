@@ -9,7 +9,10 @@ describe Agents::TrustPilotAgent do
         api_secret: 'some_api_secret',
         expected_update_period_in_days: 1,
         business_units_ids: '468302bb00006400050000a5',
-        mode: 'on_change'
+        mode: 'on_change',
+        access_token: 'some_access_token',
+        refresh_token: 'some_refresh_token',
+        expires_at: 1.days.from_now
       }
     }
 
@@ -55,8 +58,28 @@ describe Agents::TrustPilotAgent do
       expect(@checker).not_to be_valid
     end
 
+    it "should validate presence of access token" do
+      @checker.options[:access_token] = nil
+      expect(@checker).not_to be_valid
+    end
+
+    it "should validate presence of refresh token" do
+      @checker.options[:refresh_token] = nil
+      expect(@checker).not_to be_valid
+    end
+
+    it "should validate presence of expires at" do
+      @checker.options[:expires_at] = nil
+      expect(@checker).not_to be_valid
+    end
+
     it "should validate presence of business_units_ids" do
       @checker.options[:business_units_ids] = nil
+      expect(@checker).not_to be_valid
+    end
+
+    it "should validate presence of mode" do
+      @checker.options[:mode] = nil
       expect(@checker).not_to be_valid
     end
 
@@ -69,9 +92,15 @@ describe Agents::TrustPilotAgent do
   describe "#check" do
     before(:each) do
       stub_request(:get, /reviews$/).to_return(
-        :body => File.read(Rails.root.join("spec/data_fixtures/trustpilot_reviews.json")),
-        :status => 200,
-        :headers => {"Content-Type" => "text/json"}
+        body: File.read(Rails.root.join("spec/data_fixtures/trustpilot_reviews.json")),
+        status: 200,
+        headers: { "Content-Type" => "text/json" }
+      )
+
+      stub_request(:post, /refresh/).to_return(
+        body: File.read(Rails.root.join("spec/data_fixtures/trustpilot_refresh_token.json")),
+        status: 200,
+        headers: { "Content-Type" => "text/json" }
       )
     end
 
@@ -80,9 +109,9 @@ describe Agents::TrustPilotAgent do
     end
 
     it "emits review data" do
-      expected = { "id": "504e1c59000064000227282c",
-                   "stars": 4,
-                   "text": "De har styr på det, fungerer godt.",
+      expected = { "response_id": "504e1c59000064000227282c",
+                   "score": 4,
+                   "comment": "De har styr på det, fungerer godt.",
                    "title": "Godt",
                    "language": "da",
                    "created_at": "2012-09-10T16:59:05Z",
@@ -94,8 +123,9 @@ describe Agents::TrustPilotAgent do
                    "report_data": nil,
                    "compliance_labels": [],
                    "consumer_name": "T.T",
-                   "consumer_location": "kbh, DK"
-                 }.stringify_keys!
+                   "consumer_location": "kbh, DK",
+                   "email": "jhon@email.com",
+                   "user_reference_id": "123" }.stringify_keys!
       @checker.check
       expect(@checker.events.count).to eq(3)
       expect(@checker.events.first.payload).to eq(expected)
@@ -108,6 +138,21 @@ describe Agents::TrustPilotAgent do
       other_checker = Agents::TrustPilotAgent.first
       other_checker.check
       expect(other_checker.events.count).to eq(3)
+    end
+
+    it "refresh token if expired" do
+      expect(@checker.options['expires_at'].to_datetime > Time.now).to be true
+
+      three_days_from_now = 3.days.from_now
+      stub(Time).now { three_days_from_now }
+      expect(@checker.options['expires_at'].to_datetime > Time.now).to be false
+
+      @checker.check
+      @checker.save!
+
+      expect(@checker.reload.options['refresh_token']).to eq('EEfgro79v00TIhKMA9uvVqFmlGM6zN9m')
+      expect(@checker.options['access_token']).to eq('NOnI0OxB8S5fqbDZoYP17maEsYSg')
+      expect(@checker.options['expires_at'].to_datetime > Time.now).to be true
     end
   end
 end
