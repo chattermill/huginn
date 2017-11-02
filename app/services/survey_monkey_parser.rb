@@ -33,6 +33,14 @@ class SurveyMonkeyParser
       questions.find { |q| q['id'] == id }
     end
 
+    def score_keys
+      @score_key ||= (data['score_question_ids'] || "text").split(',')
+    end
+
+    def comment_keys
+      @comment_key ||= (data['comment_question_ids'] || "text").split(',')
+    end
+
     private
 
     attr_reader :data
@@ -89,7 +97,9 @@ class SurveyMonkeyParser
     end
 
     def parsed_score_answer
-      score_options.find { |c| c['id'] == score_answer_given }['text'].gsub(/[^0-9]/, '').to_i
+      choice = score_options.find { |c| c['id'] == score_answer_given }
+      key = survey.score_keys.find {|k| choice[k] }
+      choice[key].to_s.gsub(/[^0-9]/, '').to_i
     end
 
     def comment_question
@@ -101,7 +111,8 @@ class SurveyMonkeyParser
     end
 
     def parsed_comment_answer
-      comment_answer_given['text']
+      key = survey.comment_keys.find {|k| comment_answer_given[k] }
+      comment_answer_given[key]
     end
   end
 end
