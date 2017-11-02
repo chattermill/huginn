@@ -37,15 +37,6 @@ module Agents
           "title": "Hello World …",
           "language": "en",
           "created_at": "2017-08-07T10:03:23Z",
-          "updated_at": "2017-08-07T10:03:23Z,
-          "company_reply": nil,
-          "is_verified": false,
-          "number_of_likes": 0,
-          "status": "active",
-          "report_data": nil,
-          "compliance_labels": [],
-          "consumer_name": "Jeffry Taraca",
-          "consumer_location": "Kirkeby, DK",
           "email": "jhon@email.com",
           "user_reference_id": "123"
         }
