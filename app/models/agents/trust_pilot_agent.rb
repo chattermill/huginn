@@ -124,12 +124,7 @@ module Agents
     def store_payload!(review)
       case interpolated['mode'].presence
       when 'on_change'
-        review_id = review["id"]
-        if  old_events.find { |event| event.payload["id"] == review_id }
-          false
-        else
-          true
-        end
+        old_events.find { |event| event.payload["id"] == review["id"] }.blank?
       when 'all', 'merge', ''
         true
       else
