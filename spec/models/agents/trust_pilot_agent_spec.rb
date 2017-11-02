@@ -115,15 +115,6 @@ describe Agents::TrustPilotAgent do
                    "title": "Godt",
                    "language": "da",
                    "created_at": "2012-09-10T16:59:05Z",
-                   "updated_at": nil,
-                   "company_reply": nil,
-                   "is_verified": false,
-                   "number_of_likes": 0,
-                   "status": "active",
-                   "report_data": nil,
-                   "compliance_labels": [],
-                   "consumer_name": "T.T",
-                   "consumer_location": "kbh, DK",
                    "email": "jhon@email.com",
                    "user_reference_id": "123" }.stringify_keys!
       @checker.check
