@@ -28,6 +28,9 @@ module Agents
           * `api_token` - Specify the SurveyMonkey API token for authentication.
           * `survey_ids` - Specify the list of survey IDs for which Huginn will retrieve responses.
           * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
+          * `guess_mode` - Let the agent try to figure out the score question and the comment question automatically.
+          * `score_question_ids` - Hard-code the comma separated list of ids of the score questions (agent will pick the first one present) if `guess_mode` is off
+          * `comment_question_ids` - Hard-code he comma separated list of ids of the comment questions (agent will pick the first one present) if `guess_mode` is off
           * `expected_update_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
     end
@@ -48,7 +51,8 @@ module Agents
       {
         'api_token' => '{% credential SurveyMonkeyToken %}',
         'expected_update_period_in_days' => '2',
-        'mode' => 'on_change'
+        'mode' => 'on_change',
+        'guess_mode' => true,
       }
     end
 
@@ -62,6 +66,9 @@ module Agents
 
     form_configurable :api_token
     form_configurable :survey_ids
+    form_configurable :guess_mode, type: :boolean
+    form_configurable :score_question_ids
+    form_configurable :comment_question_ids
     form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :expected_update_period_in_days
 
@@ -78,6 +85,11 @@ module Agents
 
       if options['mode'].present?
         errors.add(:base, "mode must be set to on_change, all or merge") unless %w[on_change all merge].include?(options['mode'])
+      end
+
+      if options.key?('guess_mode') && !boolify(options['guess_mode'])
+        errors.add(:base, "score_question_ids option is required") if options['score_question_ids'].blank?
+        errors.add(:base, "comment_question_ids option is required") if options['comment_question_ids'].blank?
       end
 
       validate_web_request_options!
@@ -133,7 +145,10 @@ module Agents
       @surveys ||= survey_ids.map do |survey_id|
         survey = fetch_survey_details(survey_id)
         survey['responses'] = fetch_survey_responses(survey_id)
-
+        if boolify(interpolated['guess_mode']) == false
+          survey['score_question_ids'] = interpolated['score_question_ids']
+          survey['comment_question_ids'] = interpolated['comment_question_ids']
+        end
         SurveyMonkeyParser.new(survey)
       end
     end
