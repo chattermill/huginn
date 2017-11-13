@@ -342,7 +342,7 @@ module Agents
     def send_slack_notification(response, event)
       link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
       source_event_link = "<https://huginn.chattermill.xyz/events/#{event.id}|Source event>"
-      parsed_body = JSON.parse(response.body) rescue ""
+      parsed_body = JSON.parse(response.body) rescue response.body
 
       description = "```#{parsed_body}```\n#{source_event_link} | #{link}"
 
