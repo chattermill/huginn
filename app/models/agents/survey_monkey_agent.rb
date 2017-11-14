@@ -52,7 +52,7 @@ module Agents
         'api_token' => '{% credential SurveyMonkeyToken %}',
         'expected_update_period_in_days' => '2',
         'mode' => 'on_change',
-        'guess_mode' => true,
+        'guess_mode' => 'true'
       }
     end
 
