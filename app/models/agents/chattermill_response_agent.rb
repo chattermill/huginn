@@ -9,7 +9,7 @@ module Agents
     BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments dataset_id)
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
-      production: "dev.app.chattermill.xyz",
+      production: "app.chattermill.xyz",
       development: "lvh.me:3000",
       test: "localhost:3000"
     }
