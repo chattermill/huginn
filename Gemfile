@@ -62,8 +62,8 @@ gem 'tumblr_client', github: 'albertsun/tumblr_client', branch: 'master', ref: '
 gem 'omniauth-tumblr', '~> 1.2'
 
 # Dropbox Agents
-gem 'dropbox-api'
-gem 'omniauth-dropbox'
+gem 'dropbox-api', github: 'dsander/dropbox-api', ref: '86cb7b5a1254dc5b054de7263835713c4c1018c7'
+gem 'omniauth-dropbox-oauth2', github: 'bamorim/omniauth-dropbox-oauth2', ref: '35046706fb781ed3b57dfb9c3cd44ed0f3d3f8ea'
 
 # UserLocationAgent
 gem 'haversine'
@@ -123,7 +123,7 @@ gem 'font-awesome-sass', '~> 4.7.0'
 gem 'foreman', '~> 0.63.0'
 gem 'geokit', '~> 1.8.4'
 gem 'geokit-rails', '~> 2.2.0'
-gem 'hashie', '= 3.0.0'
+gem 'hashie', '= 3.5.6'
 gem 'httparty', '~> 0.13'
 gem 'httmultiparty', '~> 0.3.16'
 gem 'jquery-rails', '~> 4.2.1'
@@ -151,9 +151,9 @@ gem 'uglifier', '~> 2.7.2'
 group :development do
   gem 'better_errors', '~> 1.1'
   gem 'binding_of_caller'
-  gem 'guard', '~> 2.13.0'
+  gem 'guard', '~> 2.14.1'
   gem 'guard-livereload', '~> 2.5.1'
-  gem 'guard-rspec', '~> 4.6.4'
+  gem 'guard-rspec', '~> 4.7.3'
   gem 'rack-livereload', '~> 0.3.16'
   gem 'letter_opener_web', '~> 1.3.1'
   gem 'web-console', '>= 3.3.0'
@@ -164,8 +164,8 @@ group :development do
 
   if_true(ENV['SPRING']) do
     gem 'spring-commands-rspec', '~> 1.0.4'
-    gem 'spring', '~> 1.7.2'
-    gem 'spring-watcher-listen', '~> 2.0.0'
+    gem 'spring', '~> 2.0.2'
+    gem 'spring-watcher-listen', '~> 2.0.1'
   end
 
   group :test do

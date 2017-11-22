@@ -32,30 +32,30 @@ matrix:
     - env: RSPEC_TASK=spec:features
     - env: BACKGROUND_JOB_PROCESSOR=sidekiq
   include:
-    - rvm: 2.4.1
+    - rvm: 2.4.2
       env: DATABASE_ADAPTER=mysql2 DOCKER_IMAGE=cantino/huginn-single-process DOCKERFILE=docker/single-process/Dockerfile
-    - rvm: 2.4.1
+    - rvm: 2.4.2
       env: DATABASE_ADAPTER=mysql2 DOCKER_IMAGE=cantino/huginn DOCKERFILE=docker/multi-process/Dockerfile
-    - rvm: 2.4.1
+    - rvm: 2.4.2
       env: DATABASE_ADAPTER=mysql2 DOCKER_IMAGE=huginn/huginn-single-process DOCKERFILE=docker/single-process/Dockerfile
-    - rvm: 2.4.1
+    - rvm: 2.4.2
       env: DATABASE_ADAPTER=mysql2 DOCKER_IMAGE=huginn/huginn DOCKERFILE=docker/multi-process/Dockerfile
-    - rvm: 2.4.1
+    - rvm: 2.4.2
       env: RSPEC_TASK=spec:features DATABASE_ADAPTER=mysql2
-    - rvm: 2.4.1
+    - rvm: 2.4.2
       env: RSPEC_TASK=spec:features DATABASE_ADAPTER=postgresql DATABASE_USERNAME=postgres
-    - rvm: 2.3.4
+    - rvm: 2.3.5
       env: RSPEC_TASK=spec:features DATABASE_ADAPTER=mysql2
-    - rvm: 2.3.4
+    - rvm: 2.3.5
       env: RSPEC_TASK=spec:features DATABASE_ADAPTER=postgresql DATABASE_USERNAME=postgres
     - rvm: 2.3.1
       env: BACKGROUND_JOB_PROCESSOR=sidekiq DATABASE_ADAPTER=mysql2
     - rvm: 2.3.1
       env: BACKGROUND_JOB_PROCESSOR=sidekiq DATABASE_ADAPTER=postgresql DATABASE_USERNAME=postgres
 rvm:
-- 2.2
-- 2.3.4
-- 2.4.1
+- 2.2.8
+- 2.3.5
+- 2.4.2
 cache: bundler
 bundler_args: --without development production
 script:
