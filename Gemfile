@@ -72,7 +72,8 @@ gem 'haversine'
 gem 'usabilla_api', github: 'chattermill/usabilla_api', branch: 'md-usability-improvements'
 
 # TypeformAgent
-gem 'typeform', github: 'chattermill/typeform', branch: 'md-usability-improvements'
+gem 'typeform', github: 'chattermill/typeform', branch: 'nm-new-api-support'
+
 # DelightedAgent
 gem 'delighted'
 

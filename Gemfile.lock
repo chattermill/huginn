@@ -45,10 +45,10 @@ GIT
 
 GIT
   remote: https://github.com/chattermill/typeform.git
-  revision: 2e75fa9103b2e2260fd3264894c2f0c49e5f59ca
-  branch: md-usability-improvements
+  revision: 53793b0ac360caa4ff3740f4917f157e2ce5c84c
+  branch: nm-new-api-support
   specs:
-    typeform (0.0.2)
+    typeform (0.1.0)
       hashie (>= 3.0.0)
       httparty
       json
@@ -793,4 +793,4 @@ RUBY VERSION
    ruby 2.3.1p112
 
 BUNDLED WITH
-   1.14.6
+   1.15.3
