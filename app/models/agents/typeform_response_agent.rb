@@ -31,7 +31,9 @@ module Agents
         * `score_question_ids` - Hard-code the comma separated list of ids of the score questions (agent will pick the first one present) if `guess_mode` is off
         * `comment_question_ids` - Hard-code he comma separated list of ids of the comment questions (agent will pick the first one present) if `guess_mode` is off
         * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
-        * `limit` - Number of responses to fetch per run, better to set to a low number nad have the agent run more often.
+        * `limit` - Number of responses to fetch per run, better to set to a low number and have the agent run more often.
+        * `since` - Specify date and time, to limit request to responses submitted since the specified date and time, e.g. `8 hours ago`, `may 27th` [more valid formats](https://github.com/mojombo/chronic).
+        * `until` - Specify date and time, to limit request to responses submitted until the specified date and time, e.g. `1979-05-27 05:00:00`, `January 5 at 7pm` [more valid formats](https://github.com/mojombo/chronic).
     MD
 
     event_description <<-MD
@@ -104,6 +106,8 @@ module Agents
     form_configurable :score_question_ids
     form_configurable :comment_question_ids
     form_configurable :limit
+    form_configurable :since
+    form_configurable :until
     form_configurable :mode, type: :array, values: %w[all on_change merge]
     form_configurable :expected_update_period_in_days
 
@@ -122,6 +126,13 @@ module Agents
 
       %w[access_token form_id].each do |key|
         errors.add(:base, "The '#{key}' option is required.") if options[key].blank?
+      end
+
+      %w[since until].each do |key|
+        if options[key].present?
+          date = Chronic.parse(options[key])
+          errors.add(:base, "The '#{key}' option has an invalid format") if date.nil?
+        end
       end
     end
 
@@ -208,10 +219,19 @@ module Agents
     end
 
     def params
-      {
-        "order_by[]" => 'date_submit,desc',
-        'limit' => interpolated['limit']
+      hash = {
+        'order_by[]' => 'date_submit,desc',
+        'page_size' => interpolated['limit']
       }
+
+      %w[since until].each do |key|
+        if interpolated[key].present?
+          date = Chronic.parse(interpolated[key])
+          hash.merge!(key => date.strftime('%Y-%m-%dT%H:%M:%S')) unless date.nil?
+        end
+      end
+
+      hash
     end
 
     def typeform
