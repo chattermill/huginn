@@ -1,4 +1,5 @@
 # frozen_string_literal: true
+require 'chronic'
 
 module Agents
   class TypeformResponseAgent < Agent
