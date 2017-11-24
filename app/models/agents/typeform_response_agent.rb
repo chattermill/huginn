@@ -100,7 +100,7 @@ module Agents
             "country_id": "25",
             "tc": "2"
           },
-          "mappings": {
+          "mapped_variables": {
             "city_id": "London"
             "country_id": "UK",
           }
