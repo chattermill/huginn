@@ -69,7 +69,7 @@ module Agents
     end
 
     def check
-      log "Fetched #{reviews.size} reviews"
+      log "Fetched #{reviews&.size} reviews"
       if reviews.any?
         old_events = previous_payloads reviews.size
         reviews.each do |response|
@@ -135,7 +135,7 @@ module Agents
     end
 
     def reviews
-      @reviews ||= fetch_resource["reviews"]
+      @reviews ||= fetch_resource["reviews"] || {}
     end
 
     def fetch_resource
@@ -162,7 +162,7 @@ module Agents
     end
 
     def headers(_ = {})
-      { "X-Client-Key" => options['client_key'] }
+      { "X-Client-Key" => interpolated['client_key'] }
     end
 
   end
