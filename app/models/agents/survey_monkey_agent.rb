@@ -52,6 +52,8 @@ module Agents
         'api_token' => '{% credential SurveyMonkeyToken %}',
         'expected_update_period_in_days' => '2',
         'mode' => 'on_change',
+        'page' => '1',
+        'per_page' => '100',
         'guess_mode' => 'true'
       }
     end
@@ -70,6 +72,8 @@ module Agents
     form_configurable :score_question_ids
     form_configurable :comment_question_ids
     form_configurable :mode, type: :array, values: %w(all on_change merge)
+    form_configurable :page
+    form_configurable :per_page
     form_configurable :expected_update_period_in_days
 
     def validate_options
@@ -157,9 +161,17 @@ module Agents
       @survey_ids ||= interpolated['survey_ids'].split(',').map(&:strip)
     end
 
+    def page
+      interpolated['page']
+    end
+
+    def per_page
+      interpolated['per_page']
+    end
+
     def fetch_survey_responses(survey_id)
       log "Fetching survey ##{survey_id} responses"
-      url = "#{SURVEYS_URL_BASE}/#{survey_id}/responses/bulk?sort_by=date_modified&sort_order=DESC&status=completed"
+      url = "#{SURVEYS_URL_BASE}/#{survey_id}/responses/bulk?sort_by=date_modified&sort_order=DESC&status=completed&page=#{page}&per_page=#{per_page}"
       fetch_survey_monkey_resource(url)
     end
 
