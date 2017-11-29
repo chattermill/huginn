@@ -62,7 +62,6 @@ module Agents
         'api_key' => '{% credential DelightedApiKey %}',
         'page' => '1',
         'per_page' => '100',
-        'api_key' => '{% credential DelightedApiKey %}',
         'expected_update_period_in_days' => '1',
         'mode' => 'on_change'
       }
