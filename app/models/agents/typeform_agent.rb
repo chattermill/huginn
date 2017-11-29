@@ -33,7 +33,8 @@ module Agents
         * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
         * `limit` - Number of responses to fetch per run, better to set to a low number nad have the agent run more often.
         * `offset` - Number of responses to offset by if you want to go back in the past
-
+    MD
+    
     event_description <<-MD
       Events look like this:
         {
