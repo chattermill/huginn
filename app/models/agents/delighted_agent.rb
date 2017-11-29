@@ -23,6 +23,8 @@ module Agents
       Options:
 
         * `api_key` - Delighted API Key.
+        * `page` - Response page to fetch
+        * `per_page` - Number of responses per page (max is 100)
         * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
         * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
     MD
@@ -50,11 +52,16 @@ module Agents
     end
 
     form_configurable :api_key
+    form_configurable :page
+    form_configurable :per_page
     form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :expected_update_period_in_days
 
     def default_options
       {
+        'api_key' => '{% credential DelightedApiKey %}',
+        'page' => '1',
+        'per_page' => '100',
         'api_key' => '{% credential DelightedApiKey %}',
         'expected_update_period_in_days' => '1',
         'mode' => 'on_change'
@@ -120,9 +127,18 @@ module Agents
     def default_query
       {
         order: 'desc',
-        per_page: 100,
+        page: page,
+        per_page: per_page,
         expand: ['person']
       }
+    end
+
+    def page
+      interpolated['page']
+    end
+
+    def per_page
+      interpolated['per_page']
     end
 
     def delighted_client
