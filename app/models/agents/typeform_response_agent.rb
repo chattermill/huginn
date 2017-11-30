@@ -131,7 +131,7 @@ module Agents
         'guess_mode' => true,
         'expected_update_period_in_days' => '1',
         'mode' => 'on_change',
-        'limit' => 20,
+        'limit' => 100,
         'mapping_object' => '{}',
         'bucketing_object' => '{}'
       }
