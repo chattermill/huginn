@@ -16,6 +16,8 @@ module Agents
 
     default_schedule 'every_5h'
 
+    before_validation :parse_json_options
+
     description <<-MD
       Typeform Agent fetches responses from the Typeform Response API given an access token.
 
@@ -35,6 +37,8 @@ module Agents
         * `limit` - Number of responses to fetch per run, better to set to a low number and have the agent run more often.
         * `since` - Specify date and time, to limit request to responses submitted since the specified date and time, e.g. `8 hours ago`, `may 27th` [more valid formats](https://github.com/mojombo/chronic).
         * `until` - Specify date and time, to limit request to responses submitted until the specified date and time, e.g. `1979-05-27 05:00:00`, `January 5 at 7pm` [more valid formats](https://github.com/mojombo/chronic).
+        * `mapping_object` - Specify the mapping definition object where any hidden_variables can be mapped with a single value.
+        * `bucketing_object` - Specify the bucketing definition object where any hidden_variables can be broken into a specific bucket.
     MD
 
     event_description <<-MD
@@ -92,7 +96,14 @@ module Agents
             "name": "Susan",
             "score": "2",
             "survey_answer": "Somewhat+disappointed",
-            "survey_name": "login_monthly"
+            "survey_name": "login_monthly",
+            "city_id": "458",
+            "country_id": "25",
+            "tc": "2"
+          },
+          "mapped_variables": {
+            "city_id": "London"
+            "country_id": "UK",
           }
         }
     MD
@@ -109,6 +120,8 @@ module Agents
     form_configurable :limit
     form_configurable :since
     form_configurable :until
+    form_configurable :mapping_object, type: :json, ace: { mode: 'json' }
+    form_configurable :bucketing_object, type: :json, ace: { mode: 'json' }
     form_configurable :mode, type: :array, values: %w[all on_change merge]
     form_configurable :expected_update_period_in_days
 
@@ -118,7 +131,9 @@ module Agents
         'guess_mode' => true,
         'expected_update_period_in_days' => '1',
         'mode' => 'on_change',
-        'limit' => 20
+        'limit' => 20,
+        'mapping_object' => '{}',
+        'bucketing_object' => '{}'
       }
     end
 
@@ -189,7 +204,8 @@ module Agents
         id: response.token,
         answers: response.answers,
         metadata: response.metadata,
-        hidden_variables: response.hidden
+        hidden_variables: response.hidden,
+        mapped_variables: mapping_from_response(response)
       }
     end
 
@@ -237,6 +253,65 @@ module Agents
 
     def typeform
       @typeform ||= Typeform::Response.new(access_token: interpolated['access_token'], form_id: interpolated['form_id'])
+    end
+
+    def parse_json_options
+      parse_json_option('mapping_object')
+      parse_json_option('bucketing_object')
+    end
+
+    def parse_json_option(key)
+      options[key] = JSON.parse(options[key]) unless options[key].is_a?(Hash)
+    rescue
+      errors.add(:base, "The '#{key}' option is an invalid JSON.")
+    end
+
+    def mapping_from_response(response)
+      mapped_variables = {}
+      mapped_variables.merge!(single_values_mapping(response))
+      mapped_variables.merge!(value_ranges_mapping(response))
+    end
+
+    def single_values_mapping(response)
+      hash = {}
+      mapping = options["mapping_object"]
+      if mapping.present?
+        response.hidden.each do |k, v|
+          hash[k] = mapping[k].fetch(v, v) if mapping.key?(k)
+        end
+      end
+      hash
+    end
+
+    def value_ranges_mapping(response)
+      hash = {}
+      mapping = options["bucketing_object"]
+      if mapping.present?
+        response.hidden.each do |k, v|
+          log mapping
+          log k
+          hash[k] = extract_bucket(mapping[k], v) || v if mapping.key?(k)
+        end
+      end
+      hash
+    end
+
+    def extract_bucket(hash, value)
+      value = value.to_i
+      bucket = nil
+      hash.each do |k, v|
+        range = k.split("-")
+        min = range.first
+        max = range.last
+        if /\+/ =~ max && value >= max.tr("+", "").to_i
+          bucket = v
+          break
+        elsif (min.to_i..max.to_i).cover?(value)
+          bucket = v
+          break
+        end
+      end
+      bucket
     end
   end
 end
