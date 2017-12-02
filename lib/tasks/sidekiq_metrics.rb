@@ -10,6 +10,7 @@ namespace :sidekiq do
                                              secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],
                                              region: ENV['AWS_REGION'])
 
+    puts "Getting queues data"
     queues = Sidekiq::Queue.all.each_with_object({}) do |queue, hash|
       hash[queue.name] = {
         size: {value: queue.size, unit: 'Count'},
@@ -35,10 +36,12 @@ namespace :sidekiq do
       end
     end
 
+    puts 'Sending metrics to CloudWatch'
     cloudwatch.put_metric_data({
       namespace: "Huginn/Sidekiq",
       metric_data: data
     })
+    puts 'Done!'
 
   end
 end
