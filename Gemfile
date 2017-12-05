@@ -85,7 +85,7 @@ gem 'evernote_oauth'
 gem 'listen', '~> 3.0.5', require: false
 
 # S3Agent
-gem 'aws-sdk-core', '~> 2.2.15'
+gem 'aws-sdk-s3'
 
 # Optional Services.
 gem 'omniauth-37signals'          # BasecampAgent
@@ -104,6 +104,7 @@ gem 'bundler', '>= 1.5.0'
 gem 'chronic', require: false
 gem 'coffee-rails', '~> 4.2'
 gem 'daemons', '~> 1.1.9'
+gem 'aws-sdk-cloudwatch', '~> 1.2.0', require: false
 
 if_true(!ENV['BACKGROUND_JOB_PROCESSOR'] || ENV['BACKGROUND_JOB_PROCESSOR'] == 'delayed_job') do
   gem 'delayed_job', github: 'dsander/delayed_job', branch: 'rails51'
