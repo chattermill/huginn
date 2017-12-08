@@ -100,10 +100,10 @@ module Agents
     end
 
     def check
+      old_events = previous_payloads(1)
       responses = surveys.map(&:parse_responses).flatten
-
       responses.each do |response|
-        if store_payload!(previous_payloads(1), response)
+        if store_payload!(old_events, response)
           log "Storing new result for '#{name}': #{response.inspect}"
           create_event payload: response
         end
@@ -121,7 +121,7 @@ module Agents
       look_back = UNIQUENESS_FACTOR * num_events
       look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
 
-      events.order('id desc').limit(look_back) if interpolated['mode'] == 'on_change'
+      events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
     end
 
     # This method returns true if the result should be stored as a new event.
