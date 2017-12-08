@@ -4,7 +4,7 @@
 
 # Procfile for development using the new threaded worker (scheduler, twitter stream and delayed job)
 web: bundle exec rails server -p ${PORT-3000} -b ${IP-0.0.0.0}
-jobs: bundle exec rails runner bin/threaded.rb
+# jobs: bundle exec rails runner bin/threaded.rb
 
 # Old version with separate processes (use this if you have issues with the threaded version)
 # web: bundle exec rails server
@@ -60,4 +60,4 @@ jobs: bundle exec rails runner bin/threaded.rb
 # 2. Configure BACKGROUND_JOB_PROCESSOR=sidekiq in your .env file
 # 3. If your redis server is not running locally configure REDIS_URL
 # 4. Uncomment this line:
-sidekiq: bundle exec sidekiq
+sidekiq: bundle exec sidekiq -C config/sidekiq.yml
