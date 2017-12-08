@@ -1,2 +1,3 @@
 web=1
 sidekiq=2
+jobs=1
