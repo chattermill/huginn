@@ -15,7 +15,7 @@ namespace :sidekiq do
 
     puts 'Sending metrics to CloudWatch'
     CloudwatchMetricCreator.new("Huginn/Sidekiq", "Queue Name", queues).create!
-    puts CloudwatchMetricCreator.new("Huginn/Sidekiq", "Summary", summary).create!
+    CloudwatchMetricCreator.new("Huginn/Sidekiq", "Summary", summary).create!
     puts 'Done!'
   end
 end
