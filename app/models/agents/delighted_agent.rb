@@ -76,8 +76,9 @@ module Agents
     end
 
     def check
+      old_events = previous_payloads(1)
       delighted_events.each do |e|
-        if store_payload!(previous_payloads(1), e)
+        if store_payload!(old_events, e)
           log "Storing new result for '#{name}': #{e.inspect}"
           create_event payload: e
         end
@@ -91,7 +92,7 @@ module Agents
       look_back = UNIQUENESS_FACTOR * num_events
       look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
 
-      events.order('id desc').limit(look_back) if interpolated['mode'] == 'on_change'
+      events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
     end
 
     # This method returns true if the result should be stored as a new event.
