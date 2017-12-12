@@ -31,58 +31,95 @@ module Agents
         * `form_id` - Typeform Form ID.
         * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
         * `guess_mode` - Let the agent try to figure out the score question and the comment question automatically using the first `opinionscale` question and the first `textarea` question
-        * `score_question_ids` - Hard-code the comma separated list of ids of the score questions (agent will pick the first one present) if `guess_mode` is off
-        * `comment_question_ids` - Hard-code he comma separated list of ids of the comment questions (agent will pick the first one present) if `guess_mode` is off
+        * `score_question_ids` - Hard-code the comma separated list of ids of the score questions (agent will pick the first one present) if `guess_mode` is off. Only Id, example: `"58048493,58048049"`
+        * `comment_question_ids` - Hard-code he comma separated list of ids of the comment questions (agent will pick the first one present) if `guess_mode` is off. Only Id, example: `"5804976588,58049969,58049765"`
         * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
         * `limit` - Number of responses to fetch per run, better to set to a low number and have the agent run more often.
         * `since` - Specify date and time, to limit request to responses submitted since the specified date and time, e.g. `8 hours ago`, `may 27th` [more valid formats](https://github.com/mojombo/chronic).
         * `until` - Specify date and time, to limit request to responses submitted until the specified date and time, e.g. `1979-05-27 05:00:00`, `January 5 at 7pm` [more valid formats](https://github.com/mojombo/chronic).
         * `mapping_object` - Specify the mapping definition object where any hidden_variables can be mapped with a single value.
         * `bucketing_object` - Specify the bucketing definition object where any hidden_variables can be broken into a specific bucket.
+
+        If you specify `mapping_object` you must set up something like this:
+
+
+            "city_id": {
+              "1": "London",
+              "2": "New York"
+            },
+            "country_id": {
+              "1": "UK",
+              "2": "US"
+            }
+
+        If you specify `bucketing_object` you must set up something like this:
+
+            "tc": {
+              "1": "First Trip",
+              "2-10": "2 - 10",
+              "11-20": "11 - 20",
+              "21-50": "21 - 50",
+              "51-100": "51 - 100",
+              "100+": "101 and more"
+            }
     MD
 
     event_description <<-MD
       Events look like this:
-        {
+
           "score": 9,
           "comment": "Love the concept and the food! Just a little too expensive.",
           "id": "62e3caeaca5100adf84f61708ad69960",
           "created_at": "2017-08-12 19:16:02",
-          "answers": {
+          "answers": [
             {
-               "field": {
-                 "id": "58048684",
-                 "type": "opinion_scale"
-               },
-               "type": "number",
-               "number": 3
-             },
-             {
-               "field": {
-                 "id": "58049393",
-                 "type": "multiple_choice"
-               },
-               "type": "choice",
-               "choice": {
-                 "label": "55 to 64"
-               }
-             },
-             {
-               "field": {
-                 "id": "58049487",
-                 "type": "dropdown"
-               },
-               "type": "text",
-               "text": "South East"
-             },
-             {
-               "field": {
-                 "id": "58049969",
-                 "type": "long_text"
-               },
-               "type": "text",
-               "text": "It is really helpful to see your credit score at any time and if it changes then why gas it changed"
-             }
+              "field": {
+                "id": "58048493",
+                "type": "opinion_scale"
+              },
+              "type": "number",
+              "number": 4
+            },
+            {
+              "field": {
+                "id": "58049765",
+                "type": "dropdown"
+              },
+              "type": "text",
+              "text": "£30,000 - £39,999"
+            },
+            {
+              "field": {
+                "id": "58049969",
+                "type": "long_text"
+              },
+              "type": "text",
+              "text": "I do like knowing about my financial state and the Clearscore report  makes me feel like I'm doing something right. However I don't think my world would end if I did'nt have Clearscore, but I do look forward to their next update  "
+            },
+            {
+              "field": {
+                "id": "58049393",
+                "type": "multiple_choice"
+              },
+              "type": "choice",
+              "choice": {
+                "label": "55 to 64"
+              }
+            }
+          ],
+          "formatted_answers": {
+            "opinion_scale_58048690": 3,
+            "long_text_58049969": "It is really helpful to see your credit score at any time and if it changes then why gas it changed",
+            "opinion_scale_58048493": 5,
+            "opinion_scale_58048704": 2,
+            "dropdown_58049487": "South East",
+            "opinion_scale_58048049": 10,
+            "opinion_scale_58048684": 3,
+            "opinion_scale_58048687": 3,
+            "multiple_choice_58049393": {
+              "label": "55 to 64"
+            },
+            "dropdown_58049765": "< £20,000"
           },
           "metadata": {
             "user_agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 10_3_3 like Mac OS X) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.0 Mobile/14G60 Safari/602.1",
@@ -105,7 +142,7 @@ module Agents
             "city_id": "London"
             "country_id": "UK",
           }
-        }
+
     MD
 
     def working?
@@ -204,6 +241,7 @@ module Agents
         created_at: response.submitted_at,
         id: response.token,
         answers: response.answers,
+        formatted_answers: transform_answers(response),
         metadata: response.metadata,
         hidden_variables: response.hidden,
         mapped_variables: mapping_from_response(response)
@@ -234,6 +272,12 @@ module Agents
       answers_ids = response.answers.map {|a| a.field.id }
       key = option_ids.split(',').find { |id| answers_ids.include?(id) }
       response.answers.find {|h| h.field.id == key }
+    end
+
+    def transform_answers(response)
+      response.answers.each_with_object({}) do |a, hash|
+        hash["#{a.field.type}_#{a.field.id}"] = a.send(a.type)
+      end
     end
 
     def params
