@@ -183,7 +183,10 @@ module Agents
 
     def fetch_survey_monkey_resource(uri)
       response = faraday.get(uri)
-      return {} unless response.success?
+      unless response.success?
+        log "Failed #{response.status}: #{response.body}"
+        return {}
+      end
 
       JSON.parse(response.body)
     end

@@ -70,7 +70,7 @@ class SurveyMonkeyParser
     delegate :language, to: :survey
 
     def score
-      return parsed_score_answer unless score_question.nil?
+      return average_score unless score_question.nil?
     end
 
     def comment
@@ -96,12 +96,17 @@ class SurveyMonkeyParser
       score_question.dig('details', 'answers', 'choices')
     end
 
-    def score_answer_given
-      score_question['answers'].first['choice_id']
+    def score_answers_given
+      score_question['answers']
     end
 
-    def parsed_score_answer
-      score_options.find { |c| c['id'] == score_answer_given }['text'].gsub(/[^0-9]/, '').to_i
+    def parsed_score_answer(choice_id)
+      score_options.find { |c| c['id'] == choice_id }['text'].gsub(/[^0-9]/, '').to_i
+    end
+
+    def average_score
+      total = score_answers_given.reduce(0) { |sum, answ| sum + parsed_score_answer(answ["choice_id"]) }
+      total / (score_answers_given.size.nonzero? || 1)
     end
 
     def comment_question
@@ -112,12 +117,15 @@ class SurveyMonkeyParser
       end
     end
 
-    def comment_answer_given
-      comment_question['answers'].first
+    def comment_answers_given
+      comment_question['answers']
     end
 
     def parsed_comment_answer
-      comment_answer_given['text']
+      comments = comment_answers_given.map do |answ|
+        answ['text']
+      end
+      comments.join("\n")
     end
 
     def find_question(question_ids)
