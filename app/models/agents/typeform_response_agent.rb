@@ -71,7 +71,43 @@ module Agents
           "comment": "Love the concept and the food! Just a little too expensive.",
           "id": "62e3caeaca5100adf84f61708ad69960",
           "created_at": "2017-08-12 19:16:02",
-          "answers": {
+          "answers": [
+            {
+              "field": {
+                "id": "58048493",
+                "type": "opinion_scale"
+              },
+              "type": "number",
+              "number": 4
+            },
+            {
+              "field": {
+                "id": "58049765",
+                "type": "dropdown"
+              },
+              "type": "text",
+              "text": "£30,000 - £39,999"
+            },
+            {
+              "field": {
+                "id": "58049969",
+                "type": "long_text"
+              },
+              "type": "text",
+              "text": "I do like knowing about my financial state and the Clearscore report  makes me feel like I'm doing something right. However I don't think my world would end if I did'nt have Clearscore, but I do look forward to their next update  "
+            },
+            {
+              "field": {
+                "id": "58049393",
+                "type": "multiple_choice"
+              },
+              "type": "choice",
+              "choice": {
+                "label": "55 to 64"
+              }
+            }
+          ],
+          "formatted_answers": {
             "opinion_scale_58048690": 3,
             "long_text_58049969": "It is really helpful to see your credit score at any time and if it changes then why gas it changed",
             "opinion_scale_58048493": 5,
@@ -106,7 +142,7 @@ module Agents
             "city_id": "London"
             "country_id": "UK",
           }
-        
+
     MD
 
     def working?
@@ -204,7 +240,8 @@ module Agents
         comment: comment_from_response(response),
         created_at: response.submitted_at,
         id: response.token,
-        answers: transform_answers(response),
+        answers: response.answers,
+        formatted_answers: transform_answers(response),
         metadata: response.metadata,
         hidden_variables: response.hidden,
         mapped_variables: mapping_from_response(response)
