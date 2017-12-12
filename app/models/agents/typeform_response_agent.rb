@@ -203,7 +203,7 @@ module Agents
         comment: comment_from_response(response),
         created_at: response.submitted_at,
         id: response.token,
-        answers: response.answers,
+        answers: transform_answers(response),
         metadata: response.metadata,
         hidden_variables: response.hidden,
         mapped_variables: mapping_from_response(response)
@@ -234,6 +234,12 @@ module Agents
       answers_ids = response.answers.map {|a| a.field.id }
       key = option_ids.split(',').find { |id| answers_ids.include?(id) }
       response.answers.find {|h| h.field.id == key }
+    end
+
+    def transform_answers(response)
+      response.answers.each_with_object({}) do |a, hash|
+        hash["#{a.field.type}_#{a.field.id}"] = a.send(a.type)
+      end
     end
 
     def params
