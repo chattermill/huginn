@@ -230,18 +230,23 @@ module Agents
       end
     end
 
+    def sorted_answers(answers)
+      answers.sort_by { |el| el['field']['id'] }
+    end
+
     def typeform_events
       typeform.complete_entries(params).items.map { |r| transform_typeform_responses(r) }
     end
 
     def transform_typeform_responses(response)
+      answers = sorted_answers(response.answers)
       {
         score: score_from_response(response),
         comment: comment_from_response(response),
         created_at: response.submitted_at,
         id: response.token,
-        answers: response.answers,
-        formatted_answers: transform_answers(response),
+        answers: answers,
+        formatted_answers: transform_answers(answers),
         metadata: response.metadata,
         hidden_variables: response.hidden,
         mapped_variables: mapping_from_response(response)
@@ -274,8 +279,8 @@ module Agents
       response.answers.find {|h| h.field.id == key }
     end
 
-    def transform_answers(response)
-      response.answers.each_with_object({}) do |a, hash|
+    def transform_answers(answers)
+      answers.each_with_object({}) do |a, hash|
         hash["#{a.field.type}_#{a.field.id}"] = a.send(a.type)
       end
     end
@@ -333,8 +338,6 @@ module Agents
       mapping = options["bucketing_object"]
       if mapping.present?
         response.hidden.each do |k, v|
-          log mapping
-          log k
           hash[k] = extract_bucket(mapping[k], v) || v if mapping.key?(k)
         end
       end
