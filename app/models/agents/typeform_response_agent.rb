@@ -241,8 +241,8 @@ module Agents
     def transform_typeform_responses(response)
       answers = sorted_answers(response.answers)
       {
-        score: score_from_response(response),
-        comment: comment_from_response(response),
+        score: score_from_response(answers),
+        comment: comment_from_response(answers),
         created_at: response.submitted_at,
         id: response.token,
         answers: answers,
@@ -253,30 +253,30 @@ module Agents
       }
     end
 
-    def score_from_response(response)
+    def score_from_response(answers)
       answer = if boolify(interpolated['guess_mode'])
-                 response.answers.find {|h| h.field.type == "opinion_scale" }
+                 answers.find {|h| h.field.type == "opinion_scale" }
                else
-                 answer_for(response, interpolated['score_question_ids'])
+                 answer_for(answers, interpolated['score_question_ids'])
                end
 
       answer.number if answer.present?
     end
 
-    def comment_from_response(response)
+    def comment_from_response(answers)
       answer = if boolify(interpolated['guess_mode'])
-                 response.answers.find { |h| h["field"]["type"] == "long_text" }
+                 answers.find { |h| h["field"]["type"] == "long_text" }
                else
-                 answer_for(response, interpolated['comment_question_ids'])
+                 answer_for(answers, interpolated['comment_question_ids'])
                end
 
       answer.text if answer.present?
     end
 
-    def answer_for(response, option_ids)
-      answers_ids = response.answers.map {|a| a.field.id }
+    def answer_for(answers, option_ids)
+      answers_ids = answers.map {|a| a.field.id }
       key = option_ids.split(',').find { |id| answers_ids.include?(id) }
-      response.answers.find {|h| h.field.id == key }
+      answers.find {|h| h.field.id == key }
     end
 
     def transform_answers(answers)
