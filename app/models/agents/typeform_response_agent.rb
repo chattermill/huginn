@@ -230,52 +230,57 @@ module Agents
       end
     end
 
+    def sorted_answers(answers)
+      answers.sort_by { |el| el['field']['id'] }
+    end
+
     def typeform_events
       typeform.complete_entries(params).items.map { |r| transform_typeform_responses(r) }
     end
 
     def transform_typeform_responses(response)
+      answers = sorted_answers(response.answers)
       {
-        score: score_from_response(response),
-        comment: comment_from_response(response),
+        score: score_from_response(answers),
+        comment: comment_from_response(answers),
         created_at: response.submitted_at,
         id: response.token,
-        answers: response.answers,
-        formatted_answers: transform_answers(response),
+        answers: answers,
+        formatted_answers: transform_answers(answers),
         metadata: response.metadata,
         hidden_variables: response.hidden,
         mapped_variables: mapping_from_response(response)
       }
     end
 
-    def score_from_response(response)
+    def score_from_response(answers)
       answer = if boolify(interpolated['guess_mode'])
-                 response.answers.find {|h| h.field.type == "opinion_scale" }
+                 answers.find {|h| h.field.type == "opinion_scale" }
                else
-                 answer_for(response, interpolated['score_question_ids'])
+                 answer_for(answers, interpolated['score_question_ids'])
                end
 
       answer.number if answer.present?
     end
 
-    def comment_from_response(response)
+    def comment_from_response(answers)
       answer = if boolify(interpolated['guess_mode'])
-                 response.answers.find { |h| h["field"]["type"] == "long_text" }
+                 answers.find { |h| h["field"]["type"] == "long_text" }
                else
-                 answer_for(response, interpolated['comment_question_ids'])
+                 answer_for(answers, interpolated['comment_question_ids'])
                end
 
       answer.text if answer.present?
     end
 
-    def answer_for(response, option_ids)
-      answers_ids = response.answers.map {|a| a.field.id }
+    def answer_for(answers, option_ids)
+      answers_ids = answers.map {|a| a.field.id }
       key = option_ids.split(',').find { |id| answers_ids.include?(id) }
-      response.answers.find {|h| h.field.id == key }
+      answers.find {|h| h.field.id == key }
     end
 
-    def transform_answers(response)
-      response.answers.each_with_object({}) do |a, hash|
+    def transform_answers(answers)
+      answers.each_with_object({}) do |a, hash|
         hash["#{a.field.type}_#{a.field.id}"] = a.send(a.type)
       end
     end
@@ -333,8 +338,6 @@ module Agents
       mapping = options["bucketing_object"]
       if mapping.present?
         response.hidden.each do |k, v|
-          log mapping
-          log k
           hash[k] = extract_bucket(mapping[k], v) || v if mapping.key?(k)
         end
       end
