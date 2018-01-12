@@ -50,6 +50,7 @@ module Agents
           * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
           * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
           * `extra_fields` - Specify the Liquid interpolated JSON to build additional fields for the Response, e.g: `{ approved: true }`.
+          * `mappings` - Specify the mapping definition object where any field can be mapped with a single value.
           * `emit_events` - Select `true` or `false`.
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
           * `send_batch_events` - Select `true` or `false`.
@@ -83,6 +84,7 @@ module Agents
         'user_meta' => sample_hash,
         'segments' => sample_hash,
         'extra_fields' => '{}',
+        'mappings' => '{}',
         'emit_events' => 'true',
         'expected_receive_period_in_days' => '1',
         'send_batch_events' => 'true',
@@ -109,6 +111,7 @@ module Agents
     form_configurable :user_meta, type: :json, ace: { mode: 'json' }
     form_configurable :segments, type: :json, ace: { mode: 'json' }
     form_configurable :extra_fields, type: :json, ace: { mode: 'json' }
+    form_configurable :mappings, type: :json, ace: { mode: 'json' }
     form_configurable :emit_events, type: :boolean
     form_configurable :expected_receive_period_in_days
     form_configurable :send_batch_events, type: :boolean
@@ -178,6 +181,17 @@ module Agents
     def outgoing_data
       outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
       outgoing.merge!(interpolated['extra_fields'].presence || {})
+      apply_mappings(outgoing)
+    end
+
+    def apply_mappings(payload)
+      return payload unless interpolated['mappings'].present?
+      interpolated['mappings'].each do |key, values|
+        opt = Utils.value_at(payload, key)
+        value = values[opt] || opt
+        payload.merge!("#{key}": value)
+      end
+      payload
     end
 
     def batch_events_payload
@@ -204,6 +218,7 @@ module Agents
       parse_json_option('user_meta')
       parse_json_option('segments')
       parse_json_option('extra_fields')
+      parse_json_option('mappings')
     end
 
     def parse_json_option(key)
