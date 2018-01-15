@@ -21,6 +21,7 @@ describe Agents::ChattermillResponseAgent do
       'segments' => segments.to_json,
       'user_meta' => user_meta.to_json,
       'extra_fields' => '{}',
+      'mappings' => '{}',
       'send_batch_events' => 'false',
       'max_events_per_batch' => 2,
       'dataset_id' => 1
@@ -295,6 +296,50 @@ describe Agents::ChattermillResponseAgent do
           end
 
         end
+
+        describe "with mappings" do
+          before do
+            @checker.options['emit_events'] = 'true'
+            @checker.options['score'] = '{{ data.score }}'
+            @checker.options['mappings'] = {
+              "score": {
+                "Good, I'm satisfied": "10",
+                "Bad, I'm unsatisfied": "0"
+              },
+              "segments.segment_id.value": {
+                "Joyeux Noël": "651",
+                "Lux Letterbox Subscription": "669"
+              }
+            }
+          end
+
+          it "emits event with mapped payload" do
+            @event.payload['data']['score'] = 'Good, I\'m satisfied'
+            @event.payload['data']['segment'] = 'Joyeux Noël'
+            @checker.receive([@event])
+
+            expected = {
+              "comment" => "Test Comment",
+              "score" => "10",
+              "user_meta"=> {
+                "meta_id"=> {
+                  "type"=>"text",
+                  "name"=>"Meta Id"
+                }
+              },
+              "segments"=> {
+                "segment_id" => {
+                  "type" => "text",
+                  "name" => "Segment Id",
+                  "value" => "651"
+                }
+              },
+              "dataset_id" => 1
+            }
+
+            expect(@sent_requests[:post].first.data).to eq expected
+          end
+        end
       end
     end
 
@@ -529,6 +574,22 @@ describe Agents::ChattermillResponseAgent do
       expect(@checker).to be_valid
 
       @checker.options['extra_fields'] = "invalid json"
+      @checker.save
+      expect(@checker).to_not be_valid
+    end
+
+    it "should validate mappings as a hash" do
+      @checker.options['mappings'] = {}
+      @checker.save
+      expect(@checker).to be_valid
+    end
+
+    it "should validate mappings as a JSON string" do
+      @checker.options['mappings'] = '{}'
+      @checker.save
+      expect(@checker).to be_valid
+
+      @checker.options['mappings'] = "invalid json"
       @checker.save
       expect(@checker).to_not be_valid
     end

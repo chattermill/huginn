@@ -186,11 +186,16 @@ module Agents
 
     def apply_mappings(payload)
       return payload unless interpolated['mappings'].present?
-      interpolated['mappings'].each do |key, values|
-        opt = Utils.value_at(payload, key)
-        value = values[opt] || opt
-        payload.merge!("#{key}": value)
+      interpolated['mappings'].each do |path, values|
+        opt = Utils.value_at(payload, path)
+        next unless values.has_key?(opt)
+        mapped = path.split('.').reverse.each_with_index.inject({}) do |hash, (n,i)|
+          new_value = (i == 0 ? values[opt] : hash )
+          { n => new_value  }
+        end
+        payload.deep_merge!(mapped)
       end
+
       payload
     end
 
