@@ -55,6 +55,18 @@ module Agents
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
           * `send_batch_events` - Select `true` or `false`.
           * `max_events_per_batch` - Specify the maximum number of events that you'd like to send per batch.
+
+          If you specify `mappings` you must set up something like this:
+
+              "score": {
+                "Good, I'm satisfied": "10",
+                "Bad, I'm unsatisfied": "0"
+              },
+              "segments.segment_id.value": {
+                "Joyeux Noël": "651",
+                "Lux Letterbox Subscription": "669"
+              }
+
       MD
     end
 
