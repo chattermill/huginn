@@ -161,10 +161,7 @@ class SurveyMonkeyParser
     end
 
     def parsed_comment_answer
-      comments = comment_answers_given.map do |answ|
-        answ['text']
-      end
-      comments.join("\n")
+      comment_answers_given.map { |answ|  answ['text'] }.join("\n")
     end
 
     def find_question(question_ids)
