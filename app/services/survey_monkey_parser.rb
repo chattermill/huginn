@@ -55,7 +55,7 @@ class SurveyMonkeyParser
   end
 
   class ResponseParser
-    ATTRIBUTES = %w(score comment id survey_id date_created collector_id custom_variables analyze_url language).freeze
+    ATTRIBUTES = %w(score comment id survey_id date_created collector_id custom_variables analyze_url language full_response).freeze
 
     def initialize(data, survey)
       @data = OpenStruct.new(data)
@@ -79,6 +79,35 @@ class SurveyMonkeyParser
 
     def comment
       return parsed_comment_answer unless comment_question.nil?
+    end
+
+    def full_response
+      questions.each_with_object({}) do |question, hsh|
+        details = question.dig('details')
+        heading = details['headings']&.first['heading']
+
+        hsh[question['id']] = {
+          id: question['id'],
+          family: details['family'],
+          subtype: details['subtype'],
+          question: heading,
+          answers: question['answers']&.each_with_object({}) do |a, hsh|
+            rows = details.dig('answers', 'rows')
+            choices = details.dig('answers','choices')
+
+            if a['choice_id'].present? && a['row_id'].present?
+              row = rows&.find { |r| r['id'] == a['row_id'] }
+              choice = choices&.find { |c| c['id'] == a['choice_id'] }
+              hsh[row['text']] = choice['text']
+            elsif a['choice_id'].present?
+              choice = choices&.find { |c| c['id'] == a['choice_id'] }
+              hsh[heading] = choice['text']
+            else
+              hsh[heading] = a['text']
+            end
+          end
+        }
+      end
     end
 
     def questions
