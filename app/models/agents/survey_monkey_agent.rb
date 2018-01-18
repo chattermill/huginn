@@ -54,7 +54,8 @@ module Agents
         'mode' => 'on_change',
         'page' => '1',
         'per_page' => '100',
-        'guess_mode' => 'true'
+        'guess_mode' => 'true',
+        'use_weights' => 'false'
       }
     end
 
@@ -70,6 +71,7 @@ module Agents
     form_configurable :survey_ids
     form_configurable :guess_mode, type: :boolean
     form_configurable :score_question_ids
+    form_configurable :use_weights, type: :boolean
     form_configurable :comment_question_ids
     form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :page
@@ -153,6 +155,7 @@ module Agents
           survey['score_question_ids'] = interpolated['score_question_ids']
           survey['comment_question_ids'] = interpolated['comment_question_ids']
         end
+        survey['use_weights'] = boolify(interpolated['use_weights'])
         SurveyMonkeyParser.new(survey)
       end
     end

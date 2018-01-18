@@ -41,6 +41,10 @@ class SurveyMonkeyParser
       @comment_question_ids ||= (data['comment_question_ids'] || "").split(',')
     end
 
+    def use_weights
+      @use_weights ||= data['use_weights']
+    end
+
     private
 
     attr_reader :data
@@ -103,7 +107,7 @@ class SurveyMonkeyParser
     def parsed_score_answer(choice_id)
       choice = score_options.find { |c| c['id'] == choice_id }
 
-      if choice['weight'].present?
+      if survey.use_weights && choice['weight'].present?
         choice['weight']
       else
         choice['text'].gsub(/[^0-9]/, '').to_i
