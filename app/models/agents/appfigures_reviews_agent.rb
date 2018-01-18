@@ -69,17 +69,25 @@ module Agents
     end
 
     def check
-      log "Fetched #{reviews&.size} reviews"
-      if reviews.any?
-        old_events = previous_payloads reviews.size
-        reviews.each do |response|
-          payload = transform_appfigures_responses(response)
-          if store_payload!(old_events, payload)
-            log "Storing new result for '#{name}': #{payload.inspect}"
-            create_event payload: payload
+      unless agent_in_process?
+        process_agent!
+        log "Fetched #{reviews&.size} reviews"
+        if reviews.any?
+          old_events = previous_payloads reviews.size
+          reviews.each do |response|
+            payload = transform_appfigures_responses(response)
+            if store_payload!(old_events, payload)
+              log "Storing new result for '#{name}': #{payload.inspect}"
+              create_event payload: payload
+            end
           end
         end
+        memory['in_process'] = false
       end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
 
     private
@@ -165,5 +173,13 @@ module Agents
       { "X-Client-Key" => interpolated['client_key'] }
     end
 
+    def agent_in_process?
+      boolify(memory['in_process']) == true
+    end
+
+    def process_agent!
+      memory['in_process'] = true
+      save!
+    end
   end
 end
