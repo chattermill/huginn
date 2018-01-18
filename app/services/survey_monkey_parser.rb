@@ -101,11 +101,17 @@ class SurveyMonkeyParser
     end
 
     def parsed_score_answer(choice_id)
-      score_options.find { |c| c['id'] == choice_id }['text'].gsub(/[^0-9]/, '').to_i
+      choice = score_options.find { |c| c['id'] == choice_id }
+
+      if choice['weight'].present?
+        choice['weight']
+      else
+        choice['text'].gsub(/[^0-9]/, '').to_i
+      end
     end
 
     def average_score
-      total = score_answers_given.reduce(0) { |sum, answ| sum + parsed_score_answer(answ["choice_id"]) }
+      total = score_answers_given.reduce(0) { |sum, answer| sum + parsed_score_answer(answer["choice_id"]) }
       total / (score_answers_given.size.nonzero? || 1)
     end
 
