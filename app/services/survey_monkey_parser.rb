@@ -129,7 +129,7 @@ class SurveyMonkeyParser
     def score
       return if response.score_question.blank?
       total = response.score_answers.reduce(0) { |sum, answer| sum + parsed_score_answer(answer["choice_id"]) }
-      total / (response.score_answers.size.nonzero? || 1)
+      total.fdiv(response.score_answers.size.nonzero? || 1).round
     end
 
     def comment
