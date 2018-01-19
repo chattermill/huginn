@@ -91,22 +91,30 @@ class SurveyMonkeyParser
           family: details['family'],
           subtype: details['subtype'],
           question: heading,
-          answers: question['answers']&.each_with_object({}) do |a, hsh|
-            rows = details.dig('answers', 'rows')
-            choices = details.dig('answers','choices')
-
-            if a['choice_id'].present? && a['row_id'].present?
-              row = rows&.find { |r| r['id'] == a['row_id'] }
-              choice = choices&.find { |c| c['id'] == a['choice_id'] }
-              hsh[row['text']] = choice['text']
-            elsif a['choice_id'].present?
-              choice = choices&.find { |c| c['id'] == a['choice_id'] }
-              hsh[heading] = choice['text']
-            else
-              hsh[heading] = a['text']
-            end
-          end
+          answers: answers_from_question_payload(question)
         }
+      end
+    end
+
+    def answers_from_question_payload(question)
+      details = question.dig('details')
+      heading = details['headings']&.first['heading']
+      rows = details.dig('answers', 'rows')
+      choices = details.dig('answers','choices')
+
+      question['answers']&.each_with_object({}) do |a, hsh|
+        if a['choice_id'].present? && a['row_id'].present?
+          row = rows&.find { |r| r['id'] == a['row_id'] }
+          choice = choices&.find { |c| c['id'] == a['choice_id'] }
+
+          hsh[row['text']] = choice['text']
+        elsif a['choice_id'].present?
+          choice = choices&.find { |c| c['id'] == a['choice_id'] }
+
+          hsh[heading] = choice['text']
+        else
+          hsh[heading] = a['text']
+        end
       end
     end
 
@@ -161,7 +169,7 @@ class SurveyMonkeyParser
     end
 
     def parsed_comment_answer
-      comment_answers_given.map { |answ|  answ['text'] }.join("\n")
+      comment_answers_given.map { |answ| answ['text'] }.join("\n")
     end
 
     def find_question(question_ids)
