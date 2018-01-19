@@ -149,13 +149,7 @@ module Agents
 
     def surveys
       @surveys ||= survey_ids.map do |survey_id|
-        survey = fetch_survey_details(survey_id)
-        survey['responses'] = fetch_survey_responses(survey_id)
-        if boolify(interpolated['guess_mode']) == false
-          survey['score_question_ids'] = interpolated['score_question_ids']
-          survey['comment_question_ids'] = interpolated['comment_question_ids']
-        end
-        survey['use_weights'] = boolify(interpolated['use_weights'])
+        survey = build_survey(survey_id)
         SurveyMonkeyParser.new(survey)
       end
     end
@@ -170,6 +164,17 @@ module Agents
 
     def per_page
       interpolated['per_page']
+    end
+
+    def build_survey(survey_id)
+      survey = fetch_survey_details(survey_id)
+      survey['responses'] = fetch_survey_responses(survey_id)
+      if boolify(interpolated['guess_mode']) == false
+        survey['score_question_ids'] = interpolated['score_question_ids']
+        survey['comment_question_ids'] = interpolated['comment_question_ids']
+      end
+      survey['use_weights'] = boolify(interpolated['use_weights'])
+      survey
     end
 
     def fetch_survey_responses(survey_id)
