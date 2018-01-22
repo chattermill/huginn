@@ -174,7 +174,7 @@ module Agents
     end
 
     def agent_in_process?
-      boolify(memory['in_process']) == true
+      boolify(memory['in_process'])
     end
 
     def process_agent!
