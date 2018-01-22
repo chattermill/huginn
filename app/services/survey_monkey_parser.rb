@@ -21,6 +21,36 @@ class SurveyMonkeyParser
       data['language']
     end
 
+    def use_weights
+      @use_weights ||= data['use_weights']
+    end
+
+    def score_question_ids
+      @score_question_ids ||= if data['score_question_ids'].present?
+                                data['score_question_ids'].split(',')
+                              else
+                                questions.select { |q| qualifiable_question?(q) }
+                                         .map { |q| q['id'] }
+                              end
+    end
+
+    def comment_question_ids
+      @comment_question_ids ||= if data['comment_question_ids'].present?
+                                  data['comment_question_ids'].split(',')
+                                else
+                                  questions.select { |q| commentable_question?(q) }
+                                           .map { |q| q['id'] }
+                                end
+    end
+
+    def find_question(id)
+      questions.find { |q| q['id'] == id }
+    end
+
+    private
+
+    attr_reader :data
+
     def commentable_question?(question)
       question['family'] == 'open_ended' && question['subtype'] == 'essay'
     end
@@ -29,96 +59,40 @@ class SurveyMonkeyParser
       question['family'] == 'matrix' && question['subtype'] == 'rating'
     end
 
-    def find_question(id)
-      questions.find { |q| q['id'] == id }
-    end
-
-    def score_question_ids
-      @score_question_ids ||= (data['score_question_ids'] || "").split(',')
-    end
-
-    def comment_question_ids
-      @comment_question_ids ||= (data['comment_question_ids'] || "").split(',')
-    end
-
-    private
-
-    attr_reader :data
-
     def questions
       @questions ||= (data['pages'] || []).map { |page| page['questions'] }.flatten
     end
+
   end
 
-  class ResponseParser
-    ATTRIBUTES = %w(score comment id survey_id date_created collector_id custom_variables analyze_url language).freeze
-
-    def initialize(data, survey)
-      @data = OpenStruct.new(data)
-      @survey = survey
-    end
-
-    def parse
-      ATTRIBUTES.inject({}) { |acc, elem| acc.merge(elem => send(elem)) }
-    end
-
-    private
-
-    attr_reader :survey, :data
-
-    delegate :id, :date_created, :survey_id, :collector_id, :custom_variables, :analyze_url, to: :data
-    delegate :language, to: :survey
-
-    def score
-      return parsed_score_answer unless score_question.nil?
-    end
-
-    def comment
-      return parsed_comment_answer unless comment_question.nil?
-    end
-
-    def questions
-      @questions ||= data['pages']
-                     .map { |page| page['questions'] }
-                     .flatten
-                     .map { |q| q.merge('details' => survey.find_question(q['id'])) }
-    end
+  class Response < OpenStruct
 
     def score_question
-      if survey.score_question_ids.empty?
-        questions.find { |q| survey.qualifiable_question?(q['details']) }
-      else
-        find_question(survey.score_question_ids)
-      end
+      @score_question ||= find_question(survey.score_question_ids)
+    end
+
+    def score_answers
+      @score_answers ||= score_question['answers']
     end
 
     def score_options
-      score_question.dig('details', 'answers', 'choices')
-    end
-
-    def score_answer_given
-      score_question['answers'].first['choice_id']
-    end
-
-    def parsed_score_answer
-      score_options.find { |c| c['id'] == score_answer_given }['text'].gsub(/[^0-9]/, '').to_i
+      question = survey.find_question(score_question['id'])
+      question.dig('answers', 'choices')
     end
 
     def comment_question
-      if survey.comment_question_ids.empty?
-        questions.find { |q| survey.commentable_question?(q['details']) }
-      else
-        find_question(survey.comment_question_ids)
-      end
+      @comment_question ||= find_question(survey.comment_question_ids)
     end
 
-    def comment_answer_given
-      comment_question['answers'].first
+    def comment_answers
+      comment_question['answers']
     end
 
-    def parsed_comment_answer
-      comment_answer_given['text']
+    def questions
+      @questions ||= pages.map { |page| page['questions'] }.flatten
     end
+
+    private
 
     def find_question(question_ids)
       question = nil
@@ -128,5 +102,89 @@ class SurveyMonkeyParser
       end
       question
     end
+
   end
+
+  class ResponseParser
+    ATTRIBUTES = %w(score comment id survey_id date_created collector_id
+                    custom_variables analyze_url language full_response).freeze
+
+    def initialize(data, survey)
+      @response = Response.new(data)
+      @response.survey = survey
+      @survey = survey
+    end
+
+    def parse
+      ATTRIBUTES.inject({}) { |acc, elem| acc.merge(elem => send(elem)) }
+    end
+
+    private
+
+    attr_reader :survey, :response
+
+    delegate :id, :date_created, :survey_id, :collector_id, :custom_variables, :analyze_url, to: :response
+    delegate :language, to: :survey
+
+    def score
+      return if response.score_question.blank?
+      total = response.score_answers.reduce(0) { |sum, answer| sum + parsed_score_answer(answer["choice_id"]) }
+      total.fdiv(response.score_answers.size.nonzero? || 1).round
+    end
+
+    def comment
+      return if response.comment_question.nil?
+      response.comment_answers.map { |answer| answer['text'] }.join("\n")
+    end
+
+    def full_response
+      questions = response.questions
+      questions.each_with_object({}) do |question, hsh|
+        details = survey.find_question(question['id'])
+        heading = details['headings']&.first['heading']
+
+        hsh[question['id']] = {
+          id: question['id'],
+          family: details['family'],
+          subtype: details['subtype'],
+          question: heading,
+          answers: answers_from_question_payload(question, details)
+        }
+      end
+    end
+
+    def answers_from_question_payload(question, details)
+      heading = details['headings']&.first['heading']
+      rows = details.dig('answers', 'rows')
+      choices = details.dig('answers','choices')
+
+      question['answers']&.each_with_object({}) do |a, hsh|
+        if a['choice_id'].present? && a['row_id'].present?
+          row = rows&.find { |r| r['id'] == a['row_id'] }
+          choice = choices&.find { |c| c['id'] == a['choice_id'] }
+
+          hsh[row['text']] = choice['text']
+        elsif a['choice_id'].present?
+          choice = choices&.find { |c| c['id'] == a['choice_id'] }
+
+          hsh[heading] = choice['text']
+        else
+          hsh[heading] = a['text']
+        end
+      end
+    end
+
+    def parsed_score_answer(choice_id)
+      choice = response.score_options.find { |c| c['id'] == choice_id }
+
+      if survey.use_weights && choice['weight'].present?
+        choice['weight']
+      else
+        choice['text'].gsub(/[^0-9]/, '').to_i
+      end
+    end
+
+  end
+
+
 end

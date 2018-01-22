@@ -54,7 +54,8 @@ module Agents
         'mode' => 'on_change',
         'page' => '1',
         'per_page' => '100',
-        'guess_mode' => 'true'
+        'guess_mode' => 'true',
+        'use_weights' => 'false'
       }
     end
 
@@ -70,6 +71,7 @@ module Agents
     form_configurable :survey_ids
     form_configurable :guess_mode, type: :boolean
     form_configurable :score_question_ids
+    form_configurable :use_weights, type: :boolean
     form_configurable :comment_question_ids
     form_configurable :mode, type: :array, values: %w(all on_change merge)
     form_configurable :page
@@ -147,12 +149,7 @@ module Agents
 
     def surveys
       @surveys ||= survey_ids.map do |survey_id|
-        survey = fetch_survey_details(survey_id)
-        survey['responses'] = fetch_survey_responses(survey_id)
-        if boolify(interpolated['guess_mode']) == false
-          survey['score_question_ids'] = interpolated['score_question_ids']
-          survey['comment_question_ids'] = interpolated['comment_question_ids']
-        end
+        survey = build_survey(survey_id)
         SurveyMonkeyParser.new(survey)
       end
     end
@@ -169,6 +166,17 @@ module Agents
       interpolated['per_page']
     end
 
+    def build_survey(survey_id)
+      survey = fetch_survey_details(survey_id)
+      survey['responses'] = fetch_survey_responses(survey_id)
+      if boolify(interpolated['guess_mode']) == false
+        survey['score_question_ids'] = interpolated['score_question_ids']
+        survey['comment_question_ids'] = interpolated['comment_question_ids']
+      end
+      survey['use_weights'] = boolify(interpolated['use_weights'])
+      survey
+    end
+
     def fetch_survey_responses(survey_id)
       log "Fetching survey ##{survey_id} responses"
       url = "#{SURVEYS_URL_BASE}/#{survey_id}/responses/bulk?sort_by=date_modified&sort_order=DESC&status=completed&page=#{page}&per_page=#{per_page}"
@@ -183,7 +191,10 @@ module Agents
 
     def fetch_survey_monkey_resource(uri)
       response = faraday.get(uri)
-      return {} unless response.success?
+      unless response.success?
+        log "Failed #{response.status}: #{response.body}"
+        return {}
+      end
 
       JSON.parse(response.body)
     end
