@@ -6,6 +6,6 @@ class Link < ActiveRecord::Base
   before_create :store_event_id_at_creation
 
   def store_event_id_at_creation
-    self.event_id_at_creation = source.events.limit(1).reorder("id desc").pluck(:id).first || 0
+    self.event_id_at_creation = source.events.limit(1).reorder("id desc NULLS LAST").pluck(:id).first || 0
   end
 end

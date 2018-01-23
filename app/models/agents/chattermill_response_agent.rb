@@ -6,10 +6,10 @@ module Agents
     default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
-    BASIC_OPTIONS = %w(comment score data_type data_source created_at user_meta segments)
+    BASIC_OPTIONS = %w(comment score data_type data_source created_at user_meta segments dataset_id)
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
-      production: "dev.app.chattermill.xyz",
+      production: "app.chattermill.xyz",
       development: "lvh.me:3000",
       test: "localhost:3000"
     }
@@ -45,14 +45,28 @@ module Agents
           * `score` - Specify the Liquid interpolated expresion to build the Response score.
           * `data_type` - Specify the Liquid interpolated expresion to build the Response data_type.
           * `data_source` - Specify the Liquid interpolated expresion to build the Response data_source.
+          * `dataset_id` - Specify the Liquid interpolated expresion to build the Response dataset_id. This takes precedence over `data_type` and `data_source`.
           * `created_at` - Specify the Liquid interpolated expresion to build the Response created_at date.
           * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
           * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
           * `extra_fields` - Specify the Liquid interpolated JSON to build additional fields for the Response, e.g: `{ approved: true }`.
+          * `mappings` - Specify the mapping definition object where any field can be mapped with a single value.
           * `emit_events` - Select `true` or `false`.
           * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
           * `send_batch_events` - Select `true` or `false`.
           * `max_events_per_batch` - Specify the maximum number of events that you'd like to send per batch.
+
+          If you specify `mappings` you must set up something like this:
+
+              "score": {
+                "Good, I'm satisfied": "10",
+                "Bad, I'm unsatisfied": "0"
+              },
+              "segments.segment_id.value": {
+                "Joyeux Noël": "651",
+                "Lux Letterbox Subscription": "669"
+              }
+
       MD
     end
 
@@ -82,6 +96,7 @@ module Agents
         'user_meta' => sample_hash,
         'segments' => sample_hash,
         'extra_fields' => '{}',
+        'mappings' => '{}',
         'emit_events' => 'true',
         'expected_receive_period_in_days' => '1',
         'send_batch_events' => 'true',
@@ -103,10 +118,12 @@ module Agents
     form_configurable :score
     form_configurable :data_type
     form_configurable :data_source
+    form_configurable :dataset_id
     form_configurable :created_at
     form_configurable :user_meta, type: :json, ace: { mode: 'json' }
     form_configurable :segments, type: :json, ace: { mode: 'json' }
     form_configurable :extra_fields, type: :json, ace: { mode: 'json' }
+    form_configurable :mappings, type: :json, ace: { mode: 'json' }
     form_configurable :emit_events, type: :boolean
     form_configurable :expected_receive_period_in_days
     form_configurable :send_batch_events, type: :boolean
@@ -116,6 +133,11 @@ module Agents
       if options['organization_subdomain'].blank?
         errors.add(:base, "The 'organization_subdomain' option is required.")
       end
+
+      if options['dataset_id'].blank? && new_record?
+        errors.add(:base, "The 'dataset_id' option is required.")
+      end
+
       if options['expected_receive_period_in_days'].blank?
         errors.add(:base, "The 'expected_receive_period_in_days' option is required.")
       end
@@ -171,6 +193,22 @@ module Agents
     def outgoing_data
       outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
       outgoing.merge!(interpolated['extra_fields'].presence || {})
+      apply_mappings(outgoing)
+    end
+
+    def apply_mappings(payload)
+      return payload unless interpolated['mappings'].present?
+      interpolated['mappings'].each do |path, values|
+        opt = Utils.value_at(payload, path)
+        next unless values.has_key?(opt)
+        mapped = path.split('.').reverse.each_with_index.inject({}) do |hash, (n,i)|
+          new_value = (i == 0 ? values[opt] : hash )
+          { n => new_value  }
+        end
+        payload.deep_merge!(mapped)
+      end
+
+      payload
     end
 
     def batch_events_payload
@@ -197,6 +235,7 @@ module Agents
       parse_json_option('user_meta')
       parse_json_option('segments')
       parse_json_option('extra_fields')
+      parse_json_option('mappings')
     end
 
     def parse_json_option(key)
@@ -335,7 +374,7 @@ module Agents
     def send_slack_notification(response, event)
       link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
       source_event_link = "<https://huginn.chattermill.xyz/events/#{event.id}|Source event>"
-      parsed_body = JSON.parse(response.body) rescue ""
+      parsed_body = JSON.parse(response.body) rescue response.body
 
       description = "```#{parsed_body}```\n#{source_event_link} | #{link}"
 

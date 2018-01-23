@@ -28,6 +28,9 @@ module Agents
           * `api_token` - Specify the SurveyMonkey API token for authentication.
           * `survey_ids` - Specify the list of survey IDs for which Huginn will retrieve responses.
           * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
+          * `guess_mode` - Let the agent try to figure out the score question and the comment question automatically.
+          * `score_question_ids` - Hard-code the comma separated list of ids of the score questions (agent will pick the first one present) if `guess_mode` is off
+          * `comment_question_ids` - Hard-code he comma separated list of ids of the comment questions (agent will pick the first one present) if `guess_mode` is off
           * `expected_update_period_in_days` - Specify the period in days used to calculate if the agent is working.
       MD
     end
@@ -48,7 +51,11 @@ module Agents
       {
         'api_token' => '{% credential SurveyMonkeyToken %}',
         'expected_update_period_in_days' => '2',
-        'mode' => 'on_change'
+        'mode' => 'on_change',
+        'page' => '1',
+        'per_page' => '100',
+        'guess_mode' => 'true',
+        'use_weights' => 'false'
       }
     end
 
@@ -62,7 +69,13 @@ module Agents
 
     form_configurable :api_token
     form_configurable :survey_ids
+    form_configurable :guess_mode, type: :boolean
+    form_configurable :score_question_ids
+    form_configurable :use_weights, type: :boolean
+    form_configurable :comment_question_ids
     form_configurable :mode, type: :array, values: %w(all on_change merge)
+    form_configurable :page
+    form_configurable :per_page
     form_configurable :expected_update_period_in_days
 
     def validate_options
@@ -80,14 +93,19 @@ module Agents
         errors.add(:base, "mode must be set to on_change, all or merge") unless %w[on_change all merge].include?(options['mode'])
       end
 
+      if options.key?('guess_mode') && !boolify(options['guess_mode'])
+        errors.add(:base, "score_question_ids option is required") if options['score_question_ids'].blank?
+        errors.add(:base, "comment_question_ids option is required") if options['comment_question_ids'].blank?
+      end
+
       validate_web_request_options!
     end
 
     def check
+      old_events = previous_payloads(1)
       responses = surveys.map(&:parse_responses).flatten
-
       responses.each do |response|
-        if store_payload!(previous_payloads(1), response)
+        if store_payload!(old_events, response)
           log "Storing new result for '#{name}': #{response.inspect}"
           create_event payload: response
         end
@@ -105,7 +123,7 @@ module Agents
       look_back = UNIQUENESS_FACTOR * num_events
       look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
 
-      events.order('id desc').limit(look_back) if interpolated['mode'] == 'on_change'
+      events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
     end
 
     # This method returns true if the result should be stored as a new event.
@@ -131,9 +149,7 @@ module Agents
 
     def surveys
       @surveys ||= survey_ids.map do |survey_id|
-        survey = fetch_survey_details(survey_id)
-        survey['responses'] = fetch_survey_responses(survey_id)
-
+        survey = build_survey(survey_id)
         SurveyMonkeyParser.new(survey)
       end
     end
@@ -142,9 +158,28 @@ module Agents
       @survey_ids ||= interpolated['survey_ids'].split(',').map(&:strip)
     end
 
+    def page
+      interpolated['page']
+    end
+
+    def per_page
+      interpolated['per_page']
+    end
+
+    def build_survey(survey_id)
+      survey = fetch_survey_details(survey_id)
+      survey['responses'] = fetch_survey_responses(survey_id)
+      if boolify(interpolated['guess_mode']) == false
+        survey['score_question_ids'] = interpolated['score_question_ids']
+        survey['comment_question_ids'] = interpolated['comment_question_ids']
+      end
+      survey['use_weights'] = boolify(interpolated['use_weights'])
+      survey
+    end
+
     def fetch_survey_responses(survey_id)
       log "Fetching survey ##{survey_id} responses"
-      url = "#{SURVEYS_URL_BASE}/#{survey_id}/responses/bulk?sort_by=date_modified&sort_order=DESC&status=completed"
+      url = "#{SURVEYS_URL_BASE}/#{survey_id}/responses/bulk?sort_by=date_modified&sort_order=DESC&status=completed&page=#{page}&per_page=#{per_page}"
       fetch_survey_monkey_resource(url)
     end
 
@@ -156,7 +191,10 @@ module Agents
 
     def fetch_survey_monkey_resource(uri)
       response = faraday.get(uri)
-      return {} unless response.success?
+      unless response.success?
+        log "Failed #{response.status}: #{response.body}"
+        return {}
+      end
 
       JSON.parse(response.body)
     end

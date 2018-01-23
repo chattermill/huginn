@@ -131,12 +131,13 @@ module Agents
       events += retrieve_emails if retrieve_emails?
       events += retrieve_campaigns if retrieve_campaigns?
 
-      payload = events.map { |e| usabilla_response_to_event(e) }
+      old_events = previous_payloads(1)
 
-      payload.each do |e|
-        if store_payload!(previous_payloads(1), e)
-          log "Storing new result for '#{name}': #{e.inspect}"
-          create_event payload: e
+      events.each do |e|
+        payload = usabilla_response_to_event(e)
+        if store_payload!(old_events, payload)
+          log "Storing new result for '#{name}': #{payload.inspect}"
+          create_event payload: payload
         end
       end
     end
@@ -148,7 +149,7 @@ module Agents
       look_back = UNIQUENESS_FACTOR * num_events
       look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
 
-      events.order('id desc').limit(look_back) if interpolated['mode'] == 'on_change'
+      events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
     end
 
     # This method returns true if the result should be stored as a new event.
@@ -261,7 +262,10 @@ module Agents
 
     def extract_comment(response)
       return response.comment if response.respond_to?(:comment)
-      response.data[:comment] if response.respond_to?(:data) && response.data.is_a?(Hash)
+
+      if response.respond_to?(:data) && response.data.is_a?(Hash)
+        response.data.find { |k, v| k.to_s.start_with?('comment') && v.present? }&.last
+      end
     end
 
     def extract_score(response)

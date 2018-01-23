@@ -32,6 +32,7 @@ module Agents
         * `comment_question_ids` - Hard-code he comma separated list of ids of the comment questions (agent will pick the first one present) if `guess_mode` is off
         * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
         * `limit` - Number of responses to fetch per run, better to set to a low number nad have the agent run more often.
+        * `offset` - Number of responses to offset by if you want to go back in the past
     MD
 
     event_description <<-MD
@@ -75,6 +76,7 @@ module Agents
     form_configurable :score_question_ids
     form_configurable :comment_question_ids
     form_configurable :limit
+    form_configurable :offset
     form_configurable :mode, type: :array, values: %w[all on_change merge]
     form_configurable :expected_update_period_in_days
 
@@ -84,7 +86,8 @@ module Agents
         'guess_mode' => true,
         'expected_update_period_in_days' => '1',
         'mode' => 'on_change',
-        'limit' => 20
+        'limit' => 20,
+        'offset' => 0
       }
     end
 
@@ -97,8 +100,9 @@ module Agents
     end
 
     def check
+      old_events = previous_payloads(1)
       typeform_events.each do |e|
-        if store_payload!(previous_payloads(1), e)
+        if store_payload!(old_events, e)
           log "Storing new result for '#{name}': #{e.inspect}"
           create_event payload: e
         end
@@ -112,7 +116,7 @@ module Agents
       look_back = UNIQUENESS_FACTOR * num_events
       look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
 
-      events.order('id desc').limit(look_back) if interpolated['mode'] == 'on_change'
+      events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
     end
 
     # This method returns true if the result should be stored as a new event.
@@ -177,7 +181,8 @@ module Agents
     def params
       {
         "order_by[]" => 'date_submit,desc',
-        'limit' => interpolated['limit']
+        'limit' => interpolated['limit'],
+        'offset' => interpolated['offset']
       }
     end
 

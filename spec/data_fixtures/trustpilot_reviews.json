@@ -1,0 +1,241 @@
+{
+    "links": [
+        {
+            "href": "https://api.trustpilot.com/v1/business-units/468302bb00006400050000a5",
+            "method": "GET",
+            "rel": "business-units"
+        }
+    ],
+    "reviews": [
+        {
+            "links": [
+                {
+                    "href": "https://api.trustpilot.com/v1/reviews/59883aebfba87f08a8274e07",
+                    "method": "GET",
+                    "rel": "reviews"
+                },
+                {
+                    "href": "https://api.trustpilot.com/v1/reviews/59883aebfba87f08a8274e07/web-links",
+                    "method": "GET",
+                    "rel": "reviews-web-links"
+                },
+                {
+                    "href": "https://api.trustpilot.com/v1/resources/images/stars/1",
+                    "method": "GET",
+                    "rel": "resources-images-stars"
+                }
+            ],
+            "id": "59883aebfba87f08a8274e07",
+            "consumer": {
+                "links": [
+                    {
+                        "href": "https://api.trustpilot.com/v1/consumers/593fae8d0000ff000aa31267",
+                        "method": "GET",
+                        "rel": "consumers"
+                    },
+                    {
+                        "href": "https://user-images.trustpilot.com/593fae8d0000ff000aa31267/73x73.png",
+                        "method": "GET",
+                        "rel": "profile-image"
+                    }
+                ],
+                "id": "593fae8d0000ff000aa31267",
+                "displayName": "Jeffry Taraca",
+                "displayLocation": null,
+                "numberOfReviews": 1
+            },
+            "businessUnit": {
+                "links": [
+                    {
+                        "href": "https://api.trustpilot.com/v1/business-units/468302bb00006400050000a5",
+                        "method": "GET",
+                        "rel": "business-units"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/57x43.png",
+                        "method": "GET",
+                        "rel": "profile-image-small"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/118x89.png",
+                        "method": "GET",
+                        "rel": "profile-image-medium"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/198x149.png",
+                        "method": "GET",
+                        "rel": "profile-image-large"
+                    }
+                ],
+                "id": "468302bb00006400050000a5",
+                "identifyingName": "www.actebis.dk",
+                "displayName": "Actebis"
+            },
+            "stars": 1,
+            "title": "Som ny erhvervsdrivende har jeg forsøgt …",
+            "text": "Som ny erhvervsdrivende har jeg forsøgt at oprette login til Actebis/Also.. Det gik da også fint, og søde mennesker indtil for ca 3 uger siden, da jeg fik login problemer.. Siden da har jeg sendt dem 6 E-mails og ringet 3 gange, men uden at modtage nogen form for respons eller hjælp. Det er utilgiveligt at man bare bliver efterladt hængende uden svar.\n\nHvis det er fordi de ikke mener man er vigtig nok, så få lidt mellem benene og skriv det i stedet, det værste er manglen på respons.\n\nKan absolut ikke anbefales... Det findes heldigvis mange andre leverandører som er både pålidelige og som har bare en lille snert af kundevenlig service.",
+            "language": "da",
+            "createdAt": "2017-08-07T10:03:23Z",
+            "updatedAt": null,
+            "companyReply": null,
+            "isVerified": false,
+            "numberOfLikes": 0,
+            "status": "active",
+            "reportData": null,
+            "complianceLabels": [],
+            "countsTowardsTrustScore": true,
+            "referralEmail": "jhon@email.com",
+            "referenceId": "123"
+        },
+        {
+            "links": [
+                {
+                    "href": "https://api.trustpilot.com/v1/reviews/56b85a2b0000ff000938b8bd",
+                    "method": "GET",
+                    "rel": "reviews"
+                },
+                {
+                    "href": "https://api.trustpilot.com/v1/reviews/56b85a2b0000ff000938b8bd/web-links",
+                    "method": "GET",
+                    "rel": "reviews-web-links"
+                },
+                {
+                    "href": "https://api.trustpilot.com/v1/resources/images/stars/1",
+                    "method": "GET",
+                    "rel": "resources-images-stars"
+                }
+            ],
+            "id": "56b85a2b0000ff000938b8bd",
+            "consumer": {
+                "links": [
+                    {
+                        "href": "https://api.trustpilot.com/v1/consumers/50c5c2f20000640001299ba2",
+                        "method": "GET",
+                        "rel": "consumers"
+                    }
+                ],
+                "id": "50c5c2f20000640001299ba2",
+                "displayName": "Michael",
+                "displayLocation": null,
+                "numberOfReviews": 14
+            },
+            "businessUnit": {
+                "links": [
+                    {
+                        "href": "https://api.trustpilot.com/v1/business-units/468302bb00006400050000a5",
+                        "method": "GET",
+                        "rel": "business-units"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/57x43.png",
+                        "method": "GET",
+                        "rel": "profile-image-small"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/118x89.png",
+                        "method": "GET",
+                        "rel": "profile-image-medium"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/198x149.png",
+                        "method": "GET",
+                        "rel": "profile-image-large"
+                    }
+                ],
+                "id": "468302bb00006400050000a5",
+                "identifyingName": "www.actebis.dk",
+                "displayName": "Actebis"
+            },
+            "stars": 1,
+            "title": "Slet ingen respons",
+            "text": "Som ny erhvervsdrivende har jeg forsøgt at oprette login til Actebis/Also.. Det gik da også fint, og søde mennesker indtil for ca 3 uger siden, da jeg fik login problemer.. Siden da har jeg sendt dem 6 E-mails og ringet 3 gange, men uden at modtage nogen form for respons eller hjælp. Det er utilgiveligt at man bare bliver efterladt hængende uden svar. \r\n\r\nHvis det er fordi de ikke mener man er vigtig nok, så få lidt mellem benene og skriv det i stedet, det værste er manglen på respons. \r\n\r\nKan absolut ikke anbefales... Det findes heldigvis mange andre leverandører som er både pålidelige og som har bare en lille snert af kundevenlig service.",
+            "language": "da",
+            "createdAt": "2016-02-08T09:04:43Z",
+            "updatedAt": null,
+            "companyReply": null,
+            "isVerified": false,
+            "numberOfLikes": 1,
+            "status": "active",
+            "reportData": null,
+            "complianceLabels": [],
+            "countsTowardsTrustScore": true,
+            "referralEmail": "jhon@email.com",
+            "referenceId": "123"
+        },
+        {
+            "links": [
+                {
+                    "href": "https://api.trustpilot.com/v1/reviews/504e1c59000064000227282c",
+                    "method": "GET",
+                    "rel": "reviews"
+                },
+                {
+                    "href": "https://api.trustpilot.com/v1/reviews/504e1c59000064000227282c/web-links",
+                    "method": "GET",
+                    "rel": "reviews-web-links"
+                },
+                {
+                    "href": "https://api.trustpilot.com/v1/resources/images/stars/4",
+                    "method": "GET",
+                    "rel": "resources-images-stars"
+                }
+            ],
+            "id": "504e1c59000064000227282c",
+            "consumer": {
+                "links": [
+                    {
+                        "href": "https://api.trustpilot.com/v1/consumers/4d9ae768000064000107a997",
+                        "method": "GET",
+                        "rel": "consumers"
+                    }
+                ],
+                "id": "4d9ae768000064000107a997",
+                "displayName": "T.T",
+                "displayLocation": "kbh, DK",
+                "numberOfReviews": 4
+            },
+            "businessUnit": {
+                "links": [
+                    {
+                        "href": "https://api.trustpilot.com/v1/business-units/468302bb00006400050000a5",
+                        "method": "GET",
+                        "rel": "business-units"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/57x43.png",
+                        "method": "GET",
+                        "rel": "profile-image-small"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/118x89.png",
+                        "method": "GET",
+                        "rel": "profile-image-medium"
+                    },
+                    {
+                        "href": "https://s3-eu-west-1.amazonaws.com/tpd/screenshots/468302bb00006400050000a5/198x149.png",
+                        "method": "GET",
+                        "rel": "profile-image-large"
+                    }
+                ],
+                "id": "468302bb00006400050000a5",
+                "identifyingName": "www.actebis.dk",
+                "displayName": "Actebis"
+            },
+            "stars": 4,
+            "title": "Godt",
+            "text": "De har styr på det, fungerer godt.",
+            "language": "da",
+            "createdAt": "2012-09-10T16:59:05Z",
+            "updatedAt": null,
+            "companyReply": null,
+            "isVerified": false,
+            "numberOfLikes": 0,
+            "status": "active",
+            "reportData": null,
+            "complianceLabels": [],
+            "countsTowardsTrustScore": true,
+            "referralEmail": "jhon@email.com",
+            "referenceId": "123"
+        }
+    ]
+}
