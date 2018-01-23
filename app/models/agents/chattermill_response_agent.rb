@@ -6,7 +6,7 @@ module Agents
     default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
-    BASIC_OPTIONS = %w(comment score kind stream created_at user_meta segments dataset_id)
+    BASIC_OPTIONS = %w(comment score created_at user_meta segments dataset_id)
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "app.chattermill.xyz",
@@ -43,9 +43,7 @@ module Agents
           * `organization_subdomain` - Specify the subdomain for the target organization (e.g `moo` or `hellofresh`).
           * `comment` - Specify the Liquid interpolated expresion to build the Response comment.
           * `score` - Specify the Liquid interpolated expresion to build the Response score.
-          * `kind` - Specify the Liquid interpolated expresion to build the Response kind.
-          * `stream` - Specify the Liquid interpolated expresion to build the Response stream.
-          * `dataset_id` - Specify the Liquid interpolated expresion to build the Response dataset_id. This takes precedence over `kind` and `stream`.
+          * `dataset_id` - Specify the Liquid interpolated expresion to build the Response dataset_id.
           * `created_at` - Specify the Liquid interpolated expresion to build the Response created_at date.
           * `user_meta` - Specify the Liquid interpolated JSON to build the Response user metas.
           * `segments` - Specify the Liquid interpolated JSON to build the Response segments.
@@ -90,8 +88,6 @@ module Agents
       {
         'comment' => '{{ data.comment }}',
         'score' => '{{ data.score }}',
-        'kind' => 'nps',
-        'stream' => 'nps_survey',
         'created_at' => '{{ data.date }}',
         'user_meta' => sample_hash,
         'segments' => sample_hash,
@@ -116,8 +112,6 @@ module Agents
     form_configurable :id
     form_configurable :comment
     form_configurable :score
-    form_configurable :kind
-    form_configurable :stream
     form_configurable :dataset_id
     form_configurable :created_at
     form_configurable :user_meta, type: :json, ace: { mode: 'json' }
@@ -407,25 +401,22 @@ module Agents
 
       attr_reader :data
 
-      validates :score, presence: true, numericality: true, if: :validate_score?
+      validates :dataset_id, presence: true, numericality: true
+      validates :score, numericality: true, if: 'score.present?'
+
 
       def initialize(data)
         @data = data
-      end
-
-      def data_type
-        data['kind']
       end
 
       def score
         data['score']
       end
 
-      private
-
-      def validate_score?
-        data_type.in?(%w[nps review csat])
+      def dataset_id
+        data['dataset_id']
       end
+
     end
   end
 end
