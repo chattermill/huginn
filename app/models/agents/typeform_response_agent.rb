@@ -6,7 +6,7 @@ module Agents
     include FormConfigurable
 
     UNIQUENESS_LOOK_BACK = 500
-    UNIQUENESS_FACTOR = 5
+    UNIQUENESS_FACTOR = 1
 
     gem_dependency_check { defined?(Typeform) }
 
@@ -39,6 +39,7 @@ module Agents
         * `until` - Specify date and time, to limit request to responses submitted until the specified date and time, e.g. `1979-05-27 05:00:00`, `January 5 at 7pm` [more valid formats](https://github.com/mojombo/chronic).
         * `mapping_object` - Specify the mapping definition object where any hidden_variables can be mapped with a single value.
         * `bucketing_object` - Specify the bucketing definition object where any hidden_variables can be broken into a specific bucket.
+        * `uniqueness_look_back` - Set the limit the number of events checked for uniqueness (typically for performance).  This defaults to the larger of #{UNIQUENESS_LOOK_BACK} or #{UNIQUENESS_FACTOR}x the number of detected received results.
 
         If you specify `mapping_object` you must set up something like this:
 
@@ -160,6 +161,7 @@ module Agents
     form_configurable :mapping_object, type: :json, ace: { mode: 'json' }
     form_configurable :bucketing_object, type: :json, ace: { mode: 'json' }
     form_configurable :mode, type: :array, values: %w[all on_change merge]
+    form_configurable :uniqueness_look_back
     form_configurable :expected_update_period_in_days
 
     def default_options
@@ -210,9 +212,13 @@ module Agents
     private
 
     def previous_payloads(num_events)
-      # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-      look_back = UNIQUENESS_FACTOR * num_events
-      look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
+      if interpolated['uniqueness_look_back'].present?
+        look_back = interpolated['uniqueness_look_back'].to_i
+      else
+        # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
+        look_back = UNIQUENESS_FACTOR * num_events
+        look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
+      end
 
       events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
     end
