@@ -5,7 +5,7 @@ module Agents
     include FormConfigurable
 
     UNIQUENESS_LOOK_BACK = 500
-    UNIQUENESS_FACTOR = 5
+    UNIQUENESS_FACTOR = 1
 
     gem_dependency_check { defined?(Typeform) }
 
@@ -32,7 +32,8 @@ module Agents
         * `comment_question_ids` - Hard-code he comma separated list of ids of the comment questions (agent will pick the first one present) if `guess_mode` is off
         * `expected_receive_period_in_days` - Specify the period in days used to calculate if the agent is working.
         * `limit` - Number of responses to fetch per run, better to set to a low number nad have the agent run more often.
-        * `offset` - Number of responses to offset by if you want to go back in the past
+        * `offset` - Number of responses to offset by if you want to go back in the past.
+        * `uniqueness_look_back` - Set the limit the number of events checked for uniqueness (typically for performance).  This defaults to the larger of #{UNIQUENESS_LOOK_BACK} or #{UNIQUENESS_FACTOR}x the number of detected received results.
     MD
 
     event_description <<-MD
@@ -78,6 +79,7 @@ module Agents
     form_configurable :limit
     form_configurable :offset
     form_configurable :mode, type: :array, values: %w[all on_change merge]
+    form_configurable :uniqueness_look_back
     form_configurable :expected_update_period_in_days
 
     def default_options
@@ -112,9 +114,13 @@ module Agents
     private
 
     def previous_payloads(num_events)
-      # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-      look_back = UNIQUENESS_FACTOR * num_events
-      look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
+      if interpolated['uniqueness_look_back'].present?
+        look_back = interpolated['uniqueness_look_back'].to_i
+      else
+        # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
+        look_back = UNIQUENESS_FACTOR * num_events
+        look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
+      end
 
       events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
     end
