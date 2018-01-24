@@ -125,21 +125,29 @@ module Agents
     end
 
     def check
-      events = []
-      events += retrieve_buttons if retrieve_buttons?
-      events += retrieve_apps if retrieve_apps?
-      events += retrieve_emails if retrieve_emails?
-      events += retrieve_campaigns if retrieve_campaigns?
+      unless agent_in_process?
+        process_agent!
+        events = []
+        events += retrieve_buttons if retrieve_buttons?
+        events += retrieve_apps if retrieve_apps?
+        events += retrieve_emails if retrieve_emails?
+        events += retrieve_campaigns if retrieve_campaigns?
 
-      old_events = previous_payloads(1)
+        old_events = previous_payloads(1)
 
-      events.each do |e|
-        payload = usabilla_response_to_event(e)
-        if store_payload!(old_events, payload)
-          log "Storing new result for '#{name}': #{payload.inspect}"
-          create_event payload: payload
+        events.each do |e|
+          payload = usabilla_response_to_event(e)
+          if store_payload!(old_events, payload)
+            log "Storing new result for '#{name}': #{payload.inspect}"
+            create_event payload: payload
+          end
         end
+        memory['in_process'] = false
       end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
 
     private
@@ -279,6 +287,15 @@ module Agents
 
     def usabilla_api
       UsabillaApi
+    end
+
+    def agent_in_process?
+      boolify(memory['in_process'])
+    end
+
+    def process_agent!
+      memory['in_process'] = true
+      save!
     end
   end
 end
