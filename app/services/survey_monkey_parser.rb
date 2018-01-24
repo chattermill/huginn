@@ -159,18 +159,20 @@ class SurveyMonkeyParser
       choices = details.dig('answers','choices')
 
       question['answers']&.each_with_object({}) do |a, hsh|
-        if a['choice_id'].present? && a['row_id'].present?
-          row = rows&.find { |r| r['id'] == a['row_id'] }
-          choice = choices&.find { |c| c['id'] == a['choice_id'] }
+        row = rows&.find { |r| r['id'] == a['row_id'] }['text'] if a['row_id'].present?
+        key = row || heading
+        value = extract_text_from_answer(a, choices)
 
-          hsh[row['text']] = choice['text']
-        elsif a['choice_id'].present?
-          choice = choices&.find { |c| c['id'] == a['choice_id'] }
+        hsh[key] = hsh[key].blank? ? value : "#{hsh[key].to_s}, #{value}"
+      end
+    end
 
-          hsh[heading] = choice['text']
-        else
-          hsh[heading] = a['text']
-        end
+    def extract_text_from_answer(answer, choices)
+      if answer['choice_id'].present?
+        choice = choices&.find { |c| c['id'] == answer['choice_id'] }
+        choice['text']
+      else
+        answer['text']
       end
     end
 
