@@ -76,13 +76,21 @@ module Agents
     end
 
     def check
-      old_events = previous_payloads(1)
-      delighted_events.each do |e|
-        if store_payload!(old_events, e)
-          log "Storing new result for '#{name}': #{e.inspect}"
-          create_event payload: e
+      unless agent_in_process?
+        process_agent!
+        old_events = previous_payloads(1)
+        delighted_events.each do |e|
+          if store_payload!(old_events, e)
+            log "Storing new result for '#{name}': #{e.inspect}"
+            create_event payload: e
+          end
         end
+        memory['in_process'] = false
       end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
 
     private
@@ -143,6 +151,15 @@ module Agents
 
     def delighted_client
       @delighted_client ||= Delighted::Client.new(api_key: interpolated['api_key'])
+    end
+
+    def agent_in_process?
+      boolify(memory['in_process'])
+    end
+
+    def process_agent!
+      memory['in_process'] = true
+      save!
     end
   end
 end

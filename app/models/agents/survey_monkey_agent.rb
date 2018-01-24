@@ -108,14 +108,22 @@ module Agents
     end
 
     def check
-      responses = surveys.map(&:parse_responses).flatten
-      old_events = previous_payloads(responses.count)
-      responses.each do |response|
-        if store_payload!(old_events, response)
-          log "Storing new result for '#{name}': #{response.inspect}"
-          create_event payload: response
+      unless agent_in_process?
+        process_agent!
+        old_events = previous_payloads(responses.count)
+        responses = surveys.map(&:parse_responses).flatten
+        responses.each do |response|
+          if store_payload!(old_events, response)
+            log "Storing new result for '#{name}': #{response.inspect}"
+            create_event payload: response
+          end
         end
+        memory['in_process'] = false
       end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
 
     private
@@ -207,6 +215,15 @@ module Agents
       end
 
       JSON.parse(response.body)
+    end
+
+    def agent_in_process?
+      boolify(memory['in_process'])
+    end
+
+    def process_agent!
+      memory['in_process'] = true
+      save!
     end
   end
 end
