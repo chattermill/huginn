@@ -22,6 +22,7 @@ describe Agents::ChattermillResponseAgent do
       'user_meta' => user_meta.to_json,
       'extra_fields' => '{}',
       'mappings' => '{}',
+      'bucketing' => '{}',
       'send_batch_events' => 'false',
       'max_events_per_batch' => 2,
       'dataset_id' => 1
@@ -340,6 +341,49 @@ describe Agents::ChattermillResponseAgent do
             expect(@sent_requests[:post].first.data).to eq expected
           end
         end
+
+        describe "with bucketing" do
+          before do
+            @checker.options['emit_events'] = 'true'
+            @checker.options['score'] = '{{ data.score }}'
+            @checker.options['bucketing'] = {
+              "score": {
+                "": "0",
+                "1-25": "1",
+                "26-50": "3",
+                "51-75": "4",
+                "76-100": "5"
+              }
+            }
+          end
+
+          it "emits event with mapped payload" do
+            @event.payload['data']['score'] = '51'
+            @event.payload['data']['segment'] = 'My segment'
+            @checker.receive([@event])
+
+            expected = {
+              "comment" => "Test Comment",
+              "score" => "4",
+              "user_meta"=> {
+                "meta_id"=> {
+                  "type"=>"text",
+                  "name"=>"Meta Id"
+                }
+              },
+              "segments"=> {
+                "segment_id" => {
+                  "type" => "text",
+                  "name" => "Segment Id",
+                  "value" => "My segment"
+                }
+              },
+              "dataset_id" => 1
+            }
+
+            expect(@sent_requests[:post].first.data).to eq expected
+          end
+        end
       end
     end
 
@@ -590,6 +634,22 @@ describe Agents::ChattermillResponseAgent do
       expect(@checker).to be_valid
 
       @checker.options['mappings'] = "invalid json"
+      @checker.save
+      expect(@checker).to_not be_valid
+    end
+
+    it "should validate bucketing as a hash" do
+      @checker.options['bucketing'] = {}
+      @checker.save
+      expect(@checker).to be_valid
+    end
+
+    it "should validate bucketing as a JSON string" do
+      @checker.options['bucketing'] = '{}'
+      @checker.save
+      expect(@checker).to be_valid
+
+      @checker.options['bucketing'] = "invalid json"
       @checker.save
       expect(@checker).to_not be_valid
     end
