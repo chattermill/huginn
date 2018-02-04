@@ -147,6 +147,8 @@ module Agents
     end
 
     def fetch_resource
+      return unless request_url.present?
+
       log "Fetching reviews for products: #{options['products']}"
       response = faraday.get(request_url)
       unless response.success?
@@ -157,15 +159,17 @@ module Agents
     end
 
     def request_url
+      return unless params.present?
       url = APPFIGURES_URL_BASE
-      url << "?#{params}" if params.present?
+      url << "?#{params}"
       url
     end
 
     def params
-      query_string = []
+      return unless options['products'].present?
+
+      query_string = ["products=#{options['products']}"]
       query_string << options['filter'] if options['filter'].present?
-      query_string << "products=#{options['products']}" if options['products'].present?
       query_string.join('&')
     end
 
