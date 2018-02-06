@@ -160,9 +160,7 @@ module Agents
 
     def request_url
       return unless params.present?
-      url = APPFIGURES_URL_BASE
-      url << "?#{params}"
-      url
+      "#{APPFIGURES_URL_BASE}?#{params}"
     end
 
     def params
