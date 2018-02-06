@@ -140,16 +140,17 @@ class SurveyMonkeyParser
     def full_response
       questions = response.questions
       questions.each_with_object({}) do |question, hsh|
-        details = survey.find_question(question['id'])
-        heading = details['headings']&.first['heading']
+        details = survey.find_question(question['id']) || {}
+        heading = details.present? ? details['headings']&.first['heading'] : ""
 
         hsh[question['id']] = {
           id: question['id'],
           family: details['family'],
           subtype: details['subtype'],
           question: heading,
-          answers: answers_from_question_payload(question, details)
+          answers: details.present? ? answers_from_question_payload(question, details) : question['answers']
         }
+
       end
     end
 
