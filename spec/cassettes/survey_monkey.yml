@@ -1,0 +1,239 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.surveymonkey.net/v3/surveys/120641887/details
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/cantino/huginn
+      Authorization:
+      - bearer token123
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - nginx
+      Date:
+      - Wed, 07 Feb 2018 18:31:13 GMT
+      Content-Type:
+      - application/json; charset=UTF-8
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Set-Cookie:
+      - ep201=hfSlkF/ahU2R3J59g7EC0mCBmh4=; Domain=.surveymonkey.net; Path=/; Expires=Wed,
+        07-Feb-18 19:01:12 GMT
+      - ep202=0WfXEcw9XA/OaOpENK6wZ94zwQw=; Domain=.surveymonkey.net; Path=/; Expires=Fri,
+        08-Feb-19 00:19:58 GMT
+      Vary:
+      - Accept-Encoding
+      X-Ratelimit-App-Global-Minute-Limit:
+      - '720'
+      X-Ratelimit-App-Global-Minute-Remaining:
+      - '719'
+      X-Ratelimit-App-Global-Minute-Reset:
+      - '47'
+      X-Ratelimit-App-Global-Day-Limit:
+      - '500000'
+      X-Ratelimit-App-Global-Day-Remaining:
+      - '499293'
+      X-Ratelimit-App-Global-Day-Reset:
+      - '19727'
+      Sm-Request-Id:
+      - c159c0e3-3d43-4f6d-9e00-f38e9f79cf5a
+      X-Oauth-Scopes-Granted:
+      - surveys_read,collectors_read,responses_read,responses_read_detail,webhooks_write
+      X-Oauth-Scopes-Available:
+      - users_read,surveys_read,collectors_read,collectors_write,contacts_read,contacts_write,surveys_write,responses_read,responses_read_detail,responses_write,groups_read,webhooks_read,webhooks_write,library_read
+      Cache-Control:
+      - no-store, no-cache, max-age=0, private, must-revalidate
+      Access-Control-Allow-Headers:
+      - Authorization, Content-Type
+      Access-Control-Allow-Methods:
+      - POST, GET, PATCH, PUT, DELETE, OPTIONS, HEAD
+      Access-Control-Allow-Origin:
+      - "*"
+      Content-Encoding:
+      - gzip
+      X-Xss-Protection:
+      - 1; mode=block
+      X-Content-Type-Options:
+      - nosniff
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        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
+    http_version:
+  recorded_at: Wed, 07 Feb 2018 18:31:13 GMT
+- request:
+    method: get
+    uri: https://api.surveymonkey.net/v3/surveys/120641887/responses/bulk?page=1&per_page=5&sort_by=date_modified&sort_order=DESC&status=completed
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/cantino/huginn
+      Authorization:
+      - bearer scqXLhiOq9ixoTluRTXlz9whOh.WxNoiRcZ91.4wSs9tpOsqZRSDan0iarzfzkaQZKhWEpm3QLcYsfUX8HHva98BH-f.LnGuawKyLztS6qy-6Hk-gsV.Qms-tV5h-OxW
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Server:
+      - nginx
+      Date:
+      - Wed, 07 Feb 2018 18:31:14 GMT
+      Content-Type:
+      - application/json; charset=UTF-8
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+      Set-Cookie:
+      - ep201=mO2lvP6QLSjqFxc4gdHZoP7iN5s=; Domain=.surveymonkey.net; Path=/; Expires=Wed,
+        07-Feb-18 19:01:13 GMT
+      - ep202=Q1AHuvCjZzJahEx+EQNMJIDPE84=; Domain=.surveymonkey.net; Path=/; Expires=Fri,
+        08-Feb-19 00:19:59 GMT
+      Vary:
+      - Accept-Encoding
+      X-Ratelimit-App-Global-Minute-Limit:
+      - '720'
+      X-Ratelimit-App-Global-Minute-Remaining:
+      - '718'
+      X-Ratelimit-App-Global-Minute-Reset:
+      - '46'
+      X-Ratelimit-App-Global-Day-Limit:
+      - '500000'
+      X-Ratelimit-App-Global-Day-Remaining:
+      - '499292'
+      X-Ratelimit-App-Global-Day-Reset:
+      - '19726'
+      Link:
+      - <https://api.surveymonkey.net/v3/surveys/120641887/responses/bulk?page=1&per_page=5>;
+        rel="self", <https://api.surveymonkey.net/v3/surveys/120641887/responses/bulk?page=2&per_page=5>;
+        rel="next", <https://api.surveymonkey.net/v3/surveys/120641887/responses/bulk?page=910&per_page=5>;
+        rel="last"
+      Sm-Request-Id:
+      - e4b8d160-0006-4a2b-aba8-d3050d78e546
+      X-Oauth-Scopes-Granted:
+      - surveys_read,collectors_read,responses_read,responses_read_detail,webhooks_write
+      X-Oauth-Scopes-Available:
+      - users_read,surveys_read,collectors_read,collectors_write,contacts_read,contacts_write,surveys_write,responses_read,responses_read_detail,responses_write,groups_read,webhooks_read,webhooks_write,library_read
+      Cache-Control:
+      - no-store, no-cache, max-age=0, private, must-revalidate
+      Access-Control-Allow-Headers:
+      - Authorization, Content-Type
+      Access-Control-Allow-Methods:
+      - POST, GET, PATCH, PUT, DELETE, OPTIONS, HEAD
+      Access-Control-Allow-Origin:
+      - "*"
+      Content-Encoding:
+      - gzip
+      X-Xss-Protection:
+      - 1; mode=block
+      X-Content-Type-Options:
+      - nosniff
+    body:
+      encoding: ASCII-8BIT
+      string: !binary |-
+        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
+        O09L+MR4vkhSFuo3uoi5vsTDw38B1si4wd0aAAA=
+    http_version:
+  recorded_at: Wed, 07 Feb 2018 18:31:15 GMT
+recorded_with: VCR 3.0.3
