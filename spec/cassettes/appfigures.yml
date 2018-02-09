@@ -1,0 +1,72 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.appfigures.com/v2/reviews?count=2&products=41013601294
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/cantino/huginn
+      X-Client-Key:
+      - 5696c786d30d4b7788fdc35cd886e852
+      Authorization:
+      - Basic token123
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - private
+      Transfer-Encoding:
+      - chunked
+      Content-Type:
+      - application/json; charset=utf-8
+      Etag:
+      - '"5kWe9Logpq538bgkAzYwuA=="'
+      X-Request-Limit:
+      - '2500'
+      X-Request-Usage:
+      - '426'
+      X-Partner-Credit-Cost:
+      - '1'
+      X-Partner-Credits-Remaining:
+      - '75'
+      X-Partner-Reason:
+      - 'Some given products are not owned by your account. (the first one is: 41013601294)'
+      X-Server-Id:
+      - '12'
+      Date:
+      - Fri, 09 Feb 2018 18:43:48 GMT
+      X-Frame-Options:
+      - SAMEORIGIN
+    body:
+      encoding: UTF-8
+      string: "{\r\n  \"total\": 678,\r\n  \"pages\": 339,\r\n  \"this_page\": 1,\r\n
+        \ \"reviews\": [\r\n    {\r\n      \"author\": \"Yang Li\",\r\n      \"title\":
+        \"Some title\",\r\n      \"review\": \"good.\",\r\n      \"original_title\": \"\",\r\n
+        \     \"original_review\": \"good.\",\r\n      \"stars\": \"4.00\",\r\n      \"iso\":
+        \"ZZ\",\r\n      \"version\": \"3.3.1003\",\r\n      \"date\": \"2018-02-09T11:45:38\",\r\n
+        \     \"product\": 41013601294,\r\n      \"product_id\": 41013601294,\r\n
+        \     \"product_name\": \"reed.co.uk\",\r\n
+        \     \"vendor_id\": \"com.reedcouk.jobs\",\r\n      \"store\": \"google_play\",\r\n
+        \     \"weight\": 0,\r\n      \"id\": \"41013601294LtY5FiF31ODTSyH8hOem4Nw\",\r\n
+        \     \"predicted_langs\": [\r\n        \"cy\",\r\n        \"bs\",\r\n        \"hr\",\r\n
+        \       \"sh\",\r\n        \"tl\"\r\n      ]\r\n    },\r\n    {\r\n      \"author\":
+        \"Shane Heaney\",\r\n      \"title\": \"\",\r\n      \"review\": \"Crashes
+        5 times a day at least without even opening it. Unreliable and unstable at
+        best.\",\r\n      \"original_title\": \"\",\r\n      \"original_review\":
+        \"Crashes 5 times a day at least without even opening it. Unreliable and unstable
+        at best.\",\r\n      \"stars\": \"1.00\",\r\n      \"iso\": \"ZZ\",\r\n      \"version\":
+        \"\",\r\n      \"date\": \"2018-02-08T18:08:56\",\r\n      \"product\": 41013601294,\r\n
+        \     \"product_id\": 41013601294,\r\n      \"product_name\": \"reed.co.uk\",\r\n      \"vendor_id\": \"com.reedcouk.jobs\",\r\n
+        \     \"store\": \"google_play\",\r\n      \"weight\": 0,\r\n      \"id\":
+        \"41013601294L4VCjfobs47u8H56Nhj2Rkg\",\r\n      \"predicted_langs\": [\r\n
+        \       \"en\"\r\n      ]\r\n    }\r\n  ]\r\n}"
+    http_version:
+  recorded_at: Fri, 09 Feb 2018 18:43:47 GMT
+recorded_with: VCR 3.0.3
