@@ -1,0 +1,487 @@
+{
+    "response_count": 1692,
+    "page_count": 2,
+    "date_created": "2015-02-06T12:02:00",
+    "buttons_text": {
+        "done_button": "Done",
+        "prev_button": "Prev",
+        "exit_button": "",
+        "next_button": "Next"
+    },
+    "folder_id": "0",
+    "custom_variables": {},
+    "nickname": "",
+    "id": "60926882",
+    "question_count": 6,
+    "category": "customer_feedback",
+    "preview": "https://www.surveymonkey.com/r/Preview/?sm=hwY8qGn9qLXMJdz0blVv5GXHie38JQ7bbr3rg041Q7_2B4ypAq0v8W26xra_2BaKsjHP",
+    "is_owner": true,
+    "language": "en",
+    "footer": true,
+    "date_modified": "2018-02-08T08:36:00",
+    "analyze_url": "https://www.surveymonkey.com/analyze/_2BTDYttIauv5a7exEQzEGPjFSn4Gxcoyb9OP2yMH8XC4_3D",
+    "pages": [
+        {
+            "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606274",
+            "description": "<div>Help us improve our customer service by answering the following 3 questions:</div>",
+            "questions": [
+                {
+                    "sorting": null,
+                    "family": "single_choice",
+                    "subtype": "vertical",
+                    "required": null,
+                    "answers": {
+                        "choices": [
+                            {
+                                "visible": true,
+                                "text": "Yes",
+                                "position": 1,
+                                "id": "8607476092"
+                            },
+                            {
+                                "visible": true,
+                                "text": "No",
+                                "position": 2,
+                                "id": "8607476093"
+                            }
+                        ]
+                    },
+                    "visible": true,
+                    "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606274/questions/759363655",
+                    "headings": [
+                        {
+                            "heading": "Did we answer your question?"
+                        }
+                    ],
+                    "position": 1,
+                    "validation": null,
+                    "id": "759363655",
+                    "forced_ranking": false
+                },
+                {
+                    "sorting": null,
+                    "family": "single_choice",
+                    "subtype": "vertical",
+                    "required": null,
+                    "answers": {
+                        "choices": [
+                            {
+                                "visible": true,
+                                "text": "Excellent 5",
+                                "position": 1,
+                                "id": "8607476066"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Good 4",
+                                "position": 2,
+                                "id": "8607476067"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Average 3",
+                                "position": 3,
+                                "id": "8607476068"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Bad 2",
+                                "position": 4,
+                                "id": "8607476069"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Very Bad 1",
+                                "position": 5,
+                                "id": "8607476070"
+                            }
+                        ]
+                    },
+                    "visible": true,
+                    "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606274/questions/759363652",
+                    "headings": [
+                        {
+                            "heading": "In general, what do you think of the answer you have received?"
+                        }
+                    ],
+                    "position": 2,
+                    "validation": null,
+                    "id": "759363652",
+                    "forced_ranking": false
+                },
+                {
+                    "sorting": null,
+                    "family": "matrix",
+                    "subtype": "rating",
+                    "required": {
+                        "text": "Cette question nécessite une réponse.",
+                        "amount": "0",
+                        "type": "all"
+                    },
+                    "answers": {
+                        "rows": [
+                            {
+                                "visible": true,
+                                "text": "Enthusiasm",
+                                "position": 1,
+                                "id": "8607476079"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Professionalism",
+                                "position": 2,
+                                "id": "8607476080"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Understanding of your needs",
+                                "position": 3,
+                                "id": "8607476081"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Clarity of answer",
+                                "position": 4,
+                                "id": "8607476083"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Patience",
+                                "position": 5,
+                                "id": "8607476082"
+                            }
+                        ],
+                        "choices": [
+                            {
+                                "description": "",
+                                "weight": 5,
+                                "visible": true,
+                                "id": "8607476074",
+                                "is_na": false,
+                                "text": "Excellent 4",
+                                "position": 1
+                            },
+                            {
+                                "description": "",
+                                "weight": 4,
+                                "visible": true,
+                                "id": "8607476075",
+                                "is_na": false,
+                                "text": "Good 3",
+                                "position": 2
+                            },
+                            {
+                                "description": "",
+                                "weight": 3,
+                                "visible": true,
+                                "id": "8607476076",
+                                "is_na": false,
+                                "text": "Average 2",
+                                "position": 3
+                            },
+                            {
+                                "description": "",
+                                "weight": 2,
+                                "visible": true,
+                                "id": "8607476077",
+                                "is_na": false,
+                                "text": "Bad 1",
+                                "position": 4
+                            },
+                            {
+                                "description": "",
+                                "weight": 1,
+                                "visible": true,
+                                "id": "8607476078",
+                                "is_na": false,
+                                "text": "Very bad 0",
+                                "position": 5
+                            }
+                        ]
+                    },
+                    "visible": true,
+                    "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606274/questions/759363654",
+                    "headings": [
+                        {
+                            "heading": "In the following area, how would you evaluate the agent who answered you?"
+                        }
+                    ],
+                    "position": 3,
+                    "validation": null,
+                    "id": "759363654",
+                    "forced_ranking": false
+                }
+            ],
+            "title": "",
+            "position": 1,
+            "id": "191606274",
+            "question_count": 3
+        },
+        {
+            "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606275",
+            "description": "",
+            "questions": [
+                {
+                    "sorting": null,
+                    "family": "open_ended",
+                    "subtype": "essay",
+                    "required": null,
+                    "visible": true,
+                    "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606275/questions/759363658",
+                    "headings": [
+                        {
+                            "heading": "How could we improve the service?"
+                        }
+                    ],
+                    "position": 1,
+                    "validation": null,
+                    "id": "759363658",
+                    "forced_ranking": false
+                },
+                {
+                    "sorting": null,
+                    "family": "open_ended",
+                    "subtype": "essay",
+                    "required": null,
+                    "visible": true,
+                    "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606275/questions/759363659",
+                    "headings": [
+                        {
+                            "heading": "What would be your suggestions to improve Vivastreet ?"
+                        }
+                    ],
+                    "position": 2,
+                    "validation": null,
+                    "id": "759363659",
+                    "forced_ranking": false
+                },
+                {
+                    "sorting": null,
+                    "family": "open_ended",
+                    "subtype": "multi",
+                    "required": null,
+                    "answers": {
+                        "rows": [
+                            {
+                                "visible": true,
+                                "text": "Email address",
+                                "position": 1,
+                                "id": "8607476102"
+                            },
+                            {
+                                "visible": true,
+                                "text": "Telephone number",
+                                "position": 2,
+                                "id": "8607476103"
+                            }
+                        ]
+                    },
+                    "visible": true,
+                    "href": "https://api.surveymonkey.net/v3/surveys/60926882/pages/191606275/questions/759363657",
+                    "headings": [
+                        {
+                            "heading": "If you wish, enter your contact information below so we can contact you if necessary:"
+                        }
+                    ],
+                    "position": 3,
+                    "validation": null,
+                    "id": "759363657",
+                    "forced_ranking": false
+                }
+            ],
+            "title": "",
+            "position": 2,
+            "id": "191606275",
+            "question_count": 3
+        }
+    ],
+    "title": "CS Phone VIVA UK",
+    "responses": {
+        "per_page": 2,
+        "total": 1411,
+        "data": [
+            {
+                "total_time": 117,
+                "href": "https://api.surveymonkey.net/v3/surveys/60926882/responses/5487508380",
+                "custom_variables": {
+                  "key": "some value"
+                },
+                "ip_address": "85.255.236.178",
+                "id": "5487508380",
+                "logic_path": {},
+                "date_modified": "2018-02-08T08:37:47+00:00",
+                "response_status": "completed",
+                "custom_value": "",
+                "analyze_url": "http://www.example.com",
+                "pages": [
+                    {
+                        "id": "191606274",
+                        "questions": [
+                            {
+                                "id": "759363655",
+                                "answers": [
+                                    {
+                                        "choice_id": "8607476093"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "759363654",
+                                "answers": [
+                                    {
+                                        "choice_id": "8607476078",
+                                        "row_id": "8607476079"
+                                    },
+                                    {
+                                        "choice_id": "8607476078",
+                                        "row_id": "8607476080"
+                                    },
+                                    {
+                                        "choice_id": "8607476075",
+                                        "row_id": "8607476081"
+                                    },
+                                    {
+                                        "choice_id": "8607476078",
+                                        "row_id": "8607476083"
+                                    },
+                                    {
+                                        "choice_id": "8607476078",
+                                        "row_id": "8607476082"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "759363652",
+                                "answers": [
+                                    {
+                                        "choice_id": "8607476066"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "191606275",
+                        "questions": [
+                            {
+                                "id": "759363658",
+                                "answers": [
+                                    {
+                                        "text": "Dreadful customer service"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "759363659",
+                                "answers": [
+                                    {
+                                        "text": "Get new staff that are not useless "
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "759363657",
+                                "answers": [
+                                    {
+                                        "text": "me@foo.com",
+                                        "row_id": "8607476102"
+                                    },
+                                    {
+                                        "text": "12345",
+                                        "row_id": "8607476103"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ],
+                "page_path": [],
+                "recipient_id": "",
+                "collector_id": "98090338",
+                "date_created": "2018-02-08T08:35:49+00:00",
+                "survey_id": "60926882",
+                "collection_mode": "default",
+                "edit_url": "https://www.surveymonkey.com/r/?sm=knN_2BKmYH43p0vE2tiuQ5mU3I1zIvqZmvQIlvCsP3M883pgVP5KVsshgQAxS_2BbjcM",
+                "metadata": {}
+            },
+            {
+                "total_time": 59,
+                "href": "https://api.surveymonkey.net/v3/surveys/60926882/responses/5486675582",
+                "custom_variables": {},
+                "ip_address": "84.9.89.210",
+                "id": "5486675582",
+                "logic_path": {},
+                "date_modified": "2018-02-06T09:44:52+00:00",
+                "response_status": "completed",
+                "custom_value": "",
+                "analyze_url": "https://www.surveymonkey.com/analyze/browse/_2BTDYttIauv5a7exEQzEGPjFSn4Gxcoyb9OP2yMH8XC4_3D?respondent_id=5486675582",
+                "pages": [
+                    {
+                        "id": "191606274",
+                        "questions": [
+                            {
+                                "id": "759363655",
+                                "answers": [
+                                    {
+                                        "choice_id": "8607476092"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "759363652",
+                                "answers": [
+                                    {
+                                        "choice_id": "8607476066"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "759363654",
+                                "answers": [
+                                    {
+                                        "choice_id": "8607476075",
+                                        "row_id": "8607476079"
+                                    },
+                                    {
+                                        "choice_id": "8607476075",
+                                        "row_id": "8607476080"
+                                    },
+                                    {
+                                        "choice_id": "8607476075",
+                                        "row_id": "8607476081"
+                                    },
+                                    {
+                                        "choice_id": "8607476075",
+                                        "row_id": "8607476083"
+                                    },
+                                    {
+                                        "choice_id": "8607476075",
+                                        "row_id": "8607476082"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "id": "191606275",
+                        "questions": []
+                    }
+                ],
+                "page_path": [],
+                "recipient_id": "",
+                "collector_id": "95710927",
+                "date_created": "2018-02-06T09:43:53+00:00",
+                "survey_id": "60926882",
+                "collection_mode": "default",
+                "edit_url": "https://www.surveymonkey.com/r/?sm=Suhq7WhLhJ_2B3giOdzTyWtQb1KRqQ9Fn_2B9S8YpT_2FoapUXtI0UDqto2VMc7I_2BG8bfI",
+                "metadata": {}
+            }
+        ],
+        "page": 1,
+        "links": {
+            "self": "https://api.surveymonkey.net/v3/surveys/60926882/responses/bulk?page=1&per_page=2",
+            "last": "https://api.surveymonkey.net/v3/surveys/60926882/responses/bulk?page=706&per_page=2",
+            "next": "https://api.surveymonkey.net/v3/surveys/60926882/responses/bulk?page=2&per_page=2"
+        }
+    }
+}

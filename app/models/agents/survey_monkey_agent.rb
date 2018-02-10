@@ -5,8 +5,8 @@ module Agents
 
     UNIQUENESS_LOOK_BACK = 500
     UNIQUENESS_FACTOR = 1
-    HTTP_METHOD = "get"
-    SURVEYS_URL_BASE = "https://api.surveymonkey.net/v3/surveys"
+    HTTP_METHOD = "get".freeze
+    SURVEYS_URL_BASE = "https://api.surveymonkey.net/v3/surveys".freeze
 
     can_dry_run!
     no_bulk_receive!
@@ -61,7 +61,7 @@ module Agents
     end
 
     def working?
-      last_receive_at && last_receive_at > interpolated['expected_update_period_in_days'].to_i.days.ago && !recent_error_logs?
+      event_created_within?(options['expected_update_period_in_days']) && !recent_error_logs?
     end
 
     def http_method
@@ -93,6 +93,14 @@ module Agents
 
       if options['mode'].present?
         errors.add(:base, "mode must be set to on_change, all or merge") unless %w[on_change all merge].include?(options['mode'])
+      end
+
+      if options['page'].blank?
+        errors.add(:base, "The 'page' option is required.")
+      end
+
+      if options['per_page'].blank?
+        errors.add(:base, "The 'per_page' option is required.")
       end
 
       if options.key?('guess_mode') && !boolify(options['guess_mode'])
