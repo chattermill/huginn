@@ -3,7 +3,7 @@ module Agents
     include FormConfigurable
     include WebRequestConcern
 
-    APPFIGURES_URL_BASE = "https://api.appfigures.com/v2/reviews"
+    APPFIGURES_URL_BASE = "https://api.appfigures.com/v2/reviews".freeze
     UNIQUENESS_LOOK_BACK = 200
     UNIQUENESS_FACTOR = 3
 
@@ -143,11 +143,11 @@ module Agents
     end
 
     def reviews
-      @reviews ||= fetch_resource["reviews"] || {}
+      @reviews ||= fetch_resource["reviews"]
     end
 
     def fetch_resource
-      return unless request_url.present?
+      return {} unless request_url.present?
 
       log "Fetching reviews for products: #{options['products']}"
       response = faraday.get(request_url)

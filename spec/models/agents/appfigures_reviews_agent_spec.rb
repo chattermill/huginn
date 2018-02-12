@@ -147,4 +147,125 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
       end
     end
   end
+
+  describe 'helpers' do
+    it 'should generate a correct header' do
+      expected = { "X-Client-Key" => "token123" }
+      expect(@agent.send(:headers)).to eq(expected)
+    end
+
+    it 'build a correct params string' do
+      expected = "products=41013601294&count=2"
+      expect(@agent.send(:params)).to eq(expected)
+
+      @agent.options['filter'] = ''
+      expected = 'products=41013601294'
+      expect(@agent.send(:params)).to eq(expected)
+
+      @agent.options['products'] = ''
+      expect(@agent.send(:params)).to be nil
+    end
+
+    it 'should generate a correct request_url' do
+      expected = 'https://api.appfigures.com/v2/reviews?products=41013601294&count=2'
+      expect(@agent.send(:request_url)).to eq(expected)
+
+      @agent.options['filter'] = ''
+      expected = 'https://api.appfigures.com/v2/reviews?products=41013601294'
+      expect(@agent.send(:request_url)).to eq(expected)
+
+      @agent.options['products'] = ''
+      expect(@agent.send(:request_url)).to be nil
+    end
+
+    describe 'fetch_resource' do
+      context 'when request_url is valid' do
+        it 'returns a list of reviews' do
+          expect(@agent.send(:fetch_resource)['reviews'].size).to eq(2)
+        end
+      end
+
+      context 'when request_url is not present' do
+        it 'returns an empty object' do
+          @agent.options['products'] = ''
+          expect(@agent.send(:fetch_resource)).to eq({})
+        end
+      end
+
+      context 'when get a failed response' do
+        it 'returns an empty object' do
+          @agent.options['filter'] = 'limit=2'
+          expect(@agent.send(:fetch_resource)).to eq({})
+          expect(@agent.logs.first.message).to eq('Error')
+        end
+      end
+    end
+
+    describe 'store_payload' do
+      it 'returns true when mode is all or merge' do
+        @agent.options['mode'] = 'all'
+        expect(@agent.send(:store_payload!, [], 'key: 123')).to be true
+
+        @agent.options['mode'] = 'merge'
+        expect(@agent.send(:store_payload!, [], 'key: 123')).to be true
+      end
+
+      it 'raises an expception when mode is invalid' do
+        @agent.options['mode'] = 'xyz'
+        expect {
+          @agent.send(:store_payload!, [], 'key: 123')
+        }.to raise_error('Illegal options[mode]: xyz')
+      end
+
+      context 'when mode is on_change' do
+        before do
+          @event = Event.new
+          @event.agent = @agent
+          @event.payload = {
+            'comment' => 'somevalue'
+          }
+          @event.save!
+        end
+
+        it 'returns false if events exist' do
+          expect(@agent.send(:store_payload!, @agent.events, 'comment' => 'somevalue')).to be false
+        end
+
+        it 'returns true if events does not exist' do
+          expect(@agent.send(:store_payload!, @agent.events, 'comment' => 'othervalue')).to be true
+        end
+      end
+    end
+
+    describe 'previous_payloads' do
+      before do
+        Event.create payload: { 'comment' => 'some value'}, agent: @agent
+        Event.create payload: { 'comment' => 'another value'}, agent: @agent
+        Event.create payload: { 'comment' => 'other comment'}, agent: @agent
+      end
+
+      context 'when uniqueness_look_back is present' do
+        before do
+          @agent.options['uniqueness_look_back'] = 2
+        end
+
+        it 'returns a list of old events limited by uniqueness_look_back' do
+          expect(@agent.events.count).to eq(3)
+          expect(@agent.send(:previous_payloads, 1).count).to eq(2)
+        end
+      end
+
+      context 'when uniqueness_look_back is not present' do
+        it 'returns a list of old events limited by received events' do
+          expect(@agent.events.count).to eq(3)
+          expect(@agent.send(:previous_payloads, 1).count).to eq(3)
+        end
+      end
+
+      it 'returns nil when mode is not on_change' do
+        @agent.options['mode'] = 'all'
+        expect(@agent.send(:previous_payloads, 1)).to be nil
+      end
+    end
+  end
 end
