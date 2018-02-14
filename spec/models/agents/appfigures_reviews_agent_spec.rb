@@ -2,7 +2,7 @@ require 'rails_helper'
 
 describe Agents::AppfiguresReviewsAgent, :vcr do
   before do
-    VCR.insert_cassette 'appfigures', record: :new_episodes
+    VCR.insert_cassette 'appfigures', record: :none
 
     @opts = {
       'filter' => 'count=2',
@@ -10,7 +10,7 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
       'basic_auth' => 'user:pass',
       'products' => '41013601294',
       'expected_update_period_in_days' => '1',
-      'mode' => 'on_change'
+      'mode' => 'on_change',
     }
     @agent = Agents::AppfiguresReviewsAgent.new(:name => 'My agent', :options => @opts)
     @agent.user = users(:bob)
@@ -95,16 +95,53 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
 
   describe '#chek' do
     context 'when there is not another agent running' do
-      it 'emits events' do
-        expect { @agent.check }.to change { Event.count }.by(2)
+      context 'when review product is valid' do
+        it 'emits events' do
+          expect { @agent.check }.to change { Event.count }.by(2)
+        end
+
+        it 'does not emit duplicated events ' do
+          @agent.check
+          @agent.events.last.destroy
+
+          expect { @agent.check }.to change { Event.count }.by(1)
+          expect(@agent.events.count).to eq(2)
+        end
+
+        it 'emits correct payload' do
+          @agent.check
+          payload = @agent.events.last.payload
+          expected = {
+            'title' => 'Some title',
+            'comment' => 'good.',
+            'appfigures_id' => '41013601294LtY5FiF31ODTSyH8hOem4Nw',
+            'score' => '4.00',
+            'stream' => 'google_play',
+            'created_at' => '2018-02-09T11:45:38',
+            'iso' => 'ZZ',
+            'author' => 'Yang Li',
+            'version' => '3.3.1003',
+            'app' => 'reed.co.uk',
+            'product_id' => 41013601294,
+            'vendor_id' => 'com.reedcouk.jobs'
+          }
+
+          expect(payload).to eq(expected)
+        end
       end
 
-      it 'does not emit duplicated events ' do
-        @agent.check
-        @agent.events.last.destroy
+      context 'when review product is not valid' do
+        before do
+          @agent.options['products'] = '41013601294,41013601295'
+          @agent.options['filter'] = 'count=5'
+        end
 
-        expect { @agent.check }.to change { Event.count }.by(1)
-        expect(@agent.events.count).to eq(2)
+        it 'does not emits events with another product id' do
+          expect { @agent.check }.to change { Event.count }.by(4)
+
+          products = @agent.events.map { |e| e.payload['product_id'] }
+          expect(products.uniq).to eq([41013601294])
+        end
       end
 
       it 'changes memory in_process to true while running' do
@@ -118,26 +155,6 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
         expect(@agent.reload.memory['in_process']).to be false
       end
 
-      it 'emits correct payload' do
-        @agent.check
-        payload = @agent.events.last.payload
-        expected = {
-          'title' => 'Some title',
-          'comment' => 'good.',
-          'appfigures_id' => '41013601294LtY5FiF31ODTSyH8hOem4Nw',
-          'score' => '4.00',
-          'stream' => 'google_play',
-          'created_at' => '2018-02-09T11:45:38',
-          'iso' => 'ZZ',
-          'author' => 'Yang Li',
-          'version' => '3.3.1003',
-          'app' => 'reed.co.uk',
-          'product_id' => 41013601294,
-          'vendor_id' => 'com.reedcouk.jobs'
-        }
-
-        expect(payload).to eq(expected)
-      end
     end
 
     context 'when there is another agent running' do
@@ -188,7 +205,7 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
       context 'when request_url is not present' do
         it 'returns an empty object' do
           @agent.options['products'] = ''
-          expect(@agent.send(:fetch_resource)).to eq({})
+          expect(@agent.send(:fetch_resource)).to be nil
         end
       end
 
@@ -265,6 +282,20 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
       it 'returns nil when mode is not on_change' do
         @agent.options['mode'] = 'all'
         expect(@agent.send(:previous_payloads, 1)).to be nil
+      end
+    end
+
+    describe 'is_a_valid_product?' do
+      before do
+        @agent.options['products'] = "41013601294,41703131145,40326654086"
+      end
+
+      it 'returns true when is a valid product' do
+        expect(@agent.send(:is_a_valid_product?, {'product_id' => '41013601294'})).to be true
+      end
+
+      it 'returns false when is not a valid product' do
+        expect(@agent.send(:is_a_valid_product?, {'product_id' => '12345'})).to be false
       end
     end
   end
