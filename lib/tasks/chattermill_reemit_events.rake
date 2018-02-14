@@ -18,7 +18,7 @@ namespace :chattermill do
 
     puts "Searching failed events between #{from} and #{to}"
 
-    statuses = ['%502 Bad Gateway%', '%504 Gateway Time-out%', '%something went wrong (500)%']
+    statuses = ['%502 Bad Gateway%', '%504 Gateway Time-out%', '%something went wrong (500)%', '%default backend - 404%']
 
     statuses.each do |status|
       events = Event.joins(:agent)
