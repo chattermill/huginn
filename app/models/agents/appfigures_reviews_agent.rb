@@ -3,7 +3,7 @@ module Agents
     include FormConfigurable
     include WebRequestConcern
 
-    APPFIGURES_URL_BASE = "https://api.appfigures.com/v2/reviews"
+    APPFIGURES_URL_BASE = "https://api.appfigures.com/v2/reviews".freeze
     UNIQUENESS_LOOK_BACK = 200
     UNIQUENESS_FACTOR = 3
 
@@ -69,28 +69,32 @@ module Agents
     end
 
     def check
-      unless agent_in_process?
-        process_agent!
+      avoid_concurrent_running do
         log "Fetched #{reviews&.size} reviews"
         if reviews.any?
           old_events = previous_payloads reviews.size
           reviews.each do |response|
-            payload = transform_appfigures_responses(response)
-            if store_payload!(old_events, payload)
-              log "Storing new result for '#{name}': #{payload.inspect}"
-              create_event payload: payload
-            end
+            create_event_from_review(response, old_events)
           end
         end
-        memory['in_process'] = false
       end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
 
     private
+
+    def create_event_from_review(response, old_events)
+      return unless is_a_valid_product?(response)
+
+      payload = transform_appfigures_responses(response)
+      if store_payload!(old_events, payload)
+        log "Storing new result for '#{name}': #{payload.inspect}"
+        create_event payload: payload
+      end
+    end
+
+    def is_a_valid_product?(response)
+      options['products'].split(',').include?(response['product_id'].to_s)
+    end
 
     def transform_appfigures_responses(response)
       {
@@ -182,6 +186,19 @@ module Agents
     def process_agent!
       memory['in_process'] = true
       save!
+    end
+
+    def avoid_concurrent_running
+      raise 'Mising block' unless block_given?
+      unless agent_in_process?
+        process_agent!
+        yield
+        memory['in_process'] = false
+      end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
   end
 end

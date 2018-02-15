@@ -1,0 +1,195 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.appfigures.com/v2/reviews?count=2&products=41013601294
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/cantino/huginn
+      X-Client-Key:
+      - 5696c786d30d4b7788fdc35cd886e852
+      Authorization:
+      - Basic token123
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - private
+      Transfer-Encoding:
+      - chunked
+      Content-Type:
+      - application/json; charset=utf-8
+      Etag:
+      - '"5kWe9Logpq538bgkAzYwuA=="'
+      X-Request-Limit:
+      - '2500'
+      X-Request-Usage:
+      - '426'
+      X-Partner-Credit-Cost:
+      - '1'
+      X-Partner-Credits-Remaining:
+      - '75'
+      X-Partner-Reason:
+      - 'Some given products are not owned by your account. (the first one is: 41013601294)'
+      X-Server-Id:
+      - '12'
+      Date:
+      - Fri, 09 Feb 2018 18:43:48 GMT
+      X-Frame-Options:
+      - SAMEORIGIN
+    body:
+      encoding: UTF-8
+      string: "{\r\n  \"total\": 678,\r\n  \"pages\": 339,\r\n  \"this_page\": 1,\r\n
+        \ \"reviews\": [\r\n    {\r\n      \"author\": \"Yang Li\",\r\n      \"title\":
+        \"Some title\",\r\n      \"review\": \"good.\",\r\n      \"original_title\":
+        \"\",\r\n      \"original_review\": \"good.\",\r\n      \"stars\": \"4.00\",\r\n
+        \     \"iso\": \"ZZ\",\r\n      \"version\": \"3.3.1003\",\r\n      \"date\":
+        \"2018-02-09T11:45:38\",\r\n      \"product\": 41013601294,\r\n      \"product_id\":
+        41013601294,\r\n      \"product_name\": \"reed.co.uk\",\r\n      \"vendor_id\":
+        \"com.reedcouk.jobs\",\r\n      \"store\": \"google_play\",\r\n      \"weight\":
+        0,\r\n      \"id\": \"41013601294LtY5FiF31ODTSyH8hOem4Nw\",\r\n      \"predicted_langs\":
+        [\r\n        \"cy\",\r\n        \"bs\",\r\n        \"hr\",\r\n        \"sh\",\r\n
+        \       \"tl\"\r\n      ]\r\n    },\r\n    {\r\n      \"author\": \"Shane
+        Heaney\",\r\n      \"title\": \"\",\r\n      \"review\": \"Crashes 5 times
+        a day at least without even opening it. Unreliable and unstable at best.\",\r\n
+        \     \"original_title\": \"\",\r\n      \"original_review\": \"Crashes 5
+        times a day at least without even opening it. Unreliable and unstable at best.\",\r\n
+        \     \"stars\": \"1.00\",\r\n      \"iso\": \"ZZ\",\r\n      \"version\":
+        \"\",\r\n      \"date\": \"2018-02-08T18:08:56\",\r\n      \"product\": 41013601294,\r\n
+        \     \"product_id\": 41013601294,\r\n      \"product_name\": \"reed.co.uk\",\r\n
+        \     \"vendor_id\": \"com.reedcouk.jobs\",\r\n      \"store\": \"google_play\",\r\n
+        \     \"weight\": 0,\r\n      \"id\": \"41013601294L4VCjfobs47u8H56Nhj2Rkg\",\r\n
+        \     \"predicted_langs\": [\r\n        \"en\"\r\n      ]\r\n    }\r\n  ]\r\n}"
+    http_version:
+  recorded_at: Fri, 09 Feb 2018 18:43:47 GMT
+- request:
+    method: get
+    uri: https://api.appfigures.com/v2/reviews?limit=2&products=41013601294
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/cantino/huginn
+      X-Client-Key:
+      - token123
+      Authorization:
+      - Basic dXNlcjpwYXNz
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 0
+      message:
+    headers: {}
+    body:
+      encoding: UTF-8
+      string: Error
+    http_version:
+  recorded_at: Sun, 11 Feb 2018 00:38:06 GMT
+- request:
+    method: get
+    uri: https://api.appfigures.com/v2/reviews?count=5&products=41013601294,41013601295
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      X-Client-Key:
+      - 5696c786d30d4b7788fdc35cd886e852
+      Authorization:
+      - Basic bWlraGFpbEBjaGF0dGVybWlsbC5pbzo5NFlVZWNOVz5mS1B1cQ==
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Cache-Control:
+      - private
+      Transfer-Encoding:
+      - chunked
+      Content-Type:
+      - application/json; charset=utf-8
+      Etag:
+      - '"rZKyPwhWiqqYI1tNOCacRw=="'
+      X-Request-Limit:
+      - '2500'
+      X-Request-Usage:
+      - '551'
+      X-Partner-Credit-Cost:
+      - '1'
+      X-Partner-Credits-Remaining:
+      - '480'
+      X-Partner-Reason:
+      - 'Some given products are not owned by your account. (the first one is: 41013601294)'
+      X-Server-Id:
+      - '10'
+      Date:
+      - Wed, 14 Feb 2018 15:55:58 GMT
+      X-Frame-Options:
+      - SAMEORIGIN
+    body:
+      encoding: UTF-8
+      string: "{\r\n  \"total\": 688,\r\n  \"pages\": 138,\r\n  \"this_page\": 1,\r\n
+        \ \"reviews\": [\r\n    {\r\n      \"author\": \"Gavin Fleming\",\r\n      \"title\":
+        \"\",\r\n      \"review\": \"Shite\",\r\n      \"original_title\": \"\",\r\n
+        \     \"original_review\": \"Shite\",\r\n      \"stars\": \"1.00\",\r\n      \"iso\":
+        \"ZZ\",\r\n      \"version\": \"3.3.1004\",\r\n      \"date\": \"2018-02-12T13:30:40\",\r\n
+        \     \"product\": 41013601294,\r\n      \"product_id\": 41013601294,\r\n
+        \     \"product_name\": \"reed.co.uk Job Search - apply to over 250,000 jobs\",\r\n
+        \     \"vendor_id\": \"com.reedcouk.jobs\",\r\n      \"store\": \"google_play\",\r\n
+        \     \"weight\": 0,\r\n      \"id\": \"41013601294LGlwpBsQuprTCJj386Xxpqw\",\r\n
+        \     \"predicted_langs\": [\r\n        \"sq\"\r\n      ]\r\n    },\r\n    {\r\n
+        \     \"author\": \"A Google user\",\r\n      \"title\": \"\",\r\n      \"review\":
+        \"Search doesn't refine properly so end up with 10000 jobs to scroll through\",\r\n
+        \     \"original_title\": \"\",\r\n      \"original_review\": \"Search doesn't
+        refine properly so end up with 10000 jobs to scroll through\",\r\n      \"stars\":
+        \"2.00\",\r\n      \"iso\": \"ZZ\",\r\n      \"version\": \"3.3.1004\",\r\n
+        \     \"date\": \"2018-02-12T12:13:14\",\r\n      \"product\": 41013601294,\r\n
+        \     \"product_id\": 41013601294,\r\n      \"product_name\": \"reed.co.uk
+        Job Search - apply to over 250,000 jobs\",\r\n      \"vendor_id\": \"com.reedcouk.jobs\",\r\n
+        \     \"store\": \"google_play\",\r\n      \"weight\": 0,\r\n      \"id\":
+        \"41013601294LmYneegJUGqgRgZc-9q_fqw\",\r\n      \"predicted_langs\": [\r\n
+        \       \"en\"\r\n      ]\r\n    },\r\n    {\r\n      \"author\": \"letsdothis
+        bro\",\r\n      \"title\": \"\",\r\n      \"review\": \"Quick and easy but
+        maybe could be more front to front\",\r\n      \"original_title\": \"\",\r\n
+        \     \"original_review\": \"Quick and easy but maybe could be more front
+        to front\",\r\n      \"stars\": \"5.00\",\r\n      \"iso\": \"ZZ\",\r\n      \"version\":
+        \"3.3.1004\",\r\n      \"date\": \"2018-02-12T11:48:18\",\r\n      \"product\":
+        41013601294,\r\n      \"product_id\": 41013601294,\r\n      \"product_name\":
+        \"reed.co.uk Job Search - apply to over 250,000 jobs\",\r\n      \"vendor_id\":
+        \"com.reedcouk.jobs\",\r\n      \"store\": \"google_play\",\r\n      \"weight\":
+        0,\r\n      \"id\": \"41013601294Lsw0y3sSDPlzBeOz4D-tGbA\",\r\n      \"predicted_langs\":
+        [\r\n        \"en\"\r\n      ]\r\n    },\r\n    {\r\n      \"author\": \"Simon
+        Walder\",\r\n      \"title\": \"\",\r\n      \"review\": \"Really good interface
+        and easy to use\",\r\n      \"original_title\": \"\",\r\n      \"original_review\":
+        \"Really good interface and easy to use\",\r\n      \"stars\": \"5.00\",\r\n
+        \     \"iso\": \"ZZ\",\r\n      \"version\": \"3.3.1004\",\r\n      \"date\":
+        \"2018-02-12T11:07:27\",\r\n      \"product\": 41013601294,\r\n      \"product_id\":
+        12345,\r\n      \"product_name\": \"reed.co.uk Job Search - apply to
+        over 250,000 jobs\",\r\n      \"vendor_id\": \"com.reedcouk.jobs\",\r\n      \"store\":
+        \"google_play\",\r\n      \"weight\": 0,\r\n      \"id\": \"41013601294Ld2i09VSIr1iCjM4aJjedrg\",\r\n
+        \     \"predicted_langs\": [\r\n        \"en\"\r\n      ]\r\n    },\r\n    {\r\n
+        \     \"author\": \"KUNLE DARE\",\r\n      \"title\": \"\",\r\n      \"review\":
+        \"Quite easy to use and apply for post.\",\r\n      \"original_title\": \"\",\r\n
+        \     \"original_review\": \"Quite easy to use and apply for post.\",\r\n
+        \     \"stars\": \"5.00\",\r\n      \"iso\": \"ZZ\",\r\n      \"version\":
+        \"3.3.1004\",\r\n      \"date\": \"2018-02-12T10:54:07\",\r\n      \"product\":
+        41013601294,\r\n      \"product_id\": 41013601294,\r\n      \"product_name\":
+        \"reed.co.uk Job Search - apply to over 250,000 jobs\",\r\n      \"vendor_id\":
+        \"com.reedcouk.jobs\",\r\n      \"store\": \"google_play\",\r\n      \"weight\":
+        0,\r\n      \"id\": \"41013601294L1KQO__qPfkEmEV4rd4a5cg\",\r\n      \"predicted_langs\":
+        [\r\n        \"en\"\r\n      ]\r\n    }\r\n  ]\r\n}"
+    http_version:
+  recorded_at: Wed, 14 Feb 2018 15:56:00 GMT
+recorded_with: VCR 3.0.3
