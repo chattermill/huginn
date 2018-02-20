@@ -4,6 +4,8 @@ require 'sidekiq-unique-jobs'
 
 Sidekiq.default_worker_options = {
   unique: :until_executed,
+  unique_across_workers: true,
+  log_duplicate_payload: true,
   unique_args: lambda { |args|
     r = args.first.except('job_id')
     # this ensure to be unique by adding the 'make_unique' argument
