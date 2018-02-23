@@ -1,0 +1,201 @@
+---
+http_interactions:
+- request:
+    method: get
+    uri: https://api.typeform.com/forms/D7aM1F/responses?completed=true&order_by%5B%5D=date_submit,desc&page_size=2
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - typeform-rest-0.1.0
+      Content-Type:
+      - application/json; charset=utf-8
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - bearer HVKFmp3ooW5gYMjCEUij6MSJjtXL4KSW4FWucRMLkjUr
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Access-Control-Allow-Headers:
+      - X-Typeform-Key, Content-Type, Authorization, Typeform-Version
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, PATCH, DELETE, OPTIONS
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Feb 2018 18:40:11 GMT
+      Server:
+      - nginx
+      Typeform-Version:
+      - '2016-05-25'
+      X-Human:
+      - https://www.typeform.com/careers
+      X-Request-Id:
+      - dcfb3e2ddec15234e39e6119da67669b
+      Content-Length:
+      - '1399'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"total_items":159278,"page_count":79639,"items":[{"landing_id":"a6a996a607d808f826d7edb2d4b404cb","token":"a6a996a607d808f826d7edb2d4b404cb","landed_at":"2018-02-23T18:37:58Z","submitted_at":"2018-02-23T18:38:47Z","metadata":{"user_agent":"Mozilla/5.0
+        (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko)
+        Chrome/64.0.3282.167 Safari/537.36","platform":"other","referer":"https://transferwise.typeform.com/to/D7aM1F?userprofile=4.835.494\u0026score=1\u0026language=es","network_id":"90a2e46c14","browser":"default"},"answers":[{"field":{"id":"27098511","type":"long_text"},"type":"text","text":"Better
+        instructions....very specific as to what I will see and what I must do with
+        examples"}],"hidden":{"language":"es","score":"1","userprofile":"4.835.494"},"calculated":{"score":0}},{"landing_id":"83a39f45c9cd2c310ea701839ef5c124","token":"83a39f45c9cd2c310ea701839ef5c124","landed_at":"2018-02-23T18:37:47Z","submitted_at":"2018-02-23T18:37:52Z","metadata":{"user_agent":"Mozilla/5.0
+        (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko)
+        Chrome/64.0.3282.167 Safari/537.36","platform":"other","referer":"https://transferwise.typeform.com/to/D7aM1F?userprofile=4,817,719\u0026score=2\u0026language=en","network_id":"b4c024a808","browser":"default"},"answers":null,"hidden":{"language":"en","score":"2","userprofile":"4,817,719"},"calculated":{"score":0}}]}'
+    http_version: 
+  recorded_at: Fri, 23 Feb 2018 18:40:12 GMT
+- request:
+    method: get
+    uri: https://api.typeform.com/forms/D7aM1F/responses?completed=true&order_by%5B%5D=date_submit,desc&page_size=3
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - typeform-rest-0.1.0
+      Content-Type:
+      - application/json; charset=utf-8
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - bearer HVKFmp3ooW5gYMjCEUij6MSJjtXL4KSW4FWucRMLkjUr
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Access-Control-Allow-Headers:
+      - X-Typeform-Key, Content-Type, Authorization, Typeform-Version
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, PATCH, DELETE, OPTIONS
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 23 Feb 2018 18:40:13 GMT
+      Server:
+      - nginx
+      Typeform-Version:
+      - '2016-05-25'
+      X-Human:
+      - https://www.typeform.com/careers
+      X-Request-Id:
+      - 12b773b4f75d8b8670cd0d23c8297b2c
+      Content-Length:
+      - '2012'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"total_items":159278,"page_count":53093,"items":[{"landing_id":"a6a996a607d808f826d7edb2d4b404cb","token":"a6a996a607d808f826d7edb2d4b404cb","landed_at":"2018-02-23T18:37:58Z","submitted_at":"2018-02-23T18:38:47Z","metadata":{"user_agent":"Mozilla/5.0
+        (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko)
+        Chrome/64.0.3282.167 Safari/537.36","platform":"other","referer":"https://transferwise.typeform.com/to/D7aM1F?userprofile=4.835.494\u0026score=1\u0026language=es","network_id":"90a2e46c14","browser":"default"},"answers":[{"field":{"id":"27098511","type":"long_text"},"type":"text","text":"Better
+        instructions....very specific as to what I will see and what I must do with
+        examples"}],"hidden":{"language":"es","score":"1","userprofile":"4.835.494"},"calculated":{"score":0}},{"landing_id":"83a39f45c9cd2c310ea701839ef5c124","token":"83a39f45c9cd2c310ea701839ef5c124","landed_at":"2018-02-23T18:37:47Z","submitted_at":"2018-02-23T18:37:52Z","metadata":{"user_agent":"Mozilla/5.0
+        (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko)
+        Chrome/64.0.3282.167 Safari/537.36","platform":"other","referer":"https://transferwise.typeform.com/to/D7aM1F?userprofile=4,817,719\u0026score=2\u0026language=en","network_id":"b4c024a808","browser":"default"},"answers":null,"hidden":{"language":"en","score":"2","userprofile":"4,817,719"},"calculated":{"score":0}},{"landing_id":"8101f8dd075ea997c00a7f4c113585ac","token":"8101f8dd075ea997c00a7f4c113585ac","landed_at":"2018-02-23T18:37:42Z","submitted_at":"2018-02-23T18:37:49Z","metadata":{"user_agent":"Mozilla/5.0
+        (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140
+        Safari/537.36 OPR/51.0.2830.34","platform":"other","referer":"https://transferwise.typeform.com/to/D7aM1F?userprofile=3,934,665\u0026score=-1\u0026language=en_US","network_id":"d8e120f702","browser":"default"},"answers":null,"hidden":{"language":"en_US","score":"-1","userprofile":"3,934,665"},"calculated":{"score":0}}]}'
+    http_version: 
+  recorded_at: Fri, 23 Feb 2018 18:40:14 GMT
+- request:
+    method: get
+    uri: https://api.typeform.com/forms/D7aM1F/responses?completed=true&order_by%5B%5D=date_submit,desc&page_size=2
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - typeform-rest-0.1.0
+      Content-Type:
+      - application/json; charset=utf-8
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - bearer HVKFmp3ooW5gYMjCEUij6MSJjtXL4KSW4FWucRMLkjUr
+  response:
+    status:
+      code: 504
+      message: Gateway Time-out
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Cache-Control:
+      - no-cache
+      Content-Type:
+      - text/html
+      Date:
+      - Fri, 23 Feb 2018 19:15:51 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - 9a051587b81882105c2c88e652f807a5
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: |+
+        <html><body><h1>504 Gateway Time-out</h1>
+        The server didn't respond in time.
+        </body></html>
+
+    http_version: 
+  recorded_at: Fri, 23 Feb 2018 19:15:51 GMT
+- request:
+    method: get
+    uri: https://api.typeform.com/forms/D7aM1F/responses?completed=true&order_by%5B%5D=date_submit,desc&page_size=3
+    body:
+      encoding: US-ASCII
+      string: ''
+    headers:
+      User-Agent:
+      - typeform-rest-0.1.0
+      Content-Type:
+      - application/json; charset=utf-8
+      Accept-Encoding:
+      - gzip, deflate
+      Authorization:
+      - bearer HVKFmp3ooW5gYMjCEUij6MSJjtXL4KSW4FWucRMLkjUr
+  response:
+    status:
+      code: 504
+      message: Gateway Time-out
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Cache-Control:
+      - no-cache
+      Content-Type:
+      - text/html
+      Date:
+      - Fri, 23 Feb 2018 19:16:42 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - a292f803915884d3b0090bf5a08bbc61
+      Transfer-Encoding:
+      - chunked
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: |+
+        <html><body><h1>504 Gateway Time-out</h1>
+        The server didn't respond in time.
+        </body></html>
+
+    http_version: 
+  recorded_at: Fri, 23 Feb 2018 19:16:42 GMT
+recorded_with: VCR 3.0.3
