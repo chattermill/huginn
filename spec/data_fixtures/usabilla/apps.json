@@ -1,0 +1,207 @@
+{
+    "items": [
+        {
+            "id": "5a91907fada3421c060000fd",
+            "date": "2018-02-24T16:19:12.244Z",
+            "timestamp": "1519489151",
+            "appId": "5912eac9ed3925f77aef5e4c",
+            "appName": "HelloFresh",
+            "appVersion": "2160",
+            "deviceName": "iPhone7,2",
+            "osName": "ios",
+            "osVersion": "10.2.1",
+            "language": "en",
+            "rooted": false,
+            "freeMemory": 0,
+            "totalMemory": 0,
+            "freeStorage": 17722940,
+            "totalStorage": 118880884,
+            "orientation": "Portrait",
+            "batteryLevel": 0.86,
+            "geoLocation": {
+                "country": "US",
+                "region": "TX",
+                "city": "Grand Prairie",
+                "lat": 32.6606,
+                "lon": -97.0249
+            },
+            "location": "Grand Prairie, United States",
+            "connection": "WiFi",
+            "customData": null,
+            "data": {
+                "comment_app": null,
+                "comment_service": "Won't honor my Groupon.",
+                "email": "dscott1731@yahoo.com",
+                "feedback_choice": [
+                    "Bug"
+                ],
+                "mood": 1
+            },
+            "screenshot": "http://u4a-screenshots-production.s3.amazonaws.com/live/media/5a/91/5a91907fada3421c060000fd/screenshot",
+            "screensize": "375x667"
+        },
+        {
+            "id": "5a91970d7190f41c170000f2",
+            "date": "2018-02-24T16:47:09.971Z",
+            "timestamp": "1519490829",
+            "appId": "5912eac9ed3925f77aef5e4c",
+            "appName": "HelloFresh",
+            "appVersion": "2160",
+            "deviceName": "iPhone9,3",
+            "osName": "ios",
+            "osVersion": "11.2",
+            "language": "en",
+            "rooted": false,
+            "freeMemory": 0,
+            "totalMemory": 0,
+            "freeStorage": 19223632,
+            "totalStorage": 124989740,
+            "orientation": "Portrait",
+            "batteryLevel": 0.92,
+            "geoLocation": {
+                "country": "US",
+                "region": "GA",
+                "city": "",
+                "lat": 33.749,
+                "lon": -84.388
+            },
+            "location": "United States",
+            "connection": "Cellular",
+            "customData": null,
+            "data": {
+                "comment_app": null,
+                "comment_service": null,
+                "email": "kristinabuckler@gmail.com",
+                "feedback_choice": [
+                    "Suggestion"
+                ],
+                "mood": 1
+            },
+            "screenshot": "",
+            "screensize": "375x667"
+        },
+        {
+            "id": "5a919733ada3421c06000144",
+            "date": "2018-02-24T16:47:47.98Z",
+            "timestamp": "1519490867",
+            "appId": "5912eac9ed3925f77aef5e4c",
+            "appName": "HelloFresh",
+            "appVersion": "2160",
+            "deviceName": "iPhone9,3",
+            "osName": "ios",
+            "osVersion": "11.2",
+            "language": "en",
+            "rooted": false,
+            "freeMemory": 0,
+            "totalMemory": 0,
+            "freeStorage": 19223600,
+            "totalStorage": 124989740,
+            "orientation": "Portrait",
+            "batteryLevel": 0.92,
+            "geoLocation": {
+                "country": "US",
+                "region": "GA",
+                "city": "",
+                "lat": 33.749,
+                "lon": -84.388
+            },
+            "location": "United States",
+            "connection": "Cellular",
+            "customData": null,
+            "data": {
+                "comment_app": "List delivery address. ",
+                "comment_service": null,
+                "email": "kristinabuckler@gmail.com",
+                "feedback_choice": [
+                    "Suggestion"
+                ],
+                "mood": 1
+            },
+            "screenshot": "",
+            "screensize": "375x667"
+        },
+        {
+            "id": "5a91985c7190f41c17000106",
+            "date": "2018-02-24T16:52:45.597Z",
+            "timestamp": "1519491165",
+            "appId": "5912eac9ed3925f77aef5e4c",
+            "appName": "HelloFresh",
+            "appVersion": "2160",
+            "deviceName": "iPhone9,1",
+            "osName": "ios",
+            "osVersion": "11.2.5",
+            "language": "en",
+            "rooted": false,
+            "freeMemory": 0,
+            "totalMemory": 0,
+            "freeStorage": 1645932,
+            "totalStorage": 31239716,
+            "orientation": "Portrait",
+            "batteryLevel": 0.66,
+            "geoLocation": {
+                "country": "US",
+                "region": "PA",
+                "city": "Bryn Mawr",
+                "lat": 40.0266,
+                "lon": -75.3333
+            },
+            "location": "Bryn Mawr, United States",
+            "connection": "WiFi",
+            "customData": null,
+            "data": {
+                "comment_app": null,
+                "comment_service": "Checkout times out after PayPal entered",
+                "email": "costellomeg@gmail.com",
+                "feedback_choice": [
+                    "Bug"
+                ],
+                "mood": 2
+            },
+            "screenshot": "",
+            "screensize": "375x667"
+        },
+        {
+            "id": "5a9199e532df0f1bfb000720",
+            "date": "2018-02-24T16:59:17.924Z",
+            "timestamp": "1519491558",
+            "appId": "58affa366a4678e16238d18c",
+            "appName": "HelloFresh",
+            "appVersion": "2160",
+            "deviceName": "iPhone8,1",
+            "osName": "ios",
+            "osVersion": "11.2.5",
+            "language": "en",
+            "rooted": false,
+            "freeMemory": 0,
+            "totalMemory": 0,
+            "freeStorage": 4833676,
+            "totalStorage": 31239724,
+            "orientation": "Portrait",
+            "batteryLevel": 0.7,
+            "geoLocation": {
+                "country": "GB",
+                "region": "BRD",
+                "city": "Bradford",
+                "lat": 53.7833,
+                "lon": -1.75
+            },
+            "location": "Bradford, United Kingdom",
+            "connection": "WiFi",
+            "customData": null,
+            "data": {
+                "comment_app": null,
+                "comment_service": "You have set me up twice the app. I cancelled one immediately but you’ve sent food anyway. So I’m now receiving 2 boxes in2 days . Fed up - I had tried you again after you cold called me. Cancelling for good - \nDon’t call back",
+                "email": "pipers33@gmail.com",
+                "feedback_choice": [
+                    "Bug"
+                ],
+                "mood": 1
+            },
+            "screenshot": "",
+            "screensize": "320x568"
+        }
+    ],
+    "count": 5,
+    "hasMore": false,
+    "lastTimestamp": 1519572754917
+}

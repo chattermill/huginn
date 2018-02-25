@@ -1,0 +1,129 @@
+{
+    "items": [
+        {
+            "id": "5a911d43f63e5d1c02000c50",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299",
+            "location": "Charleroi, Belgium",
+            "date": "2018-02-24T08:07:31.3Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "555528"
+            },
+            "data": {
+                "comment_3": "J'ai l'impression de manger au restaurant tout les jours de la semaine",
+                "nps": 10
+            },
+            "url": "https://www.hellofresh.be/loyalty/status/?redirectedFromAccountArea=true",
+            "time": 54994
+        },
+        {
+            "id": "5a913a5a1dee7e1c05001afc",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299",
+            "location": "Liège, Belgium",
+            "date": "2018-02-24T10:11:40.274Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "558827"
+            },
+            "data": {
+                "nps": 8
+            },
+            "url": "https://www.hellofresh.be/customer/account/login/?default=true&redirectedFromAccountArea=true&continue=%2Fmy-account%2Fdeliveries%2Fmenu%2F2018-W07%3Fdefault%3Dtrue%26redirectedFromAccountArea%3Dtrue",
+            "time": 8490
+        },
+        {
+            "id": "5a913e31761e421c160001a2",
+            "userAgent": "Mozilla/5.0 (Windows NT 6.1; WOW64; Trident/7.0; SLCC2; .NET CLR 2.0.50727; .NET CLR 3.5.30729; .NET CLR 3.0.30729; Media Center PC 6.0; .NET4.0C; .NET4.0E; InfoPath.3; rv:11.0) like Gecko",
+            "location": "Namur, Belgium",
+            "date": "2018-02-24T10:28:04.062Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "554495"
+            },
+            "data": {
+                "comment_3": "Très diversifié et chouettes menus ;)",
+                "nps": 10
+            },
+            "url": "https://www.hellofresh.be/customer/account/login?week=2018-W08&subscriptionId=533166&redirectUrl=%2Frecipe%2Fvote",
+            "time": 30285
+        },
+        {
+            "id": "5a918e4e29974c1c1100000a",
+            "userAgent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
+            "location": "Belgium",
+            "date": "2018-02-24T16:09:50.656Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "550739"
+            },
+            "data": {
+                "nps": 9
+            },
+            "url": "https://www.hellofresh.be/customer/account/login?utm_source=transactional&utm_medium=email&utm_campaign=sub-change-reactivation&utm_content=text_link&a=referral",
+            "time": 16419
+        },
+        {
+            "id": "5a91a2df7d0eb41bf300058c",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
+            "location": "Liège, Belgium",
+            "date": "2018-02-24T17:37:35.581Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "561479"
+            },
+            "data": {
+                "nps": 8
+            },
+            "url": "https://www.hellofresh.be/customer/account/login/?default=true&continue=%2Fmy-account%2Fdeliveries%2Fmenu%2F2018-W09%3Fdefault%3Dtrue",
+            "time": 7900
+        },
+        {
+            "id": "5a91a8ac7d0eb41bf30005ca",
+            "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.132 Safari/537.36",
+            "location": "Belgium",
+            "date": "2018-02-24T18:02:20.985Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "541703"
+            },
+            "data": {
+                "nps": 7
+            },
+            "url": "https://www.hellofresh.be/my-account/deliveries/menu/2018-W09?default=true",
+            "time": 5160
+        },
+        {
+            "id": "5a91b29ea4bb141c0c000200",
+            "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
+            "location": "Brussels, Belgium",
+            "date": "2018-02-24T18:44:46.497Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "560094"
+            },
+            "data": {
+                "nps": 8
+            },
+            "url": "https://www.hellofresh.be/lidmaatschap/?redirectedFromAccountArea=true",
+            "time": 4183
+        },
+        {
+            "id": "5a91b2f07d0eb41bf3000635",
+            "userAgent": "Mozilla/5.0 (Windows NT 6.3; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
+            "location": "Niel, Belgium",
+            "date": "2018-02-24T18:46:08.738Z",
+            "campaignId": "59e0cbe2acd8122c266b8d42",
+            "customData": {
+                "customer_id": "561161"
+            },
+            "data": {
+                "nps": 7
+            },
+            "url": "https://www.hellofresh.be/my-account/deliveries/menu/2018-W09?default=true",
+            "time": 25546
+        }
+    ],
+    "count": 8,
+    "hasMore": false,
+    "lastTimestamp": 1519497968738
+}
