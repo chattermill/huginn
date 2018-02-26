@@ -1,11 +1,9 @@
 require 'rails_helper'
 
-describe Agents::TypeformAgent, :vcr do
+describe Agents::TypeformAgent do
   before do
-    VCR.insert_cassette 'typeforms/typeform', record: :new_episodes, serialize_with: :json
-
     @opts = {
-      "api_key": "41820b9f2eda8d5dea56808ca8172652a888460f",
+      "api_key": "token123",
       "form_id": "uOSkwS",
       'expected_update_period_in_days' => '1',
       'mode' => 'on_change',
@@ -17,10 +15,12 @@ describe Agents::TypeformAgent, :vcr do
     @agent = Agents::TypeformAgent.new(:name => 'My agent', :options => @opts)
     @agent.user = users(:bob)
     @agent.save!
-  end
 
-  after do
-    VCR.eject_cassette
+    stub_request(:get, /api.typeform.com\/v1\/form/).to_return(
+      body: File.read(Rails.root.join("spec/data_fixtures/typeform/form.json")),
+      headers: {"Content-Type"=> "application/json"},
+      status: 200)
+
   end
 
   describe 'descriptions' do
@@ -79,9 +79,6 @@ describe Agents::TypeformAgent, :vcr do
       expect(@agent).not_to be_valid
     end
 
-
-
-
     it 'should validate uniqueness_look_back greater than 0' do
       @agent.options['uniqueness_look_back'] = 0
       expect(@agent).not_to be_valid
@@ -90,38 +87,113 @@ describe Agents::TypeformAgent, :vcr do
 
   describe '#chek' do
     context 'when there is not another agent running' do
-      it 'emits events' do
-        expect { @agent.check }.to change { Event.count }.by(3)
+      context 'with guess_mode as true' do
+        it 'emits events' do
+          expect { @agent.check }.to change { Event.count }.by(2)
+        end
+
+        it 'does not emit duplicated events ' do
+          @agent.check
+          @agent.events.last.destroy
+
+          expect { @agent.check }.to change { Event.count }.by(1)
+          expect(@agent.events.count).to eq(2)
+        end
+
+        it 'emits correct payload' do
+          @agent.check
+          payload = @agent.events.last.payload
+          expected = {
+            'score' => '9',
+            'comment' => 'Siempre en atención al cliente se deben mejorar cosas. Es un muy buen servicio ',
+            'created_at' => '2018-02-26 14:55:46',
+            'id' => '6b3cd2e74489d2eb51b7df19a58769c4',
+            'answers' => {
+                "opinionscale_HBQFrgppgcZw" => "9",
+                "textarea_cUFpnquv2orQ" => "Siempre en atención al cliente se deben mejorar cosas. Es un muy buen servicio ",
+                "listimage_YJ8TmYnakZyy_choice" => "Hombre",
+                "list_QI6De1wB6Fr8_choice" => "25 a 34"
+            },
+            'metadata' => {
+              "date_land" => "2018-02-26 14:54:43",
+              "date_submit" => "2018-02-26 14:55:46",
+              "browser" => "fallback",
+              "platform" => "tablet"
+            },
+            'hidden_variables' => {
+              "token" => "d064a975-9c54-43de-8e70-071f0fe0bf12",
+              "city_id" => "0",
+              "country_id" => "38",
+              "tc" => "12"
+            }
+          }
+
+          expect(payload).to eq(expected)
+        end
       end
 
-      it 'does not emit duplicated events ' do
-        @agent.check
-        @agent.events.last.destroy
+      context 'with guess_mode as false' do
+        before do
+          @agent.options['guess_mode'] = false
+          @agent.options['comment_question_ids'] = 'textarea_cUFpnquv2123'
+          @agent.options['score_question_ids'] = 'opinionscale_HBQFrgppg123'
+        end
 
-        expect { @agent.check }.to change { Event.count }.by(1)
-        expect(@agent.events.count).to eq(3)
-      end
+        it 'emits events' do
+          expect { @agent.check }.to change { Event.count }.by(2)
+        end
 
-      it 'emits correct payload' do
-        @agent.check
-        payload = @agent.events.last.payload
-        expected = {
-          'score' => '9',
-          'comment' => 'Porque aveces cuando solicitas el servicio se tardan mucho en llegar ',
-          'created_at' => '',
-          'id' => 1,
-          'answers' => '',
-          'metadata' => '',
-          'hidden_variables' => ''
-        }
+        it 'does not emit duplicated events ' do
+          @agent.check
+          @agent.events.first.destroy
 
-        expect(payload).to eq(expected)
-      end
+          expect { @agent.check }.to change { Event.count }.by(1)
+          expect(@agent.events.count).to eq(2)
+        end
 
-      context 'with limit param' do
-        it 'emits limited events' do
-          @agent.options['limit'] = 5
-          expect { @agent.check }.to change { Event.count }.by(5)
+        it 'emits correct payload' do
+          @agent.check
+          payload = @agent.events.first.payload
+          expected = {
+            'score' => '10',
+            'comment' => 'Es un muy buen servicio',
+            'created_at' => '2018-02-26 14:53:23',
+            'id' => 'a290d8dbd146ad4ad4d7c13409e4578c',
+            'answers' => {
+              "opinionscale_HBQFrgppgcZw" => "7",
+              "opinionscale_HBQFrgppg123" => "10",
+              "textarea_cUFpnquv2orQ" => "Siempre en atención al cliente se deben mejorar cosas. Es un muy buen servicio ",
+              "textarea_cUFpnquv2123" => "Es un muy buen servicio"
+            },
+            'metadata' => {
+              "date_land" => "2018-02-26 14:53:05",
+              "date_submit" => "2018-02-26 14:53:23",
+              "browser" => "touch",
+              "platform" => "mobile"
+            },
+            'hidden_variables' => {
+              "token" => "526487cb-0c35-4f57-9ce3-ccfd8b6cb48d",
+              "city_id" => "1434",
+              "country_id" => "113",
+              "tc" => "12"
+            }
+          }
+
+          expect(payload).to eq(expected)
+        end
+
+        it 'emits score as nil if does not find any score question' do
+          @agent.options['score_question_ids'] = 'none'
+          @agent.check
+
+          expect(@agent.events.last.payload['score']).to be nil
+        end
+
+        it 'emits comment as nil if does not find any comment question' do
+          @agent.options['comment_question_ids'] = 'none'
+          @agent.check
+
+          expect(@agent.events.last.payload['comment']).to be nil
         end
       end
 
@@ -147,15 +219,20 @@ describe Agents::TypeformAgent, :vcr do
 
   describe 'helpers' do
     it 'build a correct params string' do
-      expected = "order_by[]=date_submit,desc&limit=3&offset=0"
+      expected = {
+        "order_by[]" => "date_submit,desc",
+        "limit" => 3,
+        "offset" => 0
+      }
       expect(@agent.send(:params)).to eq(expected)
 
       @agent.options['limit'] = ''
-      expected = 'order_by[]=date_submit,desc&offset=0'
-      expect(@agent.send(:params)).to eq(expected)
-
       @agent.options['offset'] = ''
-      expected = 'order_by[]=date_submit,desc&limit=3'
+      expected = {
+        "order_by[]" => "date_submit,desc",
+        "limit" => "",
+        "offset" => ""
+      }
       expect(@agent.send(:params)).to eq(expected)
     end
   end
