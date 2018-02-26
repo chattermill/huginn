@@ -306,7 +306,6 @@ module Agents
 
     def params
       hash = {
-        'order_by[]' => 'date_submit,desc',
         'page_size' => interpolated['limit']
       }
 

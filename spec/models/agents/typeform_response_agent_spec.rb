@@ -446,7 +446,6 @@ describe Agents::TypeformResponseAgent do
         @agent.options['until'] = "02-21-2018"
 
         expected = {
-          'order_by[]' => 'date_submit,desc',
           'page_size' => 3,
           'since' => '2018-02-20T12:00:00',
           'until' => '2018-02-21T12:00:00',
