@@ -1,0 +1,66 @@
+---
+http_interactions:
+- request:
+    method: post
+    uri: https://translation.googleapis.com/language/translate/v2?key=AIzaSyBjl1hWABkN5z5TZR_meJQYnYnQcQKzYUs
+    body:
+      encoding: UTF-8
+      string: '{"q":["comment allez-vous"],"target":"en","model":"nmt"}'
+    headers:
+      User-Agent:
+      - gcloud-ruby/1.0.1
+      Google-Cloud-Resource-Prefix:
+      - projects/
+      Content-Type:
+      - application/json
+      X-Goog-Api-Client:
+      - gl-ruby/2.3.1 gccl/1.0.1
+      Accept-Encoding:
+      - gzip;q=1.0,deflate;q=0.6,identity;q=0.3
+      Accept:
+      - "*/*"
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Content-Type:
+      - application/json; charset=UTF-8
+      Vary:
+      - Origin
+      - Referer
+      - X-Origin
+      Date:
+      - Wed, 28 Feb 2018 19:02:42 GMT
+      Server:
+      - ESF
+      Cache-Control:
+      - private
+      X-Xss-Protection:
+      - 1; mode=block
+      X-Frame-Options:
+      - SAMEORIGIN
+      X-Content-Type-Options:
+      - nosniff
+      Alt-Svc:
+      - hq=":443"; ma=2592000; quic=51303431; quic=51303339; quic=51303338; quic=51303337;
+        quic=51303335,quic=":443"; ma=2592000; v="41,39,38,37,35"
+      Transfer-Encoding:
+      - chunked
+    body:
+      encoding: ASCII-8BIT
+      string: |
+        {
+          "data": {
+            "translations": [
+              {
+                "translatedText": "how are you",
+                "detectedSourceLanguage": "fr",
+                "model": "nmt"
+              }
+            ]
+          }
+        }
+    http_version: 
+  recorded_at: Wed, 28 Feb 2018 19:02:43 GMT
+recorded_with: VCR 3.0.3
