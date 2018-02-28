@@ -1,0 +1,207 @@
+{
+    "groups": [
+        {
+            "url": "https://example.com/api/v2/groups/32961587.json",
+            "id": 32961587,
+            "name": "Campus Life",
+            "deleted": false,
+            "created_at": "2016-11-08T22:32:09Z",
+            "updated_at": "2016-11-08T22:32:09Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/32729308.json",
+            "id": 32729308,
+            "name": "Casual",
+            "deleted": false,
+            "created_at": "2016-10-25T00:19:00Z",
+            "updated_at": "2016-10-27T00:03:34Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114094402533.json",
+            "id": 114094402533,
+            "name": "Cliffhanger",
+            "deleted": false,
+            "created_at": "2017-07-05T23:35:20Z",
+            "updated_at": "2017-07-05T23:35:20Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/32148188.json",
+            "id": 32148188,
+            "name": "Episode",
+            "deleted": false,
+            "created_at": "2016-09-29T22:08:06Z",
+            "updated_at": "2016-09-29T22:08:06Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114094637453.json",
+            "id": 114094637453,
+            "name": "Episode -- Tier 2",
+            "deleted": false,
+            "created_at": "2017-08-04T21:08:12Z",
+            "updated_at": "2017-08-04T21:08:12Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/360000241354.json",
+            "id": 360000241354,
+            "name": "Episode Donacode",
+            "deleted": false,
+            "created_at": "2018-02-14T22:35:43Z",
+            "updated_at": "2018-02-14T22:35:43Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/40585167.json",
+            "id": 40585167,
+            "name": "Episode Social",
+            "deleted": false,
+            "created_at": "2017-03-25T20:44:04Z",
+            "updated_at": "2017-03-25T20:44:04Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/32245368.json",
+            "id": 32245368,
+            "name": "On-Site PX",
+            "deleted": false,
+            "created_at": "2016-10-03T23:27:15Z",
+            "updated_at": "2016-10-03T23:27:15Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114094868234.json",
+            "id": 114094868234,
+            "name": "Perfliq",
+            "deleted": false,
+            "created_at": "2017-09-01T18:01:06Z",
+            "updated_at": "2017-09-01T18:01:06Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/20503477.json",
+            "id": 20503477,
+            "name": "Support",
+            "deleted": false,
+            "created_at": "2012-12-18T01:37:38Z",
+            "updated_at": "2012-12-18T01:37:38Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/32112187.json",
+            "id": 32112187,
+            "name": "Taco Town",
+            "deleted": false,
+            "created_at": "2016-09-29T21:25:45Z",
+            "updated_at": "2016-09-29T21:25:45Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/32991008.json",
+            "id": 32991008,
+            "name": "Tap Paradise Cove",
+            "deleted": false,
+            "created_at": "2016-11-08T22:35:24Z",
+            "updated_at": "2016-11-08T22:35:24Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/32743088.json",
+            "id": 32743088,
+            "name": "War Dragons",
+            "deleted": false,
+            "created_at": "2016-10-25T22:25:31Z",
+            "updated_at": "2016-10-25T22:25:31Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095445493.json",
+            "id": 114095445493,
+            "name": "War Dragons - Chinese",
+            "deleted": false,
+            "created_at": "2017-11-08T17:14:20Z",
+            "updated_at": "2017-11-08T17:14:20Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095449274.json",
+            "id": 114095449274,
+            "name": "War Dragons - French",
+            "deleted": false,
+            "created_at": "2017-11-08T17:03:46Z",
+            "updated_at": "2017-11-08T17:03:46Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095449214.json",
+            "id": 114095449214,
+            "name": "War Dragons - German",
+            "deleted": false,
+            "created_at": "2017-11-08T17:01:38Z",
+            "updated_at": "2017-11-08T17:01:38Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095449234.json",
+            "id": 114095449234,
+            "name": "War Dragons - Italian",
+            "deleted": false,
+            "created_at": "2017-11-08T17:02:40Z",
+            "updated_at": "2017-11-08T17:02:40Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095445453.json",
+            "id": 114095445453,
+            "name": "War Dragons - Japanese",
+            "deleted": false,
+            "created_at": "2017-11-08T17:04:41Z",
+            "updated_at": "2017-11-08T17:04:41Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095449634.json",
+            "id": 114095449634,
+            "name": "War Dragons - Korean",
+            "deleted": false,
+            "created_at": "2017-11-08T17:38:57Z",
+            "updated_at": "2017-11-08T17:38:57Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095445713.json",
+            "id": 114095445713,
+            "name": "War Dragons - Portuguese",
+            "deleted": false,
+            "created_at": "2017-11-08T17:37:49Z",
+            "updated_at": "2017-11-08T17:37:49Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095449294.json",
+            "id": 114095449294,
+            "name": "War Dragons - Russian",
+            "deleted": false,
+            "created_at": "2017-11-08T17:11:26Z",
+            "updated_at": "2017-11-08T17:11:26Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095445473.json",
+            "id": 114095445473,
+            "name": "War Dragons - Spanish",
+            "deleted": false,
+            "created_at": "2017-11-08T17:12:50Z",
+            "updated_at": "2017-11-08T17:12:50Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095449654.json",
+            "id": 114095449654,
+            "name": "War Dragons - Turkish",
+            "deleted": false,
+            "created_at": "2017-11-08T17:39:33Z",
+            "updated_at": "2017-11-08T17:39:33Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095506974.json",
+            "id": 114095506974,
+            "name": "WD - Escalations",
+            "deleted": false,
+            "created_at": "2017-11-16T01:55:01Z",
+            "updated_at": "2017-11-16T01:55:01Z"
+        },
+        {
+            "url": "https://example.com/api/v2/groups/114095459294.json",
+            "id": 114095459294,
+            "name": "WD - Leads",
+            "deleted": false,
+            "created_at": "2017-11-09T18:16:27Z",
+            "updated_at": "2017-11-09T18:16:27Z"
+        }
+    ],
+    "next_page": null,
+    "previous_page": null,
+    "count": 25
+}
