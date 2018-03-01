@@ -103,16 +103,16 @@ describe Agents::TypeformResponseAgent do
     context 'when there is not another agent running' do
       context 'with guess_mode as true' do
         it 'emits events' do
-          expect { @agent.check }.to change { Event.count }.by(3)
+          expect { @agent.check }.to change { Event.count }.by(4)
         end
 
         it 'does not emit duplicated events ' do
           @agent.check
           @agent.events.last.destroy
 
-          expect(@agent.events.count).to eq(2)
-          expect { @agent.check }.to change { Event.count }.by(1)
           expect(@agent.events.count).to eq(3)
+          expect { @agent.check }.to change { Event.count }.by(1)
+          expect(@agent.events.count).to eq(4)
         end
 
         it 'emits correct payload' do
@@ -204,6 +204,13 @@ describe Agents::TypeformResponseAgent do
 
           expect(event.payload['comment']).to be nil
         end
+
+        it 'emits empty answer if there is no answers' do
+          @agent.check
+          event = @agent.events.third
+
+          expect(event.payload['answers']).to eq([])
+        end
       end
 
       context 'with guess_mode as false' do
@@ -214,16 +221,16 @@ describe Agents::TypeformResponseAgent do
         end
 
         it 'emits events' do
-          expect { @agent.check }.to change { Event.count }.by(3)
+          expect { @agent.check }.to change { Event.count }.by(4)
         end
 
         it 'does not emit duplicated events ' do
           @agent.check
           @agent.events.last.destroy
 
-          expect(@agent.events.count).to eq(2)
-          expect { @agent.check }.to change { Event.count }.by(1)
           expect(@agent.events.count).to eq(3)
+          expect { @agent.check }.to change { Event.count }.by(1)
+          expect(@agent.events.count).to eq(4)
         end
 
         it 'emits correct payload' do
@@ -305,6 +312,13 @@ describe Agents::TypeformResponseAgent do
           @agent.check
 
           expect(@agent.events.last.payload['comment']).to be nil
+        end
+
+        it 'emits empty answer if there is no answers' do
+          @agent.check
+          event = @agent.events.third
+
+          expect(event.payload['answers']).to eq([])
         end
       end
 
