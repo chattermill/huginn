@@ -23,6 +23,8 @@ describe Agents::GoogleTranslateAgent, :vcr do
       'comment' => "Hola desde aquí"
     }
 
+    stub.proxy(ENV).[](anything)
+    stub(ENV).[]('GOOGLE_TRANSLATE_API_KEY') { 'token123' }
   end
 
   describe "#working?" do
