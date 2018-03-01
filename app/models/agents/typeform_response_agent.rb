@@ -250,7 +250,7 @@ module Agents
     end
 
     def sorted_answers(answers)
-      answers.sort_by { |el| el['field']['id'] }
+      (answers || []).sort_by { |el| el['field']['id'] }
     end
 
     def typeform_events
