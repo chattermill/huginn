@@ -76,6 +76,16 @@ describe Agents::TypeformResponseAgent do
       expect(@agent).not_to be_valid
     end
 
+    it 'should validate expected_update_period_in_days is greater than 0' do
+      @agent.options['expected_update_period_in_days'] = 0
+      expect(@agent).not_to be_valid
+    end
+
+    it 'should validate uniqueness_look_back greater than 0' do
+      @agent.options['uniqueness_look_back'] = 0
+      expect(@agent).not_to be_valid
+    end
+
     it 'should validate since date format' do
       @agent.options['since'] = '2 hours ago'
       expect(@agent).to be_valid
@@ -183,21 +193,21 @@ describe Agents::TypeformResponseAgent do
 
         it 'emits score as nil if does not find any score question' do
           @agent.check
-          event = @agent.events.third
+          event = @agent.events.second
 
           expect(event.payload['score']).to be nil
         end
 
         it 'emits comment as nil if does not find any comment question' do
           @agent.check
-          event = @agent.events.third
+          event = @agent.events.second
 
           expect(event.payload['comment']).to be nil
         end
 
         it 'emits empty answer if there is no answers' do
           @agent.check
-          event = @agent.events.second
+          event = @agent.events.third
 
           expect(event.payload['answers']).to eq([])
         end
@@ -303,6 +313,13 @@ describe Agents::TypeformResponseAgent do
 
           expect(@agent.events.last.payload['comment']).to be nil
         end
+
+        it 'emits empty answer if there is no answers' do
+          @agent.check
+          event = @agent.events.third
+
+          expect(event.payload['answers']).to eq([])
+        end
       end
 
       context 'with mapping_object' do
@@ -342,7 +359,7 @@ describe Agents::TypeformResponseAgent do
           @agent.check
 
           expect(@agent.events.first.payload['mapped_variables']).to eq({"tc" => "21 - 50"})
-          expect(@agent.events.third.payload['mapped_variables']).to eq({"tc" => "101 and more"})
+          expect(@agent.events.second.payload['mapped_variables']).to eq({"tc" => "101 and more"})
           expect(@agent.events.last.payload['mapped_variables']).to eq({"tc" => ""})
         end
       end
@@ -443,7 +460,6 @@ describe Agents::TypeformResponseAgent do
         @agent.options['until'] = "02-21-2018"
 
         expected = {
-          "order_by[]"=>"date_submit,desc",
           'page_size' => 3,
           'since' => '2018-02-20T12:00:00',
           'until' => '2018-02-21T12:00:00',

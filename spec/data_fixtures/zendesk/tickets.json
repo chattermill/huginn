@@ -1,0 +1,752 @@
+{
+    "tickets": [
+        {
+            "url": "https://example.com/api/v2/tickets/1027403.json",
+            "id": 1027403,
+            "external_id": null,
+            "via": {
+                "channel": "web",
+                "source": {
+                    "from": {},
+                    "to": {},
+                    "rel": null
+                }
+            },
+            "created_at": "2018-02-14T03:19:04Z",
+            "updated_at": "2018-02-27T19:49:55Z",
+            "type": "incident",
+            "subject": "Episode ",
+            "raw_subject": "Episode ",
+            "description": "App keeps glitching and taling me out of it ",
+            "priority": null,
+            "status": "solved",
+            "recipient": null,
+            "requester_id": 360525488253,
+            "submitter_id": 360525488253,
+            "assignee_id": 114996813853,
+            "organization_id": null,
+            "group_id": 32148188,
+            "collaborator_ids": [],
+            "follower_ids": [],
+            "forum_topic_id": null,
+            "problem_id": null,
+            "has_incidents": false,
+            "is_public": true,
+            "due_at": null,
+            "tags": [
+                "account_transfer",
+                "android"
+            ],
+            "custom_fields": [
+                {
+                    "id": 24028428,
+                    "value": false
+                }
+            ],
+            "satisfaction_rating": {
+                "score": "good",
+                "id": 360080079073,
+                "comment": "Incredibly satisfied all member's that emailed me helped greatly and in the end helped fix my problem gave me every bit of info i needed and more very thankful 110% happy",
+                "reason": "No reason provided",
+                "reason_id": 787
+            },
+            "sharing_agreement_ids": [],
+            "fields": [
+                {
+                    "id": 24028428,
+                    "value": false
+                }
+            ],
+            "followup_ids": [],
+            "ticket_form_id": 112758,
+            "brand_id": 114094495673,
+            "satisfaction_probability": null,
+            "allow_channelback": false
+        },
+        {
+            "url": "https://example.com/api/v2/tickets/1038781.json",
+            "id": 1038781,
+            "external_id": null,
+            "via": {
+                "channel": "mobile_sdk",
+                "source": {
+                    "from": {},
+                    "to": {},
+                    "rel": "mobile_sdk"
+                }
+            },
+            "created_at": "2018-02-23T07:42:28Z",
+            "updated_at": "2018-02-27T17:48:20Z",
+            "type": "incident",
+            "subject": "App Ticket",
+            "raw_subject": "App Ticket",
+            "description": "Hallo Support,\n\nIch hatte in einer Super Sigil Kiste 10k Siegel. Diese sind mir allerdings nicht gutgeschrieben worden. Bitte holt das nach. Danke, Gruss FearlessBiggi",
+            "priority": "low",
+            "status": "solved",
+            "recipient": null,
+            "requester_id": 115730900114,
+            "submitter_id": 115730900114,
+            "assignee_id": 115737096334,
+            "organization_id": null,
+            "group_id": 32743088,
+            "collaborator_ids": [],
+            "follower_ids": [],
+            "forum_topic_id": null,
+            "problem_id": null,
+            "has_incidents": false,
+            "is_public": true,
+            "due_at": null,
+            "tags": [
+                "german",
+                "satisfaction_good",
+                "super_sigil_chest",
+                "ticket_received"
+            ],
+            "custom_fields": [
+                {
+                    "id": 24028428,
+                    "value": false
+                },
+                {
+                    "id": 114097777834,
+                    "value": null
+                },
+                {
+                    "id": 24022097,
+                    "value": false
+                },
+                {
+                    "id": 23814837,
+                    "value": null
+                },
+                {
+                    "id": 23896253,
+                    "value": null
+                },
+                {
+                    "id": 56145908,
+                    "value": "FearlessBiggi"
+                },
+                {
+                    "id": 23804423,
+                    "value": "angelbelle2711@gmail.com"
+                },
+                {
+                    "id": 23822396,
+                    "value": null
+                },
+                {
+                    "id": 23786153,
+                    "value": null
+                },
+                {
+                    "id": 114097777854,
+                    "value": false
+                },
+                {
+                    "id": 53604107,
+                    "value": null
+                },
+                {
+                    "id": 23793987,
+                    "value": "5U48BQ3HTF"
+                },
+                {
+                    "id": 54031907,
+                    "value": "German"
+                },
+                {
+                    "id": 23803198,
+                    "value": null
+                },
+                {
+                    "id": 23873898,
+                    "value": "iPad5,3"
+                },
+                {
+                    "id": 26520407,
+                    "value": false
+                },
+                {
+                    "id": 26564377,
+                    "value": null
+                },
+                {
+                    "id": 28802018,
+                    "value": null
+                },
+                {
+                    "id": 114096058693,
+                    "value": null
+                },
+                {
+                    "id": 114096058713,
+                    "value": null
+                },
+                {
+                    "id": 114096080734,
+                    "value": null
+                },
+                {
+                    "id": 114096058733,
+                    "value": null
+                },
+                {
+                    "id": 114100835234,
+                    "value": "739"
+                },
+                {
+                    "id": 114100835254,
+                    "value": "414"
+                },
+                {
+                    "id": 114099773893,
+                    "value": ""
+                },
+                {
+                    "id": 79719648,
+                    "value": null
+                },
+                {
+                    "id": 114099824893,
+                    "value": "Low"
+                },
+                {
+                    "id": 114101916954,
+                    "value": "german"
+                },
+                {
+                    "id": 114102227714,
+                    "value": null
+                },
+                {
+                    "id": 114101916974,
+                    "value": true
+                },
+                {
+                    "id": 360000764773,
+                    "value": null
+                },
+                {
+                    "id": 114102283113,
+                    "value": null
+                },
+                {
+                    "id": 360000764793,
+                    "value": null
+                },
+                {
+                    "id": 360000723174,
+                    "value": null
+                },
+                {
+                    "id": 114101977594,
+                    "value": null
+                }
+            ],
+            "satisfaction_rating": {
+                "score": "good",
+                "id": 360080222714,
+                "comment": "Schnelle Antwort, freundlich, es wurde sich zuegig gekuemmert",
+                "reason": "No reason provided",
+                "reason_id": 787
+            },
+            "sharing_agreement_ids": [],
+            "fields": [
+                {
+                    "id": 24028428,
+                    "value": false
+                },
+                {
+                    "id": 114097777834,
+                    "value": null
+                },
+                {
+                    "id": 24022097,
+                    "value": false
+                },
+                {
+                    "id": 23814837,
+                    "value": null
+                },
+                {
+                    "id": 23896253,
+                    "value": null
+                },
+                {
+                    "id": 56145908,
+                    "value": "FearlessBiggi"
+                },
+                {
+                    "id": 23804423,
+                    "value": "angelbelle2711@gmail.com"
+                },
+                {
+                    "id": 23822396,
+                    "value": null
+                },
+                {
+                    "id": 23786153,
+                    "value": null
+                },
+                {
+                    "id": 114097777854,
+                    "value": false
+                },
+                {
+                    "id": 53604107,
+                    "value": null
+                },
+                {
+                    "id": 23793987,
+                    "value": "5U48BQ3HTF"
+                },
+                {
+                    "id": 54031907,
+                    "value": "German"
+                },
+                {
+                    "id": 23803198,
+                    "value": null
+                },
+                {
+                    "id": 23873898,
+                    "value": "iPad5,3"
+                },
+                {
+                    "id": 26520407,
+                    "value": false
+                },
+                {
+                    "id": 26564377,
+                    "value": null
+                },
+                {
+                    "id": 28802018,
+                    "value": null
+                },
+                {
+                    "id": 114096058693,
+                    "value": null
+                },
+                {
+                    "id": 114096058713,
+                    "value": null
+                },
+                {
+                    "id": 114096080734,
+                    "value": null
+                },
+                {
+                    "id": 114096058733,
+                    "value": null
+                },
+                {
+                    "id": 114100835234,
+                    "value": "739"
+                },
+                {
+                    "id": 114100835254,
+                    "value": "414"
+                },
+                {
+                    "id": 114099773893,
+                    "value": ""
+                },
+                {
+                    "id": 79719648,
+                    "value": null
+                },
+                {
+                    "id": 114099824893,
+                    "value": "Low"
+                },
+                {
+                    "id": 114101916954,
+                    "value": "german"
+                },
+                {
+                    "id": 114102227714,
+                    "value": null
+                },
+                {
+                    "id": 114101916974,
+                    "value": true
+                },
+                {
+                    "id": 360000764773,
+                    "value": null
+                },
+                {
+                    "id": 114102283113,
+                    "value": null
+                },
+                {
+                    "id": 360000764793,
+                    "value": null
+                },
+                {
+                    "id": 360000723174,
+                    "value": null
+                },
+                {
+                    "id": 114101977594,
+                    "value": null
+                }
+            ],
+            "followup_ids": [],
+            "ticket_form_id": 114093988394,
+            "brand_id": 114094495613,
+            "satisfaction_probability": null,
+            "allow_channelback": false
+        },
+        {
+            "url": "https://example.com/api/v2/tickets/1040233.json",
+            "id": 1040233,
+            "external_id": null,
+            "via": {
+                "channel": "email",
+                "source": {
+                    "from": {
+                        "address": "belhydinha@gmail.com",
+                        "name": "belhy nda"
+                    },
+                    "to": {
+                        "name": "Support Team",
+                        "address": "episode.support@example.com"
+                    },
+                    "rel": null
+                }
+            },
+            "created_at": "2018-02-24T15:26:54Z",
+            "updated_at": "2018-02-27T19:49:27Z",
+            "type": "incident",
+            "subject": "Episode - Choose Your Story",
+            "raw_subject": "Episode - Choose Your Story",
+            "description": "oi,gostaria de saber se vão?traduzir esse jogo para o Brasil.obrigada",
+            "priority": null,
+            "status": "solved",
+            "recipient": "episode.support@example.com",
+            "requester_id": 360696902974,
+            "submitter_id": 360696902974,
+            "assignee_id": 114996813853,
+            "organization_id": null,
+            "group_id": 32148188,
+            "collaborator_ids": [],
+            "follower_ids": [],
+            "forum_topic_id": null,
+            "problem_id": null,
+            "has_incidents": false,
+            "is_public": true,
+            "due_at": null,
+            "tags": [
+                "email_submission",
+                "episode",
+                "general_feedback",
+                "language_request",
+                "macro_foreign_language_suggestion_english_only",
+                "satisfaction_good"
+            ],
+            "custom_fields": [
+                {
+                    "id": 24028428,
+                    "value": false
+                },
+                {
+                    "id": 114097777834,
+                    "value": null
+                },
+                {
+                    "id": 24022097,
+                    "value": false
+                },
+                {
+                    "id": 23814837,
+                    "value": null
+                },
+                {
+                    "id": 23896253,
+                    "value": null
+                },
+                {
+                    "id": 56145908,
+                    "value": null
+                },
+                {
+                    "id": 23804423,
+                    "value": null
+                },
+                {
+                    "id": 23822396,
+                    "value": "episode"
+                },
+                {
+                    "id": 23786153,
+                    "value": null
+                },
+                {
+                    "id": 114097777854,
+                    "value": false
+                },
+                {
+                    "id": 53604107,
+                    "value": null
+                },
+                {
+                    "id": 23793987,
+                    "value": null
+                },
+                {
+                    "id": 54031907,
+                    "value": null
+                },
+                {
+                    "id": 23803198,
+                    "value": null
+                },
+                {
+                    "id": 23873898,
+                    "value": null
+                },
+                {
+                    "id": 26520407,
+                    "value": false
+                },
+                {
+                    "id": 26564377,
+                    "value": null
+                },
+                {
+                    "id": 28802018,
+                    "value": null
+                },
+                {
+                    "id": 114096058693,
+                    "value": null
+                },
+                {
+                    "id": 114096058713,
+                    "value": null
+                },
+                {
+                    "id": 114096080734,
+                    "value": null
+                },
+                {
+                    "id": 114096058733,
+                    "value": null
+                },
+                {
+                    "id": 114100835234,
+                    "value": "84"
+                },
+                {
+                    "id": 114100835254,
+                    "value": "84"
+                },
+                {
+                    "id": 114099773893,
+                    "value": null
+                },
+                {
+                    "id": 79719648,
+                    "value": null
+                },
+                {
+                    "id": 114099824893,
+                    "value": null
+                },
+                {
+                    "id": 114101916954,
+                    "value": null
+                },
+                {
+                    "id": 114102227714,
+                    "value": null
+                },
+                {
+                    "id": 114101916974,
+                    "value": false
+                },
+                {
+                    "id": 360000764773,
+                    "value": null
+                },
+                {
+                    "id": 114102283113,
+                    "value": null
+                },
+                {
+                    "id": 360000764793,
+                    "value": null
+                },
+                {
+                    "id": 360000723174,
+                    "value": null
+                },
+                {
+                    "id": 114101977594,
+                    "value": null
+                }
+            ],
+            "satisfaction_rating": {
+                "score": "good",
+                "id": 360080078873,
+                "comment": "sim otimo atendimento",
+                "reason": "No reason provided",
+                "reason_id": 787
+            },
+            "sharing_agreement_ids": [],
+            "fields": [
+                {
+                    "id": 24028428,
+                    "value": false
+                },
+                {
+                    "id": 114097777834,
+                    "value": null
+                },
+                {
+                    "id": 24022097,
+                    "value": false
+                },
+                {
+                    "id": 23814837,
+                    "value": null
+                },
+                {
+                    "id": 23896253,
+                    "value": null
+                },
+                {
+                    "id": 56145908,
+                    "value": null
+                },
+                {
+                    "id": 23804423,
+                    "value": null
+                },
+                {
+                    "id": 23822396,
+                    "value": "episode"
+                },
+                {
+                    "id": 23786153,
+                    "value": null
+                },
+                {
+                    "id": 114097777854,
+                    "value": false
+                },
+                {
+                    "id": 53604107,
+                    "value": null
+                },
+                {
+                    "id": 23793987,
+                    "value": null
+                },
+                {
+                    "id": 54031907,
+                    "value": null
+                },
+                {
+                    "id": 23803198,
+                    "value": null
+                },
+                {
+                    "id": 23873898,
+                    "value": null
+                },
+                {
+                    "id": 26520407,
+                    "value": false
+                },
+                {
+                    "id": 26564377,
+                    "value": null
+                },
+                {
+                    "id": 28802018,
+                    "value": null
+                },
+                {
+                    "id": 114096058693,
+                    "value": null
+                },
+                {
+                    "id": 114096058713,
+                    "value": null
+                },
+                {
+                    "id": 114096080734,
+                    "value": null
+                },
+                {
+                    "id": 114096058733,
+                    "value": null
+                },
+                {
+                    "id": 114100835234,
+                    "value": "84"
+                },
+                {
+                    "id": 114100835254,
+                    "value": "84"
+                },
+                {
+                    "id": 114099773893,
+                    "value": null
+                },
+                {
+                    "id": 79719648,
+                    "value": null
+                },
+                {
+                    "id": 114099824893,
+                    "value": null
+                },
+                {
+                    "id": 114101916954,
+                    "value": null
+                },
+                {
+                    "id": 114102227714,
+                    "value": null
+                },
+                {
+                    "id": 114101916974,
+                    "value": false
+                },
+                {
+                    "id": 360000764773,
+                    "value": null
+                },
+                {
+                    "id": 114102283113,
+                    "value": null
+                },
+                {
+                    "id": 360000764793,
+                    "value": null
+                },
+                {
+                    "id": 360000723174,
+                    "value": null
+                },
+                {
+                    "id": 114101977594,
+                    "value": null
+                }
+            ],
+            "followup_ids": [],
+            "ticket_form_id": 112758,
+            "brand_id": 114094495673,
+            "satisfaction_probability": null,
+            "allow_channelback": false
+        }
+    ],
+    "next_page": null,
+    "previous_page": null,
+    "count": 3
+}

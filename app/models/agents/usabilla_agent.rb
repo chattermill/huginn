@@ -122,35 +122,44 @@ module Agents
       if boolify(options['retrieve_campaigns']).nil?
         errors.add(:base, 'The retrieve_campaigns option must be true or false')
       end
+
+      if options['expected_update_period_in_days'].present?
+        errors.add(:base, "Invalid expected_update_period_in_days format") unless options['expected_update_period_in_days'].to_i.positive?
+      end
+
+      if options['uniqueness_look_back'].present?
+        errors.add(:base, "Invalid uniqueness_look_back format") unless (options['uniqueness_look_back']).to_i.positive?
+      end
+
     end
 
     def check
-      unless agent_in_process?
-        process_agent!
-        events = []
-        events += retrieve_buttons if retrieve_buttons?
-        events += retrieve_apps if retrieve_apps?
-        events += retrieve_emails if retrieve_emails?
-        events += retrieve_campaigns if retrieve_campaigns?
+      avoid_concurrent_running do
+        events = retrieve_events
+        if events.any?
+          old_events = previous_payloads(events.size)
 
-        old_events = previous_payloads(1)
-
-        events.each do |e|
-          payload = usabilla_response_to_event(e)
-          if store_payload!(old_events, payload)
-            log "Storing new result for '#{name}': #{payload.inspect}"
-            create_event payload: payload
+          events.each do |e|
+            payload = usabilla_response_to_event(e)
+            if store_payload!(old_events, payload)
+              log "Storing new result for '#{name}': #{payload.inspect}"
+              create_event payload: payload
+            end
           end
         end
-        memory['in_process'] = false
       end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
 
     private
+
+    def retrieve_events
+      events = []
+      events += retrieve_buttons if retrieve_buttons?
+      events += retrieve_apps if retrieve_apps?
+      events += retrieve_emails if retrieve_emails?
+      events += retrieve_campaigns if retrieve_campaigns?
+      events
+    end
 
     def previous_payloads(num_events)
       # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
@@ -296,6 +305,19 @@ module Agents
     def process_agent!
       memory['in_process'] = true
       save!
+    end
+
+    def avoid_concurrent_running
+      raise 'Mising block' unless block_given?
+      unless agent_in_process?
+        process_agent!
+        yield
+        memory['in_process'] = false
+      end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
   end
 end

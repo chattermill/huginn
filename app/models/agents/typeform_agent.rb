@@ -99,24 +99,28 @@ module Agents
       %w[api_key form_id].each do |key|
         errors.add(:base, "The '#{key}' option is required.") if options[key].blank?
       end
+
+      if options['expected_update_period_in_days'].present?
+        errors.add(:base, "Invalid expected_update_period_in_days format") unless options['expected_update_period_in_days'].to_i.positive?
+      end
+
+      if options['uniqueness_look_back'].present?
+        errors.add(:base, "Invalid uniqueness_look_back format") unless (options['uniqueness_look_back']).to_i.positive?
+      end
     end
 
     def check
-      unless agent_in_process?
-        process_agent!
-        old_events = previous_payloads(1)
-        typeform_events.each do |e|
-          if store_payload!(old_events, e)
-            log "Storing new result for '#{name}': #{e.inspect}"
-            create_event payload: e
+      avoid_concurrent_running do
+        if typeform_events.any?
+          old_events = previous_payloads(typeform_events.size)
+          typeform_events.each do |e|
+            if store_payload!(old_events, e)
+              log "Storing new result for '#{name}': #{e.inspect}"
+              create_event payload: e
+            end
           end
         end
-        memory['in_process'] = false
       end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
 
     private
@@ -155,7 +159,7 @@ module Agents
     end
 
     def typeform_events
-      typeform.complete_entries(params).responses.map { |r| transform_typeform_responses(r) }
+      @typeform_events ||= typeform.complete_entries(params).responses.map { |r| transform_typeform_responses(r) }
     end
 
     def transform_typeform_responses(response)
@@ -211,6 +215,19 @@ module Agents
     def process_agent!
       memory['in_process'] = true
       save!
+    end
+
+    def avoid_concurrent_running
+      raise 'Mising block' unless block_given?
+      unless agent_in_process?
+        process_agent!
+        yield
+        memory['in_process'] = false
+      end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
   end
 end
