@@ -95,8 +95,25 @@ describe Agents::TypeformWebhookAgent do
   describe 'callback' do
     it 'perform a request to create or update the typeform webhook' do
       expect(WebMock).to have_requested(:put ,"https://api.typeform.com/forms/jOyEkB/webhooks/agent_#{@agent.id}")
-      expect(@agent.logs.count).to eq(1)
-      expect(@agent.logs.last.message).to match(/Typeform Response: 200/)
+    end
+
+    it 'does not create or update the webhook if disabled or options have not changed' do
+      @agent.name = "Another name"
+      @agent.save
+      expect(WebMock).to have_requested(:put ,"https://api.typeform.com/forms/jOyEkB/webhooks/agent_#{@agent.id}").once
+    end
+
+    it 'log failed response' do
+      VCR.eject_cassette
+      VCR.use_cassette 'typeform_webhook_failed' do
+
+        @agent.options['access_token'] = '123'
+        @agent.save!
+
+        expect(@agent.logs.count).to eq(1)
+        expect(@agent.logs.last.message).to match(/Failed/)
+
+      end
     end
   end
 

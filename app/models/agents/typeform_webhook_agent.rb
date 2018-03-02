@@ -289,13 +289,15 @@ module Agents
     end
 
     def set_typeform_webhook
+      return unless saved_change_to_disabled? || saved_change_to_options?
+
       enabled = !self.disabled
       body = {
         "url": "https://#{ENV['DOMAIN']}/users/#{user.id}/web_requests/#{id}/#{options['secret']}",
         "enabled": enabled
       }
       response = faraday.put(webhook_url, body.to_json, headers(auth_header))
-      log "Typeform Response: #{response.status}: #{response.body}"
+      error "Failed: #{response.status}: #{response.body}" unless response.success?
     end
 
     def webhook_url
