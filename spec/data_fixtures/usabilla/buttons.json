@@ -1,0 +1,157 @@
+{
+    "items": [
+        {
+            "id": "5a90e35b2c1f537f870f925c",
+            "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 11_0_2 like Mac OS X) AppleWebKit/604.1.34 (KHTML, like Gecko) CriOS/64.0.3282.112 Mobile/15A421 Safari/604.1",
+            "comment": "i cannot log in",
+            "commentTranslated": "",
+            "commentTranslatedFrom": "",
+            "location": "Huntsville, AL, United States",
+            "browser": {
+                "name": "Chrome Mobile iOS",
+                "version": "64.0.3282.112",
+                "os": "iOS",
+                "devicetype": "Mobile Phone"
+            },
+            "date": "2018-02-24T04:00:36.866Z",
+            "custom": {
+                "please_select_a_topi": "bug"
+            },
+            "email": "",
+            "image": "http://u4w-screenshots-production.s3.amazonaws.com/5a90e35b2c1f537f870f925c/full_image",
+            "labels": [
+                "bug"
+            ],
+            "nps": 0,
+            "publicUrl": "https://www.usabilla.com/feedback/item/147f1c0d301ef80ea557c66e3cf421cee39f76e8",
+            "rating": 1,
+            "buttonId": "77ef9e751258",
+            "tags": [],
+            "url": "https://www.hellofresh.com/customer/account/login/?default=true&continue=%2Fmy-account%2Fdeliveries%2Fmenu%2F2018-W09%3Fdefault%3Dtrue",
+            "Bucket": "u4w-screenshots-production"
+        },
+        {
+            "id": "5a90efb2b07f24166a517ed9",
+            "userAgent": "Mozilla/5.0 (Linux; Android 8.1.0; Pixel 2 Build/OPM1.171019.019) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.137 Mobile Safari/537.36",
+            "comment": "The chat window doesn't display properly on mobile - it cuts off the left side of the window, so I wasn't able to use it.\nIm on a Pixel 2 for reference.\n",
+            "commentTranslated": "",
+            "commentTranslatedFrom": "",
+            "location": "Vancouver, BC, Canada",
+            "browser": {
+                "name": "Chrome Mobile",
+                "version": "64.0.3282.137",
+                "os": "Android",
+                "devicetype": "Mobile Phone"
+            },
+            "date": "2018-02-24T04:53:18.825Z",
+            "custom": {
+                "please_select_a_topi": "bug"
+            },
+            "email": "",
+            "image": "",
+            "labels": [
+                "bug"
+            ],
+            "nps": 0,
+            "publicUrl": "https://www.usabilla.com/feedback/item/d1f78c64a2ebefb939fba231d33c2093f9d76c3f",
+            "rating": 3,
+            "buttonId": "77ef9e751258",
+            "tags": [],
+            "url": "https://www.hellofresh.com/app/?redirectedFromAccountArea=true",
+            "Bucket": "u4w-screenshots-production"
+        },
+        {
+            "id": "5a90f35fb07f24285f17207b",
+            "userAgent": "Mozilla/5.0 (iPhone; CPU iPhone OS 11_2_5 like Mac OS X) AppleWebKit/604.5.6 (KHTML, like Gecko) Version/11.0 Mobile/15D60 Safari/604.1",
+            "comment": "Link does not work.  Password will not work and not able to reset to order for next week.  ",
+            "commentTranslated": "",
+            "commentTranslatedFrom": "",
+            "location": "Claremore, OK, United States",
+            "browser": {
+                "name": "Safari",
+                "version": "11.0",
+                "os": "iOS",
+                "devicetype": "Mobile Phone"
+            },
+            "date": "2018-02-24T05:08:55.983Z",
+            "custom": {
+                "please_select_a_topi": "bug"
+            },
+            "email": "",
+            "image": "http://u4w-screenshots-production.s3.amazonaws.com/5a90f35fb07f24285f17207b/full_image",
+            "labels": [
+                "bug"
+            ],
+            "nps": 0,
+            "publicUrl": "https://www.usabilla.com/feedback/item/2159d6b23e898c6ca1c42394b5928397924a0624",
+            "rating": 1,
+            "buttonId": "77ef9e751258",
+            "tags": [],
+            "url": "https://www.hellofresh.com/customer/account/forgotpassword?key=54e3d7e9434eb2f3f70118b8cab2e264",
+            "Bucket": "u4w-screenshots-production"
+        },
+        {
+            "id": "5a9103a7b07f24328519cb87",
+            "userAgent": "Mozilla/5.0 (Linux; Android 7.0; VS995 Build/NRD90M; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/64.0.3282.137 Mobile Safari/537.36 hellofresh",
+            "comment": "Services were great but I'm single so $60 per week for 3 meals for 2 people is a lot. Good portion sizes but I like variety so I don't want to eat the same thing for a couple of meals. If there was an option for one person portions at a reasonable price, I could see my ordering a 4 or 5 day meal plan. Lunch/dinner would be one less thing to have to worry about during the week.",
+            "commentTranslated": "",
+            "commentTranslatedFrom": "",
+            "location": "Brunswick, GA, United States",
+            "browser": {
+                "name": "Chrome Mobile",
+                "version": "64.0.3282.137",
+                "os": "Android",
+                "devicetype": "Mobile Phone"
+            },
+            "date": "2018-02-24T06:18:29.016Z",
+            "custom": {
+                "please_select_a_topi": "suggestion"
+            },
+            "email": "",
+            "image": "",
+            "labels": [
+                "suggestion"
+            ],
+            "nps": 0,
+            "publicUrl": "https://www.usabilla.com/feedback/item/7bcb5194556202475460148a681e8114142db942",
+            "rating": 4,
+            "buttonId": "77ef9e751258",
+            "tags": [],
+            "url": "https://www.hellofresh.com/cancellation/4159948/survey/meals-not-meet-needs",
+            "Bucket": "u4w-screenshots-production"
+        },
+        {
+            "id": "5a912c83b07f2448c84187ca",
+            "userAgent": "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36",
+            "comment": "I was supposed to receive a delivery today (my first complimentary one to try your product). I received an sms at 1.16pm to let me know that my box had been delivered - however until now 8.05pm, I have received nothing! I tried to respond to your text from 0414414446 indicating that I had not received my delivery and also rang your contact number which is unattended - due to it being the weekend.  I have to say that this is really frustrating! Not only was I looking forward to trying your product, but I have now wasted a whole day waiting. I'm not sure if this is a common problem, but I think that I won't be using your service if fresh products don't show up when they're meant to!",
+            "commentTranslated": "",
+            "commentTranslatedFrom": "",
+            "location": "Williamstown, Australia",
+            "browser": {
+                "name": "Chrome",
+                "version": "64.0.3282.167",
+                "os": "Win8.1",
+                "devicetype": "Desktop"
+            },
+            "date": "2018-02-24T09:12:49.515Z",
+            "custom": {
+                "please_select_a_topi": "suggestion"
+            },
+            "email": "",
+            "image": "",
+            "labels": [
+                "suggestion"
+            ],
+            "nps": 0,
+            "publicUrl": "https://www.usabilla.com/feedback/item/3f2f7fada2428defabc2bb38a9bafe0b0d20550e",
+            "rating": 1,
+            "buttonId": "b3be95cb7e07",
+            "tags": [],
+            "url": "https://www.hellofresh.com.au/lp/getcooking-v01-1x35-p01/?c=SEMB3MEALS&gclid=EAIaIQobChMIyrLvzpi-2QIVhpS9Ch1rMQRiEAAYASAAEgI9vvD_BwE",
+            "Bucket": "u4w-screenshots-production"
+        }
+      ],
+    "count": 5,
+    "hasMore": false,
+    "lastTimestamp": 1519523413290
+}

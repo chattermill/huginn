@@ -1,0 +1,57 @@
+{
+  "pageInfo": {
+    "totalResults": 1,
+    "resultPerPage": 10,
+    "startIndex": 1
+  },
+  "tokenPagination": {
+    "nextPageToken": "",
+    "previousPageToken": ""
+  },
+  "reviews": [
+    {
+      "reviewId": "12345",
+      "authorName": "Bob",
+      "comments": [
+        {
+          "userComment": {
+            "text": "So much better. Much more intuitive.",
+            "lastModified": {
+              "nanos": 244000000,
+              "seconds": 1505862059
+            },
+            "starRating": 4,
+            "reviewerLanguage": "en_GB",
+            "device": "hero2lte",
+            "androidOsVersion": 24,
+            "appVersionCode": 108060046,
+            "appVersionName": "1.8.6",
+            "thumbsUpCount": 1,
+            "thumbsDownCount": 2,
+            "deviceMetadata": {
+              "productName": "hero2lte (Galaxy S7 Edge)",
+              "manufacturer": "Samsung",
+              "deviceClass": "phone",
+              "screenWidthPx": 1200,
+              "screenHeightPx": 800,
+              "nativePlatform": "armeabi-v7a,armeabi,arm64-v8a",
+              "screenDensityDpi": 640,
+              "glEsVersion": 196609,
+              "cpuModel": "Exynos 8890",
+              "cpuMake": "Samsung",
+              "ramMb": 4096
+            },
+            "originalText": "Original comment"
+          },
+          "developerComment": {
+            "text": "developer comment",
+            "lastModified": {
+              "seconds": 1505862059,
+              "nanos": 244000000
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

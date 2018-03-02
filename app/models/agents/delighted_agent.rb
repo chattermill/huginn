@@ -76,8 +76,7 @@ module Agents
     end
 
     def check
-      unless agent_in_process?
-        process_agent!
+      avoid_concurrent_running do
         old_events = previous_payloads(1)
         delighted_events.each do |e|
           if store_payload!(old_events, e)
@@ -85,12 +84,7 @@ module Agents
             create_event payload: e
           end
         end
-        memory['in_process'] = false
       end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
 
     private
@@ -160,6 +154,19 @@ module Agents
     def process_agent!
       memory['in_process'] = true
       save!
+    end
+
+    def avoid_concurrent_running
+      raise 'Mising block' unless block_given?
+      unless agent_in_process?
+        process_agent!
+        yield
+        memory['in_process'] = false
+      end
+    rescue
+      memory['in_process'] = false
+      save!
+      raise
     end
   end
 end
