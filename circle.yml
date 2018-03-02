@@ -1,6 +1,6 @@
 machine:
   timezone:
-    "Pacific Time (US & Canada)"
+    US/Pacific
   environment:
     # Add the Postgres 9.6 binaries to the path.
     PATH: /usr/lib/postgresql/9.6/bin/:$PATH
