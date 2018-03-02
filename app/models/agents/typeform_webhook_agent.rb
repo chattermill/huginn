@@ -147,9 +147,85 @@ module Agents
       super
     end
 
+    def receive_web_request(params, method, format)
+      # check the secret
+      secret = params.delete('secret')
+      return ["Not Authorized", 401] unless secret == interpolated['secret']
 
+      # check the verbs
+      verbs = (interpolated['verbs'] || 'post').split(/,/).map { |x| x.strip.downcase }.select { |x| x.present? }
+      return ["Please use #{verbs.join('/').upcase} requests only", 401] unless verbs.include?(method)
+
+      # check the code
+      code = (interpolated['code'].presence || 201).to_i
+
+      [payload_for(params)].flatten.each do |payload|
+        event_payload = transform_typeform_response(payload)
+        create_event(payload: event_payload) if event_payload
+      end
+
+      if interpolated['response_headers'].presence
+        [interpolated(params)['response'] || 'Event Created', code, "text/plain", interpolated['response_headers'].presence]
+      else
+        [interpolated(params)['response'] || 'Event Created', code]
+      end
+    end
 
     private
+
+    def transform_typeform_response(payload)
+      response = payload['form_response']
+      return if response.blank?
+
+      answers = sorted_answers(response['answers'])
+      {
+        score: score_from_response(answers),
+        comment: comment_from_response(answers),
+        created_at: response['submitted_at'],
+        id: response['token'],
+        answers: answers,
+        formatted_answers: transform_answers(answers),
+        metadata: response['metadata'],
+        hidden_variables: response['hidden'],
+        mapped_variables: ''
+      }
+    end
+
+    def sorted_answers(answers)
+      (answers || []).sort_by { |el| el['field']['id'] }
+    end
+
+    def score_from_response(answers)
+      answer = if boolify(interpolated['guess_mode'])
+                 answers.find {|h| h.field.type == "opinion_scale" }
+               else
+                 answer_for(answers, interpolated['score_question_ids'])
+               end
+
+      answer.number if answer.present?
+    end
+
+    def comment_from_response(answers)
+      answer = if boolify(interpolated['guess_mode'])
+                 answers.find { |h| h["field"]["type"] == "long_text" }
+               else
+                 answer_for(answers, interpolated['comment_question_ids'])
+               end
+
+      answer.text if answer.present?
+    end
+
+    def answer_for(answers, option_ids)
+      answers_ids = answers.map {|a| a.field.id }
+      key = option_ids.split(',').find { |id| answers_ids.include?(id) }
+      answers.find {|h| h.field.id == key }
+    end
+
+    def transform_answers(answers)
+      answers.each_with_object({}) do |a, hash|
+        hash["#{a.field.type}_#{a.field.id}"] = a.send(a.type)
+      end
+    end
 
     def set_typeform_webhook
       enabled = !self.disabled
