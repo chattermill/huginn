@@ -1,0 +1,50 @@
+---
+http_interactions:
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061892591
+    body:
+      encoding: UTF-8
+      string: '{"url":"https://78c2a8b3.ngrok.io/users/902541635/web_requests/1061892591/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer token123
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 200
+      message: OK
+    headers:
+      Access-Control-Allow-Headers:
+      - X-Typeform-Key, Content-Type, Authorization, Typeform-Version
+      Access-Control-Allow-Methods:
+      - GET, POST, PUT, PATCH, DELETE, OPTIONS
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - application/json; charset=UTF-8
+      Date:
+      - Fri, 02 Mar 2018 14:22:18 GMT
+      Server:
+      - nginx
+      X-Human:
+      - https://www.typeform.com/careers
+      X-Request-Id:
+      - df0589185348bbdfefa575d8aadced54
+      Content-Length:
+      - '245'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"id":"ZFM4GhXJ5f","form_uid":"jOyEkB","tag":"agent_1061892591","url":"https://78c2a8b3.ngrok.io/users/902541635/web_requests/1061892591/foobar","enabled":true,"created_at":"2018-03-02T14:22:18.27321Z","updated_at":"2018-03-02T14:22:18.27321Z"}
+
+'
+    http_version:
+  recorded_at: Fri, 02 Mar 2018 14:22:16 GMT
+recorded_with: VCR 3.0.3

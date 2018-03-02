@@ -4,8 +4,10 @@ module Agents
 
     TYPEFORM_URL_BASE = 'https://api.typeform.com'.freeze
 
-    default_schedule "never"
+    cannot_be_scheduled!
+    cannot_receive_events!
 
+    before_validation :parse_json_options
     after_save :set_typeform_webhook
 
     description do
@@ -187,7 +189,7 @@ module Agents
         formatted_answers: transform_answers(answers),
         metadata: response['metadata'],
         hidden_variables: response['hidden'],
-        mapped_variables: ''
+        mapped_variables: mapping_from_response(response)
       }
     end
 
@@ -197,12 +199,12 @@ module Agents
 
     def score_from_response(answers)
       answer = if boolify(interpolated['guess_mode'])
-                 answers.find {|h| h.field.type == "opinion_scale" }
+                 answers.find {|h| h['field']['type'] == "opinion_scale" }
                else
                  answer_for(answers, interpolated['score_question_ids'])
                end
 
-      answer.number if answer.present?
+      answer['number'] if answer.present?
     end
 
     def comment_from_response(answers)
@@ -212,30 +214,88 @@ module Agents
                  answer_for(answers, interpolated['comment_question_ids'])
                end
 
-      answer.text if answer.present?
+      answer['text'] if answer.present?
     end
 
     def answer_for(answers, option_ids)
-      answers_ids = answers.map {|a| a.field.id }
+      answers_ids = answers.map {|a| a['field']['id'] }
       key = option_ids.split(',').find { |id| answers_ids.include?(id) }
-      answers.find {|h| h.field.id == key }
+      answers.find {|h| h['field']['id'] == key }
     end
 
     def transform_answers(answers)
       answers.each_with_object({}) do |a, hash|
-        hash["#{a.field.type}_#{a.field.id}"] = a.send(a.type)
+        hash["#{a['field']['type']}_#{a['field']['id']}"] = a.fetch(a['type'])
       end
+    end
+
+    def mapping_from_response(response)
+      return if response['hidden'].blank?
+
+      mapped_variables = {}
+      mapped_variables.merge!(single_values_mapping(response))
+      mapped_variables.merge!(value_ranges_mapping(response))
+    end
+
+    def single_values_mapping(response)
+      hash = {}
+      mapping = options["mapping_object"]
+      if mapping.present?
+        response['hidden'].each do |k, v|
+          hash[k] = mapping[k].fetch(v, v) if mapping.key?(k)
+        end
+      end
+      hash
+    end
+
+    def value_ranges_mapping(response)
+      hash = {}
+      mapping = options["bucketing_object"]
+      if mapping.present?
+        response['hidden'].each do |k, v|
+          hash[k] = extract_bucket(mapping[k], v) || v if mapping.key?(k)
+        end
+      end
+      hash
+    end
+
+    def extract_bucket(hash, value)
+      value = value.to_i
+      bucket = nil
+      hash.each do |k, v|
+        range = k.split("-")
+        min = range.first
+        max = range.last
+        if /\+/ =~ max && value >= max.tr("+", "").to_i
+          bucket = v
+          break
+        elsif (min.to_i..max.to_i).cover?(value)
+          bucket = v
+          break
+        end
+      end
+      bucket
+    end
+
+    def parse_json_options
+      parse_json_option('mapping_object')
+      parse_json_option('bucketing_object')
+    end
+
+    def parse_json_option(key)
+      options[key] = JSON.parse(options[key]) unless options[key].is_a?(Hash)
+    rescue
+      errors.add(:base, "The '#{key}' option is an invalid JSON.")
     end
 
     def set_typeform_webhook
       enabled = !self.disabled
       body = {
-        "url": "https://db9773ae.ngrok.io/users/#{user.id}/web_requests/#{id}/#{options['secret']}",
+        "url": "https://#{ENV['DOMAIN']}/users/#{user.id}/web_requests/#{id}/#{options['secret']}",
         "enabled": enabled
       }
       response = faraday.put(webhook_url, body.to_json, headers(auth_header))
-
-      log "Response: #{response.status}: #{response.body}"
+      log "Typeform Response: #{response.status}: #{response.body}"
     end
 
     def webhook_url
