@@ -1,6 +1,6 @@
 require 'rails_helper'
 
-describe Agents::TypeformWebhookAgent do
+describe Agents::WebhookTypeformAgent do
   before do
     VCR.insert_cassette 'typeform_webhook', record: :none, :match_requests_on => [:host], :allow_playback_repeats => true
 
@@ -15,7 +15,7 @@ describe Agents::TypeformWebhookAgent do
       "payload_path" => "."
     }
 
-    @agent = Agents::TypeformWebhookAgent.new(:name => 'My agent', :options => @opts)
+    @agent = Agents::WebhookTypeformAgent.new(:name => 'My agent', :options => @opts)
     @agent.user = users(:bob)
     @agent.save!
   end

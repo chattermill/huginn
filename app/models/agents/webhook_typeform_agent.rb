@@ -1,5 +1,5 @@
 module Agents
-  class TypeformWebhookAgent < WebhookAgent
+  class WebhookTypeformAgent < WebhookAgent
     include FormConfigurable
 
     TYPEFORM_URL_BASE = 'https://api.typeform.com'.freeze
@@ -12,7 +12,7 @@ module Agents
 
     description do
       <<-MD
-        The Typeform Webhook Agent will create events by receiving webhooks from Typeform.
+        The webhook agent for typeform will create events by receiving webhooks from Typeform.
         In order to create events with this agent, make a POST request to:
 
         ```
