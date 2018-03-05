@@ -69,13 +69,11 @@ module Agents
     end
 
     def check
-      avoid_concurrent_running do
-        log "Fetched #{reviews&.size} reviews"
-        if reviews.any?
-          old_events = previous_payloads reviews.size
-          reviews.each do |response|
-            create_event_from_review(response, old_events)
-          end
+      log "Fetched #{reviews&.size} reviews"
+      if reviews.any?
+        old_events = previous_payloads reviews.size
+        reviews.each do |response|
+          create_event_from_review(response, old_events)
         end
       end
     end
@@ -177,28 +175,6 @@ module Agents
 
     def headers(_ = {})
       { "X-Client-Key" => interpolated['client_key'] }
-    end
-
-    def agent_in_process?
-      boolify(memory['in_process'])
-    end
-
-    def process_agent!
-      memory['in_process'] = true
-      save!
-    end
-
-    def avoid_concurrent_running
-      raise 'Mising block' unless block_given?
-      unless agent_in_process?
-        process_agent!
-        yield
-        memory['in_process'] = false
-      end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
   end
 end

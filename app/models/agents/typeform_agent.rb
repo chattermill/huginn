@@ -110,14 +110,12 @@ module Agents
     end
 
     def check
-      avoid_concurrent_running do
-        if typeform_events.any?
-          old_events = previous_payloads(typeform_events.size)
-          typeform_events.each do |e|
-            if store_payload!(old_events, e)
-              log "Storing new result for '#{name}': #{e.inspect}"
-              create_event payload: e
-            end
+      if typeform_events.any?
+        old_events = previous_payloads(typeform_events.size)
+        typeform_events.each do |e|
+          if store_payload!(old_events, e)
+            log "Storing new result for '#{name}': #{e.inspect}"
+            create_event payload: e
           end
         end
       end
@@ -206,28 +204,6 @@ module Agents
 
     def typeform
       @typeform ||= Typeform::Form.new(api_key: interpolated['api_key'], form_id: interpolated['form_id'])
-    end
-
-    def agent_in_process?
-      boolify(memory['in_process'])
-    end
-
-    def process_agent!
-      memory['in_process'] = true
-      save!
-    end
-
-    def avoid_concurrent_running
-      raise 'Mising block' unless block_given?
-      unless agent_in_process?
-        process_agent!
-        yield
-        memory['in_process'] = false
-      end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
   end
 end
