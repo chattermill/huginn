@@ -43,6 +43,7 @@ module Agents
 
           * `subdomain` - Specify the subdomain of the Zendesk client (e.g `moo` or `hellofresh`).
           * `account_email` - Specify email to be used for Basic authentication.
+          * `use_oauth` - Check if you want to authenticate with oAUth tokens.
           * `api_token` - Specify the token (or password) to be used for Basic authentication.
           * `filter` - Extra params to be used to filter satisfaction ratings (e.g. score, start_time, end_time).
           * `mode` - Select the operation mode (`all`, `on_change`, `merge`).
@@ -73,6 +74,7 @@ module Agents
 
     form_configurable :subdomain
     form_configurable :account_email
+    form_configurable :use_oauth, type: :boolean
     form_configurable :api_token
     form_configurable :filter
     form_configurable :mode, type: :array, values: %w(all on_change merge)
@@ -86,6 +88,7 @@ module Agents
         'subdomain' => 'myaccount',
         'filter' => 'sort_order=desc&score=received_with_comment',
         'account_email' => '{% credential ZendeskEmail %}',
+        'use_oauth' => 'false',
         'api_token' => '{% credential ZendeskToken %}',
         'expected_update_period_in_days' => '2',
         'mode' => 'on_change',
@@ -98,8 +101,12 @@ module Agents
     def validate_options
       super
 
-      %w(subdomain account_email api_token).each do |key|
+      %w(subdomain api_token).each do |key|
         errors.add(:base, "The '#{key}' option is required.") if options[key].blank?
+      end
+
+      unless boolify(options['use_oauth'])
+        errors.add(:base, "The account_email options is required") if options['account_email'].blank?
       end
 
       if boolify(options['retrieve_assignee']).nil?
@@ -116,7 +123,11 @@ module Agents
     def build_default_options
       options['url'] = "https://#{options['subdomain']}.#{DOMAIN}#{API_ENDPOINT}"
       options['url'] << "?#{options['filter']}" if options['filter'].present?
-      options['basic_auth'] = "#{options['account_email']}/token:#{options['api_token']}"
+      if boolify(options['use_oauth'])
+        options['headers'] = oauth_header
+      else
+        options['basic_auth'] = "#{options['account_email']}/token:#{options['api_token']}"
+      end
       options['type'] = 'json'
       options['extract'] = EXTRACT
 
@@ -209,6 +220,11 @@ module Agents
       log "Fetching groups"
       doc.merge!(get_zendesk_resource(uri))
     end
+
+    def oauth_header
+      { "Authorization" => "Bearer #{interpolated['api_token']}" }
+    end
+
 
     def zendesk_uri_base
       "https://#{interpolated['subdomain']}.#{DOMAIN}/api/v2"
