@@ -4,8 +4,8 @@ describe Agents::ZendeskSatisfactionRatingsAgent do
   before do
 
     @opts = {
-      "subdomain": "pocketgems",
-      "account_email": "jared@pocketgems.com",
+      "subdomain": "foo",
+      "account_email": "name@example.com",
       "api_token": "etNzSER4H3sYsWk4dyO6cD4O04KbBwBxHNvchlTw",
       "filter": "sort_order=desc&score=received_with_comment",
       'expected_update_period_in_days' => '2',
@@ -86,6 +86,9 @@ describe Agents::ZendeskSatisfactionRatingsAgent do
     it 'should validate presence of account_email' do
       @agent.options['account_email'] = ''
       expect(@agent).not_to be_valid
+
+      @agent.options['use_oauth'] = true
+      expect(@agent).to be_valid
     end
 
     it 'should validate retrieve_assignee value' do
@@ -103,6 +106,8 @@ describe Agents::ZendeskSatisfactionRatingsAgent do
       @agent.options['retrieve_ticket'] = 'xyz'
       expect(@agent).not_to be_valid
     end
+
+
   end
 
   describe '#check' do
@@ -386,6 +391,68 @@ describe Agents::ZendeskSatisfactionRatingsAgent do
       it 'returns nil when mode is not on_change' do
         @agent.options['mode'] = 'all'
         expect(@agent.send(:previous_payloads, 1)).to be nil
+      end
+    end
+  end
+
+  describe 'build_default_options' do
+    before do
+      @opts = {
+        "subdomain": "foo",
+        "account_email": "name@example.com",
+        "api_token": "token123",
+        'expected_update_period_in_days' => '2',
+        'mode' => 'on_change',
+        'retrieve_assignee' => 'false',
+        'retrieve_ticket' => 'false',
+        'retrieve_group' => 'false'
+      }
+      @agent = Agents::ZendeskSatisfactionRatingsAgent.new(:name => 'Another agent', :options => @opts)
+      @agent.user = users(:bob)
+
+    end
+
+    it 'generate a correct url option' do
+      @agent.send(:build_default_options)
+
+      expected = "https://foo.zendesk.com/api/v2/satisfaction_ratings.json"
+      expect(@agent.options['url']).to eq(expected)
+
+      @agent.options['filter'] = "sort_order=desc"
+      @agent.send(:build_default_options)
+
+      expected = "https://foo.zendesk.com/api/v2/satisfaction_ratings.json?sort_order=desc"
+      expect(@agent.options['url']).to eq(expected)
+    end
+
+    context 'when use_oauth is false' do
+      before do
+        @agent.send(:build_default_options)
+      end
+
+      it 'generate a correct basic_auth option' do
+        expected = "name@example.com/token:token123"
+        expect(@agent.options['basic_auth']).to eq(expected)
+      end
+
+      it 'does not generate a headers option' do
+        expect(@agent.options['headers']).to be nil
+      end
+    end
+
+    context 'when use_oauth is true' do
+      before do
+        @agent.options['use_oauth'] = 'true'
+        @agent.send(:build_default_options)
+      end
+
+      it 'generate a correct headers option' do
+        expected = { "Authorization" => "Bearer token123" }
+        expect(@agent.options['headers']).to eq(expected)
+      end
+
+      it 'does not generate a basic_auth option' do
+        expect(@agent.options['basic_auth']).to be nil
       end
     end
   end
