@@ -139,14 +139,14 @@ module Agents
 
     def check
       return if interpolated['mode'] != 'read'
-      contents = safely do
-                   get_bucket_contents
-                 end
-      if boolify(interpolated['watch'])
-        watch(contents)
-      else
-        contents.each do |key, _|
-          create_event payload: get_file_pointer(key)
+      safely do
+        contents = get_bucket_contents
+        if boolify(interpolated['watch'])
+          watch(contents)
+        else
+          contents.each do |key, _|
+            create_event payload: get_file_pointer(key)
+          end
         end
       end
     end
