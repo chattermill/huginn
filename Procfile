@@ -3,7 +3,7 @@
 ###############################
 
 # Procfile for development using the new threaded worker (scheduler, twitter stream and delayed job)
-web: bundle exec rake agents:clean_in_process_memory && rails server -p ${PORT-3000} -b ${IP-0.0.0.0}
+web: bundle exec rails server -p ${PORT-3000} -b ${IP-0.0.0.0}
 jobs: bundle exec rails runner bin/threaded.rb
 
 # Old version with separate processes (use this if you have issues with the threaded version)

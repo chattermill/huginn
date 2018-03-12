@@ -126,93 +126,62 @@ describe Agents::SurveyMonkeyAgent, :vcr do
   end
 
   describe '#check' do
-    context 'when there is not another agent running' do
-      it 'emits events' do
-        expect { @agent.check }.to change { Event.count }.by(5)
-      end
+    it 'emits events' do
+      expect { @agent.check }.to change { Event.count }.by(5)
+    end
 
-      it 'does not emit duplicated events ' do
-        @agent.check
-        @agent.events.last.destroy
+    it 'does not emit duplicated events ' do
+      @agent.check
+      @agent.events.last.destroy
 
-        expect { @agent.check }.to change { Event.count }.by(1)
-        expect(@agent.events.count).to eq(5)
-      end
+      expect { @agent.check }.to change { Event.count }.by(1)
+      expect(@agent.events.count).to eq(5)
+    end
 
-      it 'emits correct payload' do
-        @agent.check
-        payload = @agent.events.first.payload
-        expected = {
-          "score"=>9,
-          "comment"=>  "Me parece un servicio muy útil, hace más fácil viajar, por los horarios, la comodidad y la rapidez. Además la aplicación/ página web tiene una buena usabilidad. ",
-          "id"=>"6679245053",
-          "survey_id"=>"120641887",
-          "date_created"=>"2018-02-07T15:50:38+00:00",
-          "collector_id"=>"160345859",
-          "custom_variables"=>{"hid"=>"17119010"},
-          "analyze_url"=> "https://www.surveymonkey.com/analyze/browse/luifTxpMqjC5UdZnocdTgJ8Et4kYkeCcv_2BkKNNFhby8_3D?respondent_id=6679245053",
-          "language"=>"es",
-          "full_response"=> {
-            "149398100"=> {
-              "id"=>"149398100",
-              "family"=>"matrix",
-              "subtype"=>"rating",
-              "question"=>
-               "¿Qué tan probable es que recomiendes BlaBlaCar a tus amigos o compañeros de trabajo?<br><br><em>0 significa \"nada probable\"</em><br><em>10 significa \"muy probable\"<br><br></em>",
-              "answers"=>{""=>"9"}
-            },
-            "149398098"=> {
-              "id"=>"149398098",
-              "family"=>"open_ended",
-              "subtype"=>"essay",
-              "question"=>"¿Qué es lo que hace realmente bien BlaBlaCar?",
-              "answers"=> {
-                "¿Qué es lo que hace realmente bien BlaBlaCar?" => "Me parece un servicio muy útil, hace más fácil viajar, por los horarios, la comodidad y la rapidez. Además la aplicación/ página web tiene una buena usabilidad. "
-              }
-            },
-            "149398096"=> {
-              "id"=>"149398096",
-              "family"=>"single_choice",
-              "subtype"=>"vertical",
-              "question"=>"¿Por qué realizaste tu último viaje en coche compartido?",
-              "answers"=> {
-                "¿Por qué realizaste tu último viaje en coche compartido?"=> "Para visitar a amigos"
-              }
+    it 'emits correct payload' do
+      @agent.check
+      payload = @agent.events.first.payload
+      expected = {
+        "score"=>9,
+        "comment"=>  "Me parece un servicio muy útil, hace más fácil viajar, por los horarios, la comodidad y la rapidez. Además la aplicación/ página web tiene una buena usabilidad. ",
+        "id"=>"6679245053",
+        "survey_id"=>"120641887",
+        "date_created"=>"2018-02-07T15:50:38+00:00",
+        "collector_id"=>"160345859",
+        "custom_variables"=>{"hid"=>"17119010"},
+        "analyze_url"=> "https://www.surveymonkey.com/analyze/browse/luifTxpMqjC5UdZnocdTgJ8Et4kYkeCcv_2BkKNNFhby8_3D?respondent_id=6679245053",
+        "language"=>"es",
+        "full_response"=> {
+          "149398100"=> {
+            "id"=>"149398100",
+            "family"=>"matrix",
+            "subtype"=>"rating",
+            "question"=>
+             "¿Qué tan probable es que recomiendes BlaBlaCar a tus amigos o compañeros de trabajo?<br><br><em>0 significa \"nada probable\"</em><br><em>10 significa \"muy probable\"<br><br></em>",
+            "answers"=>{""=>"9"}
+          },
+          "149398098"=> {
+            "id"=>"149398098",
+            "family"=>"open_ended",
+            "subtype"=>"essay",
+            "question"=>"¿Qué es lo que hace realmente bien BlaBlaCar?",
+            "answers"=> {
+              "¿Qué es lo que hace realmente bien BlaBlaCar?" => "Me parece un servicio muy útil, hace más fácil viajar, por los horarios, la comodidad y la rapidez. Además la aplicación/ página web tiene una buena usabilidad. "
+            }
+          },
+          "149398096"=> {
+            "id"=>"149398096",
+            "family"=>"single_choice",
+            "subtype"=>"vertical",
+            "question"=>"¿Por qué realizaste tu último viaje en coche compartido?",
+            "answers"=> {
+              "¿Por qué realizaste tu último viaje en coche compartido?"=> "Para visitar a amigos"
             }
           }
         }
-        expect(payload).to eq(expected)
-      end
-
-      it 'changes memory in_process to true while running' do
-        @agent.check
-        expect(@agent.reload.memory['in_process']).to be true
-      end
-
-      it 'changes memory in_process to false after running' do
-        @agent.check
-        @agent.save!
-        expect(@agent.reload.memory['in_process']).to be false
-      end
-
-      it 'changes memory in_process to false when an error raised' do
-        mock(@agent).check.once {
-          raise "error"
-        }
-        expect {
-          @agent.check
-        }.to raise_error(RuntimeError)
-      end
-
+      }
+      expect(payload).to eq(expected)
     end
-
-    context 'when there is another agent running' do
-      it 'does not emit events' do
-        @agent.memory['in_process'] = true
-        expect { @agent.check }.to change { Event.count }.by(0)
-      end
-    end
-
   end
 
   describe 'helpers' do

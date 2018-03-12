@@ -134,17 +134,15 @@ module Agents
     end
 
     def check
-      avoid_concurrent_running do
-        events = retrieve_events
-        if events.any?
-          old_events = previous_payloads(events.size)
+      events = retrieve_events
+      if events.any?
+        old_events = previous_payloads(events.size)
 
-          events.each do |e|
-            payload = usabilla_response_to_event(e)
-            if store_payload!(old_events, payload)
-              log "Storing new result for '#{name}': #{payload.inspect}"
-              create_event payload: payload
-            end
+        events.each do |e|
+          payload = usabilla_response_to_event(e)
+          if store_payload!(old_events, payload)
+            log "Storing new result for '#{name}': #{payload.inspect}"
+            create_event payload: payload
           end
         end
       end
@@ -296,28 +294,6 @@ module Agents
 
     def usabilla_api
       UsabillaApi
-    end
-
-    def agent_in_process?
-      boolify(memory['in_process'])
-    end
-
-    def process_agent!
-      memory['in_process'] = true
-      save!
-    end
-
-    def avoid_concurrent_running
-      raise 'Mising block' unless block_given?
-      unless agent_in_process?
-        process_agent!
-        yield
-        memory['in_process'] = false
-      end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
   end
 end

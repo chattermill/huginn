@@ -17,6 +17,7 @@ WebMock.disable_net_connect!(allow_localhost: true)
 
 if Rails.configuration.active_job.queue_adapter == :sidekiq
   require 'sidekiq/testing'
+  require 'sidekiq_unique_jobs/testing'
   Sidekiq::Testing.inline!
 end
 

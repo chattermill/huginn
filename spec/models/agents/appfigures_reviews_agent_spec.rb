@@ -94,73 +94,52 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
   end
 
   describe '#chek' do
-    context 'when there is not another agent running' do
-      context 'when review product is valid' do
-        it 'emits events' do
-          expect { @agent.check }.to change { Event.count }.by(2)
-        end
-
-        it 'does not emit duplicated events ' do
-          @agent.check
-          @agent.events.last.destroy
-
-          expect { @agent.check }.to change { Event.count }.by(1)
-          expect(@agent.events.count).to eq(2)
-        end
-
-        it 'emits correct payload' do
-          @agent.check
-          payload = @agent.events.last.payload
-          expected = {
-            'title' => 'Some title',
-            'comment' => 'good.',
-            'appfigures_id' => '41013601294LtY5FiF31ODTSyH8hOem4Nw',
-            'score' => '4.00',
-            'stream' => 'google_play',
-            'created_at' => '2018-02-09T11:45:38',
-            'iso' => 'ZZ',
-            'author' => 'Yang Li',
-            'version' => '3.3.1003',
-            'app' => 'reed.co.uk',
-            'product_id' => 41013601294,
-            'vendor_id' => 'com.reedcouk.jobs'
-          }
-
-          expect(payload).to eq(expected)
-        end
+    context 'when review product is valid' do
+      it 'emits events' do
+        expect { @agent.check }.to change { Event.count }.by(2)
       end
 
-      context 'when review product is not valid' do
-        before do
-          @agent.options['products'] = '41013601294,41013601295'
-          @agent.options['filter'] = 'count=5'
-        end
-
-        it 'does not emits events with another product id' do
-          expect { @agent.check }.to change { Event.count }.by(4)
-
-          products = @agent.events.map { |e| e.payload['product_id'] }
-          expect(products.uniq).to eq([41013601294])
-        end
-      end
-
-      it 'changes memory in_process to true while running' do
+      it 'does not emit duplicated events ' do
         @agent.check
-        expect(@agent.reload.memory['in_process']).to be true
+        @agent.events.last.destroy
+
+        expect { @agent.check }.to change { Event.count }.by(1)
+        expect(@agent.events.count).to eq(2)
       end
 
-      it 'changes memory in_process to false after running' do
+      it 'emits correct payload' do
         @agent.check
-        @agent.save!
-        expect(@agent.reload.memory['in_process']).to be false
-      end
+        payload = @agent.events.last.payload
+        expected = {
+          'title' => 'Some title',
+          'comment' => 'good.',
+          'appfigures_id' => '41013601294LtY5FiF31ODTSyH8hOem4Nw',
+          'score' => '4.00',
+          'stream' => 'google_play',
+          'created_at' => '2018-02-09T11:45:38',
+          'iso' => 'ZZ',
+          'author' => 'Yang Li',
+          'version' => '3.3.1003',
+          'app' => 'reed.co.uk',
+          'product_id' => 41013601294,
+          'vendor_id' => 'com.reedcouk.jobs'
+        }
 
+        expect(payload).to eq(expected)
+      end
     end
 
-    context 'when there is another agent running' do
-      it 'does not emit events' do
-        @agent.memory['in_process'] = true
-        expect { @agent.check }.to change { Event.count }.by(0)
+    context 'when review product is not valid' do
+      before do
+        @agent.options['products'] = '41013601294,41013601295'
+        @agent.options['filter'] = 'count=5'
+      end
+
+      it 'does not emits events with another product id' do
+        expect { @agent.check }.to change { Event.count }.by(4)
+
+        products = @agent.events.map { |e| e.payload['product_id'] }
+        expect(products.uniq).to eq([41013601294])
       end
     end
   end

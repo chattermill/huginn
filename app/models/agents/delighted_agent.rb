@@ -76,13 +76,11 @@ module Agents
     end
 
     def check
-      avoid_concurrent_running do
-        old_events = previous_payloads(1)
-        delighted_events.each do |e|
-          if store_payload!(old_events, e)
-            log "Storing new result for '#{name}': #{e.inspect}"
-            create_event payload: e
-          end
+      old_events = previous_payloads(1)
+      delighted_events.each do |e|
+        if store_payload!(old_events, e)
+          log "Storing new result for '#{name}': #{e.inspect}"
+          create_event payload: e
         end
       end
     end
@@ -145,28 +143,6 @@ module Agents
 
     def delighted_client
       @delighted_client ||= Delighted::Client.new(api_key: interpolated['api_key'])
-    end
-
-    def agent_in_process?
-      boolify(memory['in_process'])
-    end
-
-    def process_agent!
-      memory['in_process'] = true
-      save!
-    end
-
-    def avoid_concurrent_running
-      raise 'Mising block' unless block_given?
-      unless agent_in_process?
-        process_agent!
-        yield
-        memory['in_process'] = false
-      end
-    rescue
-      memory['in_process'] = false
-      save!
-      raise
     end
   end
 end

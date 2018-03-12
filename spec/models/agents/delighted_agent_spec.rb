@@ -68,68 +68,48 @@ describe Agents::DelightedAgent do
   end
 
   describe '#check' do
-    context 'when there is not another agent running' do
-      it 'emits events' do
-        expect { @agent.check }.to change { Event.count }.by(3)
-      end
-
-      it 'does not emit duplicated events ' do
-        @agent.check
-        @agent.events.last.destroy
-
-        expect { @agent.check }.to change { Event.count }.by(1)
-        expect(@agent.events.count).to eq(3)
-      end
-
-      it 'emits correct payload' do
-        @agent.check
-        expected = {
-          "survey_type" => "nps",
-          "score" => 10,
-          "comment" => nil,
-          "permalink" => "https://delighted.com/r/cYnHR7xwKWyEB",
-          "created_at" => 1519050765,
-          "updated_at" => 1519050765,
-          "person_properties" => {
-              "segment" => "140",
-              "country" => "France",
-              "brand" => "Allo Resto",
-              "restaurant_key" => "955411",
-              "restaurant_id" => "9554",
-              "restaurant_name" => "Allo Pizza Pasta",
-              "cuisine" => "burger",
-              "city" => "STRASBOURG - MONTAGNE VERTE",
-              "owner_name" => nil,
-              "locale" => "fr-justeat",
-              "delighted intro message" => "Nous aimerions vous poser une question. Je vous remercie",
-              "delighted email subject" => "Recommanderais tu Allo Resto?"
-          },
-          "notes" => [],
-          "tags" => [],
-          "person" =>  "153585695",
-          "id" => "50942642"
-        }
-
-        expect(@agent.events.first.payload).to eq(expected)
-      end
-
-      it 'changes memory in_process to true while running' do
-        @agent.check
-        expect(@agent.reload.memory['in_process']).to be true
-      end
-
-      it 'changes memory in_process to false after running' do
-        @agent.check
-        @agent.save!
-        expect(@agent.reload.memory['in_process']).to be false
-      end
+    it 'emits events' do
+      expect { @agent.check }.to change { Event.count }.by(3)
     end
 
-    context 'when there is another agent running' do
-      it 'does not emit events' do
-        @agent.memory['in_process'] = true
-        expect { @agent.check }.to change { Event.count }.by(0)
-      end
+    it 'does not emit duplicated events ' do
+      @agent.check
+      @agent.events.last.destroy
+
+      expect { @agent.check }.to change { Event.count }.by(1)
+      expect(@agent.events.count).to eq(3)
+    end
+
+    it 'emits correct payload' do
+      @agent.check
+      expected = {
+        "survey_type" => "nps",
+        "score" => 10,
+        "comment" => nil,
+        "permalink" => "https://delighted.com/r/cYnHR7xwKWyEB",
+        "created_at" => 1519050765,
+        "updated_at" => 1519050765,
+        "person_properties" => {
+            "segment" => "140",
+            "country" => "France",
+            "brand" => "Allo Resto",
+            "restaurant_key" => "955411",
+            "restaurant_id" => "9554",
+            "restaurant_name" => "Allo Pizza Pasta",
+            "cuisine" => "burger",
+            "city" => "STRASBOURG - MONTAGNE VERTE",
+            "owner_name" => nil,
+            "locale" => "fr-justeat",
+            "delighted intro message" => "Nous aimerions vous poser une question. Je vous remercie",
+            "delighted email subject" => "Recommanderais tu Allo Resto?"
+        },
+        "notes" => [],
+        "tags" => [],
+        "person" =>  "153585695",
+        "id" => "50942642"
+      }
+
+      expect(@agent.events.first.payload).to eq(expected)
     end
   end
 
