@@ -1,0 +1,81 @@
+---
+http_interactions:
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061892591
+    body:
+      encoding: UTF-8
+      string: '{"url":"https://78c2a8b3.ngrok.io/users/902541635/web_requests/1061892591/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 02 Mar 2018 19:43:23 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - 64bc2c5987b0cb74465c886221a575eb
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Fri, 02 Mar 2018 19:43:23 GMT
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061892595
+    body:
+      encoding: UTF-8
+      string: '{"url":"https://78c2a8b3.ngrok.io/users/902541635/web_requests/1061892595/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Fri, 02 Mar 2018 19:48:23 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - b37a2a554071ad5a9e0adc60e88f2e8a
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Fri, 02 Mar 2018 19:48:23 GMT
+recorded_with: VCR 3.0.3
