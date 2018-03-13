@@ -154,7 +154,7 @@ module Agents
       log "Fetching reviews for products: #{options['products']}"
       response = faraday.get(request_url)
       unless response.success?
-        log response.body
+        log response.body.presence || "Failed response: #{response.status} status"
         return {}
       end
       JSON.parse(response.body)
