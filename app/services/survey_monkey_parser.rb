@@ -77,7 +77,7 @@ class SurveyMonkeyParser
 
     def score_options
       question = survey.find_question(score_question['id'])
-      question.dig('answers', 'choices')
+      question&.dig('answers', 'choices')
     end
 
     def comment_question
@@ -128,7 +128,7 @@ class SurveyMonkeyParser
 
     def score
       return if response.score_question.blank?
-      total = response.score_answers.reduce(0) { |sum, answer| sum + parsed_score_answer(answer["choice_id"]) }
+      total = response.score_answers.reduce(0) { |sum, answer| sum + (parsed_score_answer(answer["choice_id"]) || 0 ) }
       total.fdiv(response.score_answers.size.nonzero? || 1).round
     end
 
@@ -178,6 +178,7 @@ class SurveyMonkeyParser
     end
 
     def parsed_score_answer(choice_id)
+      return if response.score_options.blank?
       choice = response.score_options.find { |c| c['id'] == choice_id }
 
       if survey.use_weights && choice['weight'].present?
