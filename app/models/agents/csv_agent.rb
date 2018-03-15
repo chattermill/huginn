@@ -206,8 +206,8 @@ module Agents
     end
 
     def encode(io)
-      return io if interpolated['encoding'].blank?
-      string = io.respond_to?(:read) ? io.read : io
+      string = io.respond_to?(:read) ? io.read.sub("\xEF\xBB\xBF", "") : io
+      return string if interpolated['encoding'].blank?
       encodings = interpolated['encoding'].split(':').reverse
       # We use src:dst for param, but #encode! uses dst:src
       string.encode!(*encodings, invalid: :replace)
