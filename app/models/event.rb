@@ -23,6 +23,7 @@ class Event < ActiveRecord::Base
 
   after_create :update_agent_last_event_at
   after_create :possibly_propagate
+  after_create :save_deduplication_token
 
   scope :expired, lambda {
     where("expires_at IS NOT NULL AND expires_at < ?", Time.now)
@@ -98,6 +99,10 @@ class Event < ActiveRecord::Base
     #immediately schedule agents that want immediate updates
     propagate_ids = agent.receivers.where(:propagate_immediately => true).pluck(:id)
     Agent.receive!(:only_receivers => propagate_ids) unless propagate_ids.empty?
+  end
+
+  def save_deduplication_token
+    self.agent.tokens.create!(token: Digest::SHA256.hexdigest(self.payload.to_s))
   end
 end
 
