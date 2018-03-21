@@ -173,6 +173,23 @@ describe Event do
       end
     end
   end
+
+  describe "save_deduplication_token callback" do
+    let(:event) do
+      event = Event.new agent: agents(:jane_weather_agent)
+      event.payload = { 'somekey' => 'somevalue' }
+      event
+    end
+
+    it 'save token' do
+      event.save!
+      agent = event.agent
+      expected = Digest::SHA256.hexdigest(event.payload.to_s)
+
+      expect(agent.tokens.count).to eq(1)
+      expect(agent.tokens.first.token).to eq(expected)
+    end
+  end
 end
 
 describe EventDrop do
