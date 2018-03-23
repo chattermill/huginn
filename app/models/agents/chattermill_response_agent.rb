@@ -347,11 +347,12 @@ module Agents
     def handle_batch(data, headers)
       url = request_url(batch: true)
       headers['Content-Type'] = 'application/json; charset=utf-8'
+      source_events = Event.where(id: events_ids)
       response = faraday.run_request(:post, url, data.to_json, headers)
 
       return unless boolify(interpolated['emit_events'])
       headers = normalize_response_headers(response.headers)
-      source_events = Event.where(id: events_ids)
+
       if [200, 201].include?(response.status)
         responses = JSON.parse(response.body)
         responses.each_with_index do |r, i|
@@ -369,13 +370,15 @@ module Agents
           memory['events'].delete(event.id)
         end
       end
-      memory['in_process'] = false
-      memory['check_counter'] = 0
     rescue Faraday::TimeoutError
       response = OpenStruct.new body: "Request timeout", status: 408, headers: headers
-      send_slack_notification(response, Event.new)
-      memory['events'].unshift(*events_ids)
+      source_events.each do |event|
+        send_slack_notification(response, event)
+        create_event(event_payload(response, headers, event))
+      end
+    ensure
       memory['in_process'] = false
+      memory['check_counter'] = 0
     end
 
     def event_payload(response, headers, event)
@@ -423,7 +426,8 @@ module Agents
       source_event_link = "<https://huginn.chattermill.xyz/events/#{event.id}|Source event>"
       parsed_body = JSON.parse(response.body) rescue response.body
 
-      description = "```#{parsed_body}```\n#{source_event_link} | #{link}"
+      description = "```#{parsed_body}```"
+      description << "\n#{source_event_link} | #{link}" if event.id.present?
 
       slack_opts = {
         icon_emoji: ':fire:',

@@ -568,9 +568,10 @@ describe Agents::ChattermillResponseAgent do
           expect(@checker.memory['events'].length).to eq(2)
           @checker.check
 
-          expect(@checker.memory['events'].length).to eq(2)
+          expect(@checker.memory['events'].length).to eq(0)
           expect(@checker.memory['in_process']).to be false
-          expect(@checker.events.count).to eq(0)
+          expect(@checker.memory['check_counter']).to eq(0)
+          expect(@checker.events.count).to eq(2)
         end
       end
     end
