@@ -333,11 +333,15 @@ module Agents
       headers['Content-Type'] = 'application/json; charset=utf-8'
       body = data.to_json
       response = faraday.run_request(http_method, url, body, headers)
-
       send_slack_notification(response, event) unless [200, 201].include?(response.status)
 
       return unless boolify(interpolated['emit_events'])
       create_event(event_payload(response, response.headers, event))
+    rescue Faraday::TimeoutError
+      response = OpenStruct.new body: "Request timeout", status: 408, headers: headers
+
+      send_slack_notification(response, event)
+      create_event(event_payload(response, response.headers, event)) if boolify(interpolated['emit_events'])
     end
 
     def handle_batch(data, headers)
@@ -367,6 +371,11 @@ module Agents
       end
       memory['in_process'] = false
       memory['check_counter'] = 0
+    rescue Faraday::TimeoutError
+      response = OpenStruct.new body: "Request timeout", status: 408, headers: headers
+      send_slack_notification(response, Event.new)
+      memory['events'].unshift(*events_ids)
+      memory['in_process'] = false
     end
 
     def event_payload(response, headers, event)

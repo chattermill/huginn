@@ -384,6 +384,23 @@ describe Agents::ChattermillResponseAgent do
             expect(@sent_requests[:post].first.data).to eq expected
           end
         end
+
+        describe "when raise a Request Timeout" do
+          it 'emit events' do
+            @checker.options['emit_events'] = 'true'
+            stub_request(:any, /:/).to_raise(Faraday::TimeoutError)
+
+            stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
+            stub.any_instance_of(Slack::Notifier).ping { true }
+
+            expect(@checker.events.count).to eq(0)
+            @checker.receive([@event])
+
+            expect(@checker.events.count).to eq(1)
+            expect(@checker.events.first.payload["body"]).to eq("Request timeout")
+            expect(@checker.events.first.payload["status"]).to eq(408)
+          end
+        end
       end
     end
 
@@ -535,6 +552,26 @@ describe Agents::ChattermillResponseAgent do
         expect(@checker.events.first.payload["body"]).to eq("error")
         expect(@checker.events.last.payload["body"]).to eq("error")
         expect(@checker.memory['events'].length).to eq(0)
+      end
+
+      describe "when raise a Request Timeout" do
+        it 'emit events' do
+          stub_request(:any, /:/).to_raise(Faraday::TimeoutError)
+
+          stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
+          stub.any_instance_of(Slack::Notifier).ping { true }
+
+          expect(@checker.events.count).to eq(0)
+          @checker.receive([@event, @event1])
+          @checker.save!
+
+          expect(@checker.memory['events'].length).to eq(2)
+          @checker.check
+
+          expect(@checker.memory['events'].length).to eq(2)
+          expect(@checker.memory['in_process']).to be false
+          expect(@checker.events.count).to eq(0)
+        end
       end
     end
   end
