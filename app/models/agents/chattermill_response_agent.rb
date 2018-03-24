@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Agents
   class ChattermillResponseAgent < Agent
     include WebRequestConcern
@@ -6,14 +8,12 @@ module Agents
     default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
-
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "app.chattermill.xyz",
       development: "lvh.me:3000",
       test: "localhost:3000"
     }
-
 
     can_dry_run!
     no_bulk_receive!
@@ -111,7 +111,7 @@ module Agents
     end
 
     def http_method
-      has_id? ? :patch : :post
+      id? ? :patch : :post
     end
 
     form_configurable :organization_subdomain
@@ -157,11 +157,11 @@ module Agents
         errors.add(:base, "Set a schedule value different than 'Never'")
       end
 
-      if options.key?('send_batch_events') && !boolify(options['send_batch_events']) && (schedule != 'never' )
+      if options.key?('send_batch_events') && !boolify(options['send_batch_events']) && (schedule != 'never')
         errors.add(:base, "Schedule must be 'Never'")
       end
 
-      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (options['max_events_per_batch'].blank? || !options['max_events_per_batch']&.to_i&.positive? )
+      if options.key?('send_batch_events') && boolify(options['send_batch_events']) && (options['max_events_per_batch'].blank? || !options['max_events_per_batch']&.to_i&.positive?)
         errors.add(:base, "The 'max_events_per_batch' option is required and must be an integer greater than 0")
       end
 
@@ -203,7 +203,7 @@ module Agents
     end
 
     def outgoing_data
-      data = Chattermill::ResponseParser.new(interpolated).parse
+      Chattermill::ResponseParser.new(interpolated).parse
     end
 
     def emit_event(response, event, headers)
@@ -212,7 +212,6 @@ module Agents
       create_event(event_payload(response, headers, event))
       send_slack_notification(response, event) unless [200, 201].include?(response.status)
     end
-
 
     def save_events_in_buffer(incoming_events)
       memory['events'] ||= []
@@ -294,24 +293,22 @@ module Agents
     def normalize_response_headers(headers)
       case interpolated['event_headers_style']
       when nil, '', 'capitalized'
-        normalize = ->name {
+        normalize = ->(name) {
           name.gsub(/(?:\A|(?<=-))([[:alpha:]])|([[:alpha:]]+)/) {
             $1 ? $1.upcase : $2.downcase
           }
         }
       when 'downcased'
         normalize = :downcase.to_proc
-      when 'snakecased', nil
-        normalize = ->name { name.tr('A-Z-', 'a-z_') }
+      when 'snakecased'
+        normalize = ->(name) { name.tr('A-Z-', 'a-z_') }
       when 'raw'
-        normalize = ->name { name }  # :itself.to_proc in Ruby >= 2.2
+        normalize = ->(name) { name } # :itself.to_proc in Ruby >= 2.2
       else
         raise ArgumentError, "if provided, event_headers_style must be 'capitalized', 'downcased', 'snakecased' or 'raw'"
       end
 
-      headers.each_with_object({}) { |(key, value), hash|
-        hash[normalize[key]] = value
-      }
+      headers.each_with_object({}) { |(key, value), hash| hash[normalize[key]] = value }
     end
 
     def parse_json_options
@@ -328,7 +325,7 @@ module Agents
       errors.add(:base, "The '#{key}' option is an invalid JSON.")
     end
 
-    def has_id?
+    def id?
       interpolated['id'].present?
     end
 
@@ -356,7 +353,7 @@ module Agents
     end
 
     def process_queue?
-      !queue_in_process? && ( batch_ready? || batch_expired? )
+      !queue_in_process? && (batch_ready? || batch_expired?)
     end
 
     def batch_ready?
@@ -365,7 +362,7 @@ module Agents
 
     def batch_expired?
       counter = memory['check_counter']&.to_i || 0
-      memory['events'] && memory['events'].length.positive? && counter >= MAX_COUNTER_TO_EXPIRE_BATCH
+      memory['events']&.length&.positive? && counter >= MAX_COUNTER_TO_EXPIRE_BATCH
     end
 
     def batch_events?
@@ -377,12 +374,7 @@ module Agents
     end
 
     def send_slack_notification(response, event)
-      link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
-      source_event_link = "<https://huginn.chattermill.xyz/events/#{event.id}|Source event>"
-      parsed_body = JSON.parse(response.body) rescue response.body
-
-      description = "```#{parsed_body}```"
-      description << "\n#{source_event_link} | #{link}" if event.id.present?
+      description = slack_description(response, event)
 
       slack_opts = {
         icon_emoji: ':fire:',
@@ -402,6 +394,15 @@ module Agents
       }
 
       slack_notifier.ping('', slack_opts)
+    end
+
+    def slack_description(response, event)
+      link = "<https://huginn.chattermill.xyz/agents/#{event.agent_id}/events|Details>"
+      source_event_link = "<https://huginn.chattermill.xyz/events/#{event.id}|Source event>"
+      parsed_body = JSON.parse(response.body) rescue response.body
+
+      details = "\n#{source_event_link} | #{link}"
+      "```#{parsed_body}```#{details if event.id.present?}"
     end
 
     def slack_notifier
