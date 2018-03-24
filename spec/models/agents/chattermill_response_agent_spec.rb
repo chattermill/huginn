@@ -18,6 +18,7 @@ describe Agents::ChattermillResponseAgent do
       'organization_subdomain' => 'foo',
       'expected_receive_period_in_days' => 1,
       'comment' => '{{ data.comment }}',
+      'score' => '{{ data.score }}',
       'segments' => segments.to_json,
       'user_meta' => user_meta.to_json,
       'extra_fields' => '{}',
@@ -42,9 +43,12 @@ describe Agents::ChattermillResponseAgent do
     @event.payload = {
       'somekey' => 'somevalue',
       'data' => {
-        'comment' => 'Test Comment'
+        'comment' => 'Test Comment',
+        'score' => 4
       }
     }
+    @event.save
+
     @requests = 0
     @sent_requests = Hash.new { |hash, method| hash[method] = [] }
 
@@ -118,15 +122,19 @@ describe Agents::ChattermillResponseAgent do
 
       context 'when memory is not empty' do
         before do
-          other_event = Event.new
-          other_event.agent = agents(:jane_weather_agent)
-          other_event.payload = {
+          another_event = Event.new
+          another_event.agent = agents(:jane_weather_agent)
+          another_event.payload = {
             'somekey' => 'somevalue',
             'data' => {
-              'comment' => 'Test Comment 2'
+              'comment' => 'Test Comment 2',
+              'score' => 1
             }
           }
-          @checker.memory['events'] = [@event.id, other_event.id]
+          another_event.save
+
+          @checker.receive([@event, another_event])
+          @checker.save!
         end
 
         it "makes POST requests" do
@@ -185,6 +193,7 @@ describe Agents::ChattermillResponseAgent do
 
         expected = {
           'comment' => 'Test Comment',
+          'score' => '4',
           'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
           'user_meta' => user_meta,
           'dataset_id' => 1
@@ -524,7 +533,7 @@ describe Agents::ChattermillResponseAgent do
       end
 
       it "emit events if buffer has expired" do
-        @checker.memory['events'] = [@event.id]
+        @checker.receive([@event])
         @checker.save!
 
         3.times do |i|

@@ -6,7 +6,7 @@ module Agents
     default_schedule "never"
 
     API_ENDPOINT = "/webhooks/responses"
-    BASIC_OPTIONS = %w(comment score data_type data_source created_at user_meta segments dataset_id)
+
     MAX_COUNTER_TO_EXPIRE_BATCH = 3
     DOMAINS = {
       production: "app.chattermill.xyz",
@@ -169,19 +169,17 @@ module Agents
     end
 
     def receive(incoming_events)
-      if boolify(interpolated['send_batch_events'])
-        save_events_in_buffer(incoming_events)
-      else
-        incoming_events.each do |event|
-          interpolate_with(event) do
-            handle outgoing_data, event, headers(auth_header)
-          end
+      return save_events_in_buffer(incoming_events) if batch_events?
+
+      incoming_events.each do |event|
+        interpolate_with(event) do
+          handle outgoing_data, event, headers(auth_header)
         end
       end
     end
 
     def check
-      if boolify(interpolated['send_batch_events'])
+      if batch_events?
         if process_queue?
           process_queue!
           handle_batch batch_events_payload, headers(auth_header)
@@ -193,72 +191,28 @@ module Agents
 
     private
 
+    def handle(data, event = Event.new, headers)
+      return unless valid_payload?(data, event)
+      headers['Content-Type'] = 'application/json; charset=utf-8'
+
+      response = faraday.run_request(http_method, request_url, data.to_json, headers)
+      emit_event(response, event, response.headers)
+    rescue Faraday::TimeoutError
+      response = OpenStruct.new body: "Request timeout", status: 408, headers: headers
+      emit_event(response, event, response.headers)
+    end
+
     def outgoing_data
-      outgoing = interpolated.slice(*BASIC_OPTIONS).select { |_, v| v.present? }
-      outgoing.merge!(interpolated['extra_fields'].presence || {})
-      apply_mappings(outgoing)
-      apply_bucketing(outgoing)
+      data = Chattermill::ResponseParser.new(interpolated).parse
     end
 
-    def apply_mappings(payload)
-      return payload unless interpolated['mappings'].present?
-      interpolated['mappings'].each do |path, values|
-        opt = Utils.value_at(payload, path)
-        next unless values.has_key?(opt)
-        mapped = path.split('.').reverse.each_with_index.inject({}) do |hash, (n,i)|
-          new_value = (i == 0 ? values[opt] : hash )
-          { n => new_value  }
-        end
-        payload.deep_merge!(mapped)
-      end
+    def emit_event(response, event, headers)
+      return unless boolify(interpolated['emit_events'])
 
-      payload
+      create_event(event_payload(response, headers, event))
+      send_slack_notification(response, event) unless [200, 201].include?(response.status)
     end
 
-    def apply_bucketing(payload)
-      return payload unless interpolated['bucketing'].present?
-      interpolated['bucketing'].each do |path, values|
-        opt = Utils.value_at(payload, path)
-        mapped = path.split('.').reverse.each_with_index.inject({}) do |hash, (n,i)|
-          new_value = (i == 0 ? extract_bucket(values,opt) : hash )
-          { n => new_value  }
-        end
-        payload.deep_merge!(mapped)
-      end
-
-      payload
-    end
-
-    def extract_bucket(hash, value)
-      value = value.to_i
-      bucket = nil
-      hash.each do |k, v|
-        range = k.split("-")
-        min = range.first
-        max = range.last
-        if /\+/ =~ max && value >= max.tr("+", "").to_i
-          bucket = v
-          break
-        elsif (min.to_i..max.to_i).cover?(value)
-          bucket = v
-          break
-        end
-      end
-
-      bucket
-    end
-
-    def batch_events_payload
-      payloads = []
-      buffered_events = received_events.where(id: events_ids).reorder(id: :asc)
-      buffered_events.each do |event|
-        interpolate_with(event) do
-          data = outgoing_data
-          payloads.push(data) if valid_payload?(data, event)
-        end
-      end
-      { responses: payloads }
-    end
 
     def save_events_in_buffer(incoming_events)
       memory['events'] ||= []
@@ -268,18 +222,73 @@ module Agents
       end
     end
 
-    def parse_json_options
-      parse_json_option('user_meta')
-      parse_json_option('segments')
-      parse_json_option('extra_fields')
-      parse_json_option('mappings')
-      parse_json_option('bucketing')
+    def batch_events_payload
+      payloads = []
+      source_events.each do |event|
+        interpolate_with(event) do
+          data = outgoing_data
+          payloads.push(data) if valid_payload?(data, event)
+        end
+      end
+
+      { responses: payloads }
     end
 
-    def parse_json_option(key)
-      options[key] = JSON.parse(options[key]) unless options[key].is_a?(Hash)
-    rescue
-      errors.add(:base, "The '#{key}' option is an invalid JSON.")
+    def source_events
+      @source_events ||= Event.where(id: events_ids).reorder(id: :asc)
+    end
+
+    def handle_batch(data, headers)
+      return if data[:responses].empty?
+
+      headers['Content-Type'] = 'application/json; charset=utf-8'
+      response = faraday.run_request(:post, request_url(batch: true), data.to_json, headers)
+      headers = normalize_response_headers(response.headers)
+
+      emit_events(response)
+    rescue Faraday::TimeoutError
+      response = OpenStruct.new body: "Request timeout", status: 408, headers: headers
+      source_events.each do |event|
+        emit_event(response, event, headers)
+      end
+    ensure
+      memory['in_process'] = false
+      memory['check_counter'] = 0
+    end
+
+    def emit_events(response)
+      return unless boolify(interpolated['emit_events'])
+
+      if [200, 201].include?(response.status)
+        responses = JSON.parse(response.body)
+        responses.each_with_index do |r, i|
+          event = source_events.detect{ |e| e.id == events_ids[i] }
+          event_response = OpenStruct.new(r)
+
+          emit_event(event_response, event, headers)
+        end
+      else
+        source_events.each do |event|
+          emit_event(response, event, headers)
+        end
+      end
+    end
+
+    def event_payload(response, headers, event)
+      { payload: { body: response.body,
+                   headers: normalize_response_headers(headers),
+                   status: response.status,
+                   source_event: event.id } }
+    end
+
+    def request_url(batch: false)
+      protocol = Rails.env.production? ? 'https' : 'http'
+      domain = DOMAINS[Rails.env.to_sym]
+      if batch
+        "#{protocol}://#{domain}#{API_ENDPOINT}/bulk"
+      else
+        "#{protocol}://#{domain}#{API_ENDPOINT}/#{interpolated['id']}"
+      end
     end
 
     def normalize_response_headers(headers)
@@ -305,14 +314,18 @@ module Agents
       }
     end
 
-    def request_url(event = Event.new, batch: false)
-      protocol = Rails.env.production? ? 'https' : 'http'
-      domain = DOMAINS[Rails.env.to_sym]
-      if batch
-        "#{protocol}://#{domain}#{API_ENDPOINT}/bulk"
-      else
-        "#{protocol}://#{domain}#{API_ENDPOINT}/#{interpolated['id']}"
-      end
+    def parse_json_options
+      parse_json_option('user_meta')
+      parse_json_option('segments')
+      parse_json_option('extra_fields')
+      parse_json_option('mappings')
+      parse_json_option('bucketing')
+    end
+
+    def parse_json_option(key)
+      options[key] = JSON.parse(options[key]) unless options[key].is_a?(Hash)
+    rescue
+      errors.add(:base, "The '#{key}' option is an invalid JSON.")
     end
 
     def has_id?
@@ -324,68 +337,6 @@ module Agents
         "Authorization" => "Bearer #{ENV['CHATTERMILL_AUTH_TOKEN']}",
         "Organization" => interpolated['organization_subdomain']
       }
-    end
-
-    def handle(data, event = Event.new, headers)
-      return unless valid_payload?(data, event)
-
-      url = request_url(event)
-      headers['Content-Type'] = 'application/json; charset=utf-8'
-      body = data.to_json
-      response = faraday.run_request(http_method, url, body, headers)
-      send_slack_notification(response, event) unless [200, 201].include?(response.status)
-
-      return unless boolify(interpolated['emit_events'])
-      create_event(event_payload(response, response.headers, event))
-    rescue Faraday::TimeoutError
-      response = OpenStruct.new body: "Request timeout", status: 408, headers: headers
-
-      send_slack_notification(response, event)
-      create_event(event_payload(response, response.headers, event)) if boolify(interpolated['emit_events'])
-    end
-
-    def handle_batch(data, headers)
-      url = request_url(batch: true)
-      headers['Content-Type'] = 'application/json; charset=utf-8'
-      source_events = Event.where(id: events_ids)
-      response = faraday.run_request(:post, url, data.to_json, headers)
-
-      return unless boolify(interpolated['emit_events'])
-      headers = normalize_response_headers(response.headers)
-
-      if [200, 201].include?(response.status)
-        responses = JSON.parse(response.body)
-        responses.each_with_index do |r, i|
-          event = source_events.detect{ |e| e.id == events_ids[i] }
-          event_response = OpenStruct.new(r)
-          send_slack_notification(event_response, event) unless [200, 201].include?(event_response.status)
-
-          create_event(event_payload(event_response, headers, event))
-          memory['events'].delete(event.id)
-        end
-      else
-        source_events.each do |event|
-          send_slack_notification(response, event)
-          create_event(event_payload(response, headers, event))
-          memory['events'].delete(event.id)
-        end
-      end
-    rescue Faraday::TimeoutError
-      response = OpenStruct.new body: "Request timeout", status: 408, headers: headers
-      source_events.each do |event|
-        send_slack_notification(response, event)
-        create_event(event_payload(response, headers, event))
-      end
-    ensure
-      memory['in_process'] = false
-      memory['check_counter'] = 0
-    end
-
-    def event_payload(response, headers, event)
-      { payload: { body: response.body,
-                   headers: normalize_response_headers(headers),
-                   status: response.status,
-                   source_event: event.id } }
     end
 
     def valid_payload?(data, event)
@@ -415,6 +366,10 @@ module Agents
     def batch_expired?
       counter = memory['check_counter']&.to_i || 0
       memory['events'] && memory['events'].length.positive? && counter >= MAX_COUNTER_TO_EXPIRE_BATCH
+    end
+
+    def batch_events?
+      boolify(interpolated['send_batch_events'])
     end
 
     def events_ids
