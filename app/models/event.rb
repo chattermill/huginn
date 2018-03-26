@@ -102,7 +102,7 @@ class Event < ActiveRecord::Base
   end
 
   def save_deduplication_token
-    self.agent.tokens.create!(token: Digest::SHA256.hexdigest(self.payload.to_s))
+    self.agent.tokens.create!(token: Digest::SHA256.hexdigest(self.payload.to_json))
   end
 end
 

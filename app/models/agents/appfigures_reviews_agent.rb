@@ -2,6 +2,7 @@ module Agents
   class AppfiguresReviewsAgent < Agent
     include FormConfigurable
     include WebRequestConcern
+    include DeduplicationConcern
 
     APPFIGURES_URL_BASE = "https://api.appfigures.com/v2/reviews".freeze
     UNIQUENESS_LOOK_BACK = 200
@@ -71,7 +72,7 @@ module Agents
     def check
       log "Fetched #{reviews&.size} reviews"
       if reviews.any?
-        old_events = previous_payloads reviews.size
+        old_events = previous_payloads(reviews.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
         reviews.each do |response|
           create_event_from_review(response, old_events)
         end
@@ -84,7 +85,7 @@ module Agents
       return unless is_a_valid_product?(response)
 
       payload = transform_appfigures_responses(response)
-      if store_payload!(old_events, payload)
+      if store_payload?(old_events, payload)
         log "Storing new result for '#{name}': #{payload.inspect}"
         create_event payload: payload
       end
@@ -109,39 +110,6 @@ module Agents
         product_id: response['product_id'],
         vendor_id: response['vendor_id']
       }
-    end
-
-    def previous_payloads(num_events)
-      if interpolated['uniqueness_look_back'].present?
-        look_back = interpolated['uniqueness_look_back'].to_i
-      else
-        # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-        look_back = UNIQUENESS_FACTOR * num_events
-        if look_back < UNIQUENESS_LOOK_BACK
-          look_back = UNIQUENESS_LOOK_BACK
-        end
-      end
-      events.order("id desc NULLS LAST").limit(look_back) if interpolated['mode'] == "on_change"
-    end
-
-    # This method returns true if the result should be stored as a new event.
-    # If mode is set to 'on_change', this method may return false and update an existing
-    # event to expire further in the future.
-    def store_payload!(old_events, result)
-      case interpolated['mode'].presence
-      when 'on_change'
-        result_json = result.to_json
-        if found = old_events.find { |event| event.payload.to_json == result_json }
-          found.update!(expires_at: new_event_expiration_date)
-          false
-        else
-          true
-        end
-      when 'all', 'merge', ''
-        true
-      else
-        raise "Illegal options[mode]: #{interpolated['mode']}"
-      end
     end
 
     def reviews
