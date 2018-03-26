@@ -301,7 +301,7 @@ module Agents
       when 'downcased'
         normalize = :downcase.to_proc
       when 'snakecased'
-        normalize = ->(name) { name.tr('A-Z-', 'a-z_') }
+        normalize = ->(name) { name.underscore }
       when 'raw'
         normalize = ->(name) { name } # :itself.to_proc in Ruby >= 2.2
       else
