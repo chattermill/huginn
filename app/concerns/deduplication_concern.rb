@@ -22,9 +22,7 @@ module DeduplicationConcern
     case interpolated['mode'].presence
     when 'on_change'
       token = payload_to_sha(payload)
-
       if found = old_events.find { |e| e.token == token }
-        found.update!(expires_at: new_event_expiration_date)
         false
       else
         true
