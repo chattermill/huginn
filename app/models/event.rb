@@ -16,6 +16,7 @@ class Event < ActiveRecord::Base
 
   has_many :agent_logs_as_inbound_event, :class_name => "AgentLog", :foreign_key => :inbound_event_id, :dependent => :nullify
   has_many :agent_logs_as_outbound_event, :class_name => "AgentLog", :foreign_key => :outbound_event_id, :dependent => :nullify
+  has_one :token, :class_name => "DeduplicationToken", dependent: :destroy
 
   scope :recent, lambda { |timespan = 12.hours.ago|
     where("events.created_at > ?", timespan)
@@ -102,7 +103,7 @@ class Event < ActiveRecord::Base
   end
 
   def save_deduplication_token
-    self.agent.tokens.create!(token: Digest::SHA256.hexdigest(self.payload.to_json))
+    self.create_token!(agent: agent, token: Digest::SHA256.hexdigest(self.payload.to_json))
   end
 end
 

@@ -101,7 +101,7 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
 
       it 'does not emit duplicated events ' do
         @agent.check
-        @agent.tokens.last.destroy
+        @agent.events.last.destroy
 
         expect { @agent.check }.to change { Event.count }.by(1)
         expect(@agent.events.count).to eq(2)
