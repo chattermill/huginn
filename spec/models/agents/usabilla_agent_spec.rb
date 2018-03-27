@@ -127,8 +127,10 @@ describe Agents::UsabillaAgent do
         @agent.events.last.destroy
 
         expect(@agent.events.count).to eq(7)
+        expect(@agent.tokens.count).to eq(7)
         expect { @agent.check }.to change { Event.count }.by(1)
         expect(@agent.events.count).to eq(8)
+        expect(@agent.tokens.count).to eq(8)
       end
 
       it 'emits correct payload' do
@@ -180,8 +182,10 @@ describe Agents::UsabillaAgent do
         @agent.events.last.destroy
 
         expect(@agent.events.count).to eq(4)
+        expect(@agent.tokens.count).to eq(4)
         expect { @agent.check }.to change { Event.count }.by(1)
         expect(@agent.events.count).to eq(5)
+        expect(@agent.tokens.count).to eq(5)
       end
 
       it 'emits correct payload' do
@@ -249,8 +253,10 @@ describe Agents::UsabillaAgent do
         @agent.events.last.destroy
 
         expect(@agent.events.count).to eq(4)
+        expect(@agent.tokens.count).to eq(4)
         expect { @agent.check }.to change { Event.count }.by(1)
         expect(@agent.events.count).to eq(5)
+        expect(@agent.tokens.count).to eq(5)
       end
 
       it 'emits correct payload' do

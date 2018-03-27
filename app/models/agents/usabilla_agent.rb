@@ -1,6 +1,7 @@
 module Agents
   class UsabillaAgent < Agent
     include FormConfigurable
+    include DeduplicationConcern
 
     UNIQUENESS_LOOK_BACK = 500
     UNIQUENESS_FACTOR = 5
@@ -134,13 +135,12 @@ module Agents
     end
 
     def check
-      events = retrieve_events
-      if events.any?
-        old_events = previous_payloads(events.size)
-
-        events.each do |e|
+      new_events = retrieve_events
+      if new_events.any?
+        old_events = previous_payloads(new_events.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+        new_events.each do |e|
           payload = usabilla_response_to_event(e)
-          if store_payload!(old_events, payload)
+          if store_payload?(old_events, payload)
             log "Storing new result for '#{name}': #{payload.inspect}"
             create_event payload: payload
           end
@@ -157,35 +157,6 @@ module Agents
       events += retrieve_emails if retrieve_emails?
       events += retrieve_campaigns if retrieve_campaigns?
       events
-    end
-
-    def previous_payloads(num_events)
-      # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-      look_back = UNIQUENESS_FACTOR * num_events
-      look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
-
-      events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
-    end
-
-    # This method returns true if the result should be stored as a new event.
-    # If mode is set to 'on_change', this method may return false and update an
-    # existing event to expire further in the future.
-    # Also, it will retrive asignee and/or ticket if the event should be stored.
-    def store_payload!(old_events, result)
-      case interpolated['mode'].presence
-      when 'on_change'
-        result_json = result.to_json
-        if found = old_events.find { |event| event.payload.to_json == result_json }
-          found.update!(expires_at: new_event_expiration_date)
-          false
-        else
-          true
-        end
-      when 'all', 'merge', ''
-        true
-      else
-        raise "Illegal options[mode]: #{interpolated['mode']}"
-      end
     end
 
     def retrieve_buttons?
