@@ -95,6 +95,10 @@ describe Agents::GooglePlayReviewsAgent do
   end
 
   describe '#check' do
+    it 'emits events' do
+      expect { @agent.check }.to change { Event.count }.by(1)
+    end
+
     it 'emits correct payload' do
       stub(Google::Auth::ServiceAccountCredentials).fetch_access_token! { Google::Auth::ServiceAccountCredentials.new }
       @agent.check
@@ -150,6 +154,15 @@ describe Agents::GooglePlayReviewsAgent do
       }
 
       expect(@agent.events.last.payload).to eq(expected)
+    end
+
+    it 'does not emit duplicated events ' do
+      @agent.check
+      expect(@agent.events.count).to eq(1)
+
+      expect { @agent.check }.to change { Event.count }.by(0)
+      expect(@agent.events.count).to eq(1)
+      expect(@agent.tokens.count).to eq(1)
     end
   end
 

@@ -136,6 +136,7 @@ describe Agents::SurveyMonkeyAgent, :vcr do
 
       expect { @agent.check }.to change { Event.count }.by(1)
       expect(@agent.events.count).to eq(5)
+      expect(@agent.tokens.count).to eq(5)
     end
 
     it 'emits correct payload' do

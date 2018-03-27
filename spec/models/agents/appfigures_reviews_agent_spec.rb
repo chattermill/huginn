@@ -105,6 +105,7 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
 
         expect { @agent.check }.to change { Event.count }.by(1)
         expect(@agent.events.count).to eq(2)
+        expect(@agent.tokens.count).to eq(2)
       end
 
       it 'emits correct payload' do
