@@ -125,70 +125,136 @@ describe SurveyMonkeyParser do
     end
 
     it "returns a full_response attribute with all response answers" do
-    expected = {
-      '759363655' => {
-        id: '759363655',
-        family: 'single_choice',
-        subtype: 'vertical',
-        question: 'Did we answer your question?',
-        answers: {
-          'Did we answer your question?' => 'No'
-        }
-      },
-      '759363654' => {
-        id: '759363654',
-        family: 'matrix',
-        subtype: 'rating',
-        question: 'In the following area, how would you evaluate the agent who answered you?',
-        answers: {
-          'Enthusiasm' => 'Very bad 0',
-          'Professionalism' => 'Very bad 0',
-          'Understanding of your needs' => 'Good 3',
-          'Clarity of answer' => 'Very bad 0',
-          'Patience' => 'Very bad 0'
-        }
-      },
-      '759363652' => {
-        id: '759363652',
-        family: 'single_choice',
-        subtype: 'vertical',
-        question: 'In general, what do you think of the answer you have received?',
-        answers: {
-          'In general, what do you think of the answer you have received?' => 'Excellent 5'
-        }
-      },
-      '759363658' => {
-        id: '759363658',
-        family: 'open_ended',
-        subtype: 'essay',
-        question: 'How could we improve the service?',
-        answers: {
-          'How could we improve the service?' => 'Dreadful customer service'
-        }
-      },
-      '759363659' => {
-        id: '759363659',
-        family: 'open_ended',
-        subtype: 'essay',
-        question: 'What would be your suggestions to improve Vivastreet ?',
-        answers: {
-          'What would be your suggestions to improve Vivastreet ?' => 'Get new staff that are not useless '
-        }
-      },
-      '759363657' => {
-        id: '759363657',
-        family: 'open_ended',
-        subtype: 'multi',
-        question: 'If you wish, enter your contact information below so we can contact you if necessary:',
-        answers: {
-          'Email address' => 'me@foo.com',
-          'Telephone number' => '12345'
-        }
-      },
-    }
-    expect(response.key?('full_response')).to be true
-    expect(response['full_response']).to eq(expected)
+      expected = {
+        '759363655' => {
+          id: '759363655',
+          family: 'single_choice',
+          subtype: 'vertical',
+          question: 'Did we answer your question?',
+          answers: {
+            'Did we answer your question?' => 'No'
+          }
+        },
+        '759363654' => {
+          id: '759363654',
+          family: 'matrix',
+          subtype: 'rating',
+          question: 'In the following area, how would you evaluate the agent who answered you?',
+          answers: {
+            'Enthusiasm' => 'Very bad 0',
+            'Professionalism' => 'Very bad 0',
+            'Understanding of your needs' => 'Good 3',
+            'Clarity of answer' => 'Very bad 0',
+            'Patience' => 'Very bad 0'
+          }
+        },
+        '759363652' => {
+          id: '759363652',
+          family: 'single_choice',
+          subtype: 'vertical',
+          question: 'In general, what do you think of the answer you have received?',
+          answers: {
+            'In general, what do you think of the answer you have received?' => 'Excellent 5'
+          }
+        },
+        '759363658' => {
+          id: '759363658',
+          family: 'open_ended',
+          subtype: 'essay',
+          question: 'How could we improve the service?',
+          answers: {
+            'How could we improve the service?' => 'Dreadful customer service'
+          }
+        },
+        '759363659' => {
+          id: '759363659',
+          family: 'open_ended',
+          subtype: 'essay',
+          question: 'What would be your suggestions to improve Vivastreet ?',
+          answers: {
+            'What would be your suggestions to improve Vivastreet ?' => 'Get new staff that are not useless '
+          }
+        },
+        '759363657' => {
+          id: '759363657',
+          family: 'open_ended',
+          subtype: 'multi',
+          question: 'If you wish, enter your contact information below so we can contact you if necessary:',
+          answers: {
+            'Email address' => 'me@foo.com',
+            'Telephone number' => '12345'
+          }
+        },
+      }
+      expect(response.key?('full_response')).to be true
+      expect(response['full_response']).to eq(expected)
+    end
   end
 
+  describe 'store_payload' do
+    it 'returns true when mode is all or merge' do
+      @agent.options['mode'] = 'all'
+      expect(@agent.send(:store_payload?, [], 'key: 123')).to be true
+
+      @agent.options['mode'] = 'merge'
+      expect(@agent.send(:store_payload?, [], 'key: 123')).to be true
+    end
+
+    it 'raises an expception when mode is invalid' do
+      @agent.options['mode'] = 'xyz'
+      expect {
+        @agent.send(:store_payload?, [], 'key: 123')
+      }.to raise_error('Illegal options[mode]: xyz')
+    end
+
+    context 'when mode is on_change' do
+      before do
+        @event = Event.new
+        @event.agent = @agent
+        @event.payload = {
+          'comment' => 'somevalue'
+        }
+        @event.save!
+      end
+
+      it 'returns false if events exist' do
+        expect(@agent.send(:store_payload?, @agent.tokens, 'comment' => 'somevalue')).to be false
+      end
+
+      it 'returns true if events does not exist' do
+        expect(@agent.send(:store_payload?, @agent.tokens, 'comment' => 'othervalue')).to be true
+      end
+    end
+  end
+
+  describe 'previous_payloads' do
+    before do
+      Event.create payload: { 'comment' => 'some value'}, agent: @agent
+      Event.create payload: { 'comment' => 'another value'}, agent: @agent
+      Event.create payload: { 'comment' => 'other comment'}, agent: @agent
+    end
+
+    context 'when uniqueness_look_back is present' do
+      before do
+        @agent.options['uniqueness_look_back'] = 2
+      end
+
+      it 'returns a list of old events limited by uniqueness_look_back' do
+        expect(@agent.events.count).to eq(3)
+        expect(@agent.send(:previous_payloads, 2, 1).count).to eq(2)
+      end
+    end
+
+    context 'when uniqueness_look_back is not present' do
+      it 'returns a list of old events limited by received events' do
+        expect(@agent.events.count).to eq(3)
+        expect(@agent.send(:previous_payloads, 3, 2).count).to eq(3)
+      end
+    end
+
+    it 'returns nil when mode is not on_change' do
+      @agent.options['mode'] = 'all'
+      expect(@agent.send(:previous_payloads, 1, 2)).to be nil
+    end
   end
 end
