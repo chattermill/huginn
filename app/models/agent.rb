@@ -59,7 +59,7 @@ class Agent < ActiveRecord::Base
   has_many :control_targets, through: :control_links_as_controller, class_name: "Agent", inverse_of: :controllers
   has_many :scenario_memberships, :dependent => :destroy, :inverse_of => :agent
   has_many :scenarios, :through => :scenario_memberships, :inverse_of => :agents
-  has_many :tokens, dependent: :destroy, inverse_of: :agent, class_name: "DeduplicationToken"
+  has_many :tokens, dependent: :delete_all, inverse_of: :agent, class_name: "DeduplicationToken"
 
   scope :active,   -> { where(disabled: false, deactivated: false) }
   scope :inactive, -> { where(['disabled = ? OR deactivated = ?', true, true]) }

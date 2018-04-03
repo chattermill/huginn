@@ -78,4 +78,43 @@ http_interactions:
       string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
     http_version: 
   recorded_at: Fri, 02 Mar 2018 19:48:23 GMT
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061894057
+    body:
+      encoding: UTF-8
+      string: '{"url":"https://localhost/users/902541635/web_requests/1061894057/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate,br
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 03 Apr 2018 19:11:44 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - 842a6168ad3cb06a66110313219e2b5b
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Tue, 03 Apr 2018 19:11:44 GMT
 recorded_with: VCR 3.0.3
