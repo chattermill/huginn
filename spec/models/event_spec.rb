@@ -153,6 +153,18 @@ describe Event do
       expect(agent_logs(:log_for_jane_website_agent).reload.outbound_event_id).to be_present
       expect(agent_logs(:log_for_bob_website_agent).reload.outbound_event_id).to be_nil
     end
+
+    it "delete token related" do
+      event = agents(:jane_weather_agent).events.create!(payload: {"a": "123"})
+      agents(:jane_weather_agent).events.create!(payload: {"b": "123"})
+
+      expect(agents(:jane_weather_agent).tokens.count).to eq(2)
+
+      agents(:jane_weather_agent).events.first.destroy
+
+      expect(agents(:jane_weather_agent).tokens.count).to eq(1)
+      expect(agents(:jane_weather_agent).tokens.take.event_id).to eq(event.id)
+    end
   end
 
   describe "caches" do
