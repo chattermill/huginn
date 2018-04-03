@@ -384,13 +384,13 @@ describe Agents::ZendeskSatisfactionRatingsAgent do
 
       it 'returns a list of old events limited by received events' do
         expect(@agent.events.count).to eq(3)
-        expect(@agent.send(:previous_payloads, 3, 1).count).to eq(3)
+        expect(@agent.send(:previous_payloads, 3).count).to eq(3)
       end
 
 
       it 'returns nil when mode is not on_change' do
         @agent.options['mode'] = 'all'
-        expect(@agent.send(:previous_payloads, 1, 2)).to be nil
+        expect(@agent.send(:previous_payloads, 1)).to be nil
       end
     end
   end

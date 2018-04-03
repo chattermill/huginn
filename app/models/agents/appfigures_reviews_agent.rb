@@ -72,7 +72,7 @@ module Agents
     def check
       log "Fetched #{reviews&.size} reviews"
       if reviews.any?
-        old_events = previous_payloads(reviews.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+        old_events = previous_payloads(reviews.size)
         reviews.each do |response|
           create_event_from_review(response, old_events)
         end

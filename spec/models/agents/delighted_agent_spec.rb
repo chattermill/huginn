@@ -157,8 +157,6 @@ describe Agents::DelightedAgent do
         Event.create payload: { 'comment' => 'another value'}, agent: @agent
         Event.create payload: { 'comment' => 'other comment'}, agent: @agent
 
-        @uniqueness_look_back = 1
-        @uniqueness_factor = 1
       end
 
       context 'when uniqueness_look_back is present' do
@@ -168,20 +166,20 @@ describe Agents::DelightedAgent do
 
         it 'returns a list of old events limited by uniqueness_look_back' do
           expect(@agent.events.count).to eq(3)
-          expect(@agent.send(:previous_payloads, 1 * @uniqueness_factor, @uniqueness_look_back).count).to eq(2)
+          expect(@agent.send(:previous_payloads, 1).count).to eq(2)
         end
       end
 
       context 'when uniqueness_look_back is not present' do
         it 'returns a list of old events limited by received events' do
           expect(@agent.events.count).to eq(3)
-          expect(@agent.send(:previous_payloads, 3 * @uniqueness_factor, @uniqueness_look_back).count).to eq(3)
+          expect(@agent.send(:previous_payloads, 3).count).to eq(3)
         end
       end
 
       it 'returns nil when mode is not on_change' do
         @agent.options['mode'] = 'all'
-        expect(@agent.send(:previous_payloads, 1 * @uniqueness_factor, @uniqueness_look_back)).to be nil
+        expect(@agent.send(:previous_payloads, 1)).to be nil
       end
     end
 

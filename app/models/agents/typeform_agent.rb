@@ -112,7 +112,7 @@ module Agents
 
     def check
       if typeform_events.any?
-        old_events = previous_payloads(typeform_events.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+        old_events = previous_payloads(typeform_events.size)
         typeform_events.each do |e|
           if store_payload?(old_events, e)
             log "Storing new result for '#{name}': #{e.inspect}"

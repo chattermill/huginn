@@ -142,7 +142,7 @@ module Agents
     def check
       return unless retrieve_reviews.any?
 
-      old_events = previous_payloads(retrieve_reviews.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+      old_events = previous_payloads(retrieve_reviews.size)
       retrieve_reviews.each do |review|
         payload = prepare_event(review)
         if store_payload?(old_events, payload)

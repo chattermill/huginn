@@ -2,12 +2,14 @@
 module DeduplicationConcern
   extend ActiveSupport::Concern
 
-  def previous_payloads(events_amount, uniqueness_look_back)
+  def previous_payloads(events_amount)
     if interpolated['uniqueness_look_back'].present?
       look_back = interpolated['uniqueness_look_back'].to_i
     else
       # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-      look_back = events_amount
+      uniqueness_look_back = self.class.const_get(:UNIQUENESS_LOOK_BACK) || 0
+      factor = self.class.const_get(:UNIQUENESS_FACTOR) || 1
+      look_back = events_amount * factor
       if look_back < uniqueness_look_back
         look_back = uniqueness_look_back
       end

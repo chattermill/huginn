@@ -137,7 +137,7 @@ module Agents
     def check
       new_events = retrieve_events
       if new_events.any?
-        old_events = previous_payloads(new_events.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+        old_events = previous_payloads(new_events.size)
         new_events.each do |e|
           payload = usabilla_response_to_event(e)
           if store_payload?(old_events, payload)

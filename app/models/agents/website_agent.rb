@@ -416,7 +416,7 @@ module Agents
       doc = parse(body)
 
       if extract_full_json?
-        if store_payload?(previous_payloads(UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK), doc)
+        if store_payload?(previous_payloads(1), doc)
           log "Storing new result for '#{name}': #{doc.inspect}"
           create_event payload: existing_payload.merge(doc)
         end
@@ -436,7 +436,7 @@ module Agents
       num_tuples = output.size or
         raise "At least one non-repeat key is required"
 
-      old_events = previous_payloads(num_tuples * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+      old_events = previous_payloads(num_tuples)
 
       template = options['template'].presence
 

@@ -120,7 +120,7 @@ module Agents
       responses = surveys.map(&:parse_responses).flatten
       return unless responses.any?
 
-      old_events = previous_payloads(responses.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+      old_events = previous_payloads(responses.size)
       responses.each do |response|
         if store_payload?(old_events, response)
           log "Storing new result for '#{name}': #{response.inspect}"

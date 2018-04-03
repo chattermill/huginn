@@ -78,7 +78,7 @@ module Agents
 
     def check
       if delighted_events.any?
-        old_events = previous_payloads(delighted_events.size * UNIQUENESS_FACTOR, UNIQUENESS_LOOK_BACK)
+        old_events = previous_payloads(delighted_events.size)
         delighted_events.each do |e|
           if store_payload?(old_events, e)
             log "Storing new result for '#{name}': #{e.inspect}"
