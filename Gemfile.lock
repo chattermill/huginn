@@ -182,6 +182,9 @@ GEM
       rails (>= 3.1)
     buftok (0.2.0)
     builder (3.2.3)
+    bullet (5.7.5)
+      activesupport (>= 3.0.0)
+      uniform_notifier (~> 1.11.0)
     byebug (9.1.0)
     capistrano (3.4.1)
       i18n
@@ -662,6 +665,7 @@ GEM
     unicorn (5.1.0)
       kgio (~> 2.6)
       raindrops (~> 0.7)
+    uniform_notifier (1.11.0)
     uuid (2.3.8)
       macaddr (~> 1.0)
     vcr (3.0.3)
@@ -697,6 +701,7 @@ DEPENDENCIES
   better_errors (~> 1.1)
   binding_of_caller
   bootstrap-kaminari-views (~> 0.0.3)
+  bullet
   bundler (>= 1.5.0)
   capistrano (~> 3.4.0)
   capistrano-bundler (~> 1.1.4)
