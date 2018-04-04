@@ -147,10 +147,7 @@ describe Agents::WebsiteAgent do
         @valid_options['mode'] = 'all'
         @checker.options = @valid_options
         @checker.check
-        @checker.check
-        event = Event.last
-        event.payload = "{}"
-        event.save
+        event = @checker.events.create! payload: "{}"
 
         expect {
           @valid_options['mode'] = 'on_change'
