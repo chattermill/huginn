@@ -85,7 +85,7 @@ class Event < ActiveRecord::Base
   def self.cleanup_expired!
     transaction do
       affected_agents = Event.expired.group("agent_id").pluck(:agent_id)
-      DeduplicationToken.where(event_id: Event.to_expire.pluck(:id)).delete_all
+      DeduplicationToken.where(event_id: Event.to_expire.pluck(:id)).destroy_all
       Event.to_expire.delete_all
       Agent.where(id: affected_agents).update_all "events_count = (select count(*) from events where agent_id = agents.id)"
     end
