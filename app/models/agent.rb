@@ -42,6 +42,7 @@ class Agent < ActiveRecord::Base
   before_save :unschedule_if_cannot_schedule
   before_create :set_last_checked_event_id
   after_save :possibly_update_event_expirations
+  before_destroy :delete_tokens
 
   belongs_to :user, :inverse_of => :agents
   belongs_to :service, :inverse_of => :agents, optional: true
@@ -59,7 +60,7 @@ class Agent < ActiveRecord::Base
   has_many :control_targets, through: :control_links_as_controller, class_name: "Agent", inverse_of: :controllers
   has_many :scenario_memberships, :dependent => :destroy, :inverse_of => :agent
   has_many :scenarios, :through => :scenario_memberships, :inverse_of => :agents
-  has_many :tokens, dependent: :delete_all, inverse_of: :agent, class_name: "DeduplicationToken"
+  has_many :tokens, inverse_of: :agent, class_name: "DeduplicationToken"
 
   scope :active,   -> { where(disabled: false, deactivated: false) }
   scope :inactive, -> { where(['disabled = ? OR deactivated = ?', true, true]) }
@@ -261,6 +262,10 @@ class Agent < ActiveRecord::Base
 
   def possibly_update_event_expirations
     update_event_expirations! if saved_change_to_keep_events_for?
+  end
+
+  def delete_tokens
+    tokens.destroy_all
   end
 
   #Validation Methods
