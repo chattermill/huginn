@@ -164,6 +164,32 @@ describe Agents::WebsiteAgent do
         }.to change { Event.count }.by(1)
       end
 
+      it "should save deduplication tokens correctly" do
+        @valid_options['mode'] = 'all'
+        @checker.options = @valid_options
+        @checker.check
+        last_token = @checker.tokens.last
+        event = @checker.events.create! payload: "{}"
+        expect(@checker.tokens.count).to eq(2)
+
+        expect {
+          @valid_options['mode'] = 'on_change'
+          @valid_options['uniqueness_look_back'] = 2
+          @checker.options = @valid_options
+          @checker.check
+        }.not_to change { Event.count }
+        expect(@checker.tokens.count).to eq(2)
+
+        expect {
+          @valid_options['mode'] = 'on_change'
+          @valid_options['uniqueness_look_back'] = 1
+          @checker.options = @valid_options
+          @checker.check
+        }.to change { Event.count }.by(1)
+        expect(@checker.tokens.count).to eq(3)
+        expect(@checker.tokens.last.token).to eq(last_token.token)
+      end
+
       it "should log an error if the number of results for a set of extraction patterns differs" do
         @valid_options['extract']['url']['css'] = "div"
         @checker.options = @valid_options
