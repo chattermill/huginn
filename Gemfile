@@ -221,6 +221,7 @@ ENV['DATABASE_ADAPTER'] ||=
 
 if_true(ENV['DATABASE_ADAPTER'].strip == 'postgresql') do
   gem 'pg', '~> 0.21.0'
+  gem 'pghero'
 end
 
 if_true(ENV['DATABASE_ADAPTER'].strip == 'mysql2') do
