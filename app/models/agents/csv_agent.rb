@@ -15,7 +15,7 @@ module Agents
         'with_header' => 'true',
         'data_path' => '$.data',
         'data_key' => 'data',
-        'encoding' => ''
+        'encoding' => 'ISO-8859-1:UTF-8'
       }
     end
 
