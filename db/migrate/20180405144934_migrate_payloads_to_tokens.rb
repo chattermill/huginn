@@ -16,7 +16,7 @@ class MigratePayloadsToTokens < ActiveRecord::Migration[5.1]
 
       klass = a.constantize
       klass.all.each do |agent|
-        events = agent.events.where("created_at > ?", 3.months.ago).limit(uniqueness_look_back(agent))
+        events = agent.events.where("created_at > ?", 1.month.ago).limit(uniqueness_look_back(agent))
         events.find_in_batches do |group|
           group.each do |e|
             e.create_token!(agent: agent, token: Digest::SHA256.hexdigest(e.payload.to_json))
