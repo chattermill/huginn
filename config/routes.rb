@@ -111,14 +111,26 @@ Huginn::Application.routes.draw do
   post  "/users/:user_id/update_location/:secret" => "web_requests#update_location" # legacy
 
   devise_for :users,
-             controllers: { 
+             controllers: {
                omniauth_callbacks: 'omniauth_callbacks',
                registrations: 'users/registrations'
              },
              sign_out_via: [:post, :delete]
-  
+
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/letter_opener"
+  end
+
+  if ENV['DATABASE_ADAPTER'].strip == 'postgresql'
+    admin_constraint = lambda do |request|
+      current_user = request.env['warden'].user
+      current_user.present? && current_user.admin?
+    end
+
+    constraints admin_constraint do
+      mount PgHero::Engine, at: "pghero"
+
+    end
   end
 
   get "/about" => "home#about"
