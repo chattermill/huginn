@@ -16,6 +16,7 @@ class Event < ActiveRecord::Base
 
   has_many :agent_logs_as_inbound_event, :class_name => "AgentLog", :foreign_key => :inbound_event_id, :dependent => :nullify
   has_many :agent_logs_as_outbound_event, :class_name => "AgentLog", :foreign_key => :outbound_event_id, :dependent => :nullify
+  has_one :token, :class_name => "DeduplicationToken", dependent: :destroy
 
   scope :recent, lambda { |timespan = 12.hours.ago|
     where("events.created_at > ?", timespan)
@@ -23,6 +24,7 @@ class Event < ActiveRecord::Base
 
   after_create :update_agent_last_event_at
   after_create :possibly_propagate
+  after_create :save_deduplication_token
 
   scope :expired, lambda {
     where("expires_at IS NOT NULL AND expires_at < ?", Time.now)
@@ -83,6 +85,7 @@ class Event < ActiveRecord::Base
   def self.cleanup_expired!
     transaction do
       affected_agents = Event.expired.group("agent_id").pluck(:agent_id)
+      DeduplicationToken.where(event_id: Event.to_expire.pluck(:id)).destroy_all
       Event.to_expire.delete_all
       Agent.where(id: affected_agents).update_all "events_count = (select count(*) from events where agent_id = agents.id)"
     end
@@ -98,6 +101,10 @@ class Event < ActiveRecord::Base
     #immediately schedule agents that want immediate updates
     propagate_ids = agent.receivers.where(:propagate_immediately => true).pluck(:id)
     Agent.receive!(:only_receivers => propagate_ids) unless propagate_ids.empty?
+  end
+
+  def save_deduplication_token
+    self.create_token!(agent: agent, token: Digest::SHA256.hexdigest(self.payload.to_json))
   end
 end
 
