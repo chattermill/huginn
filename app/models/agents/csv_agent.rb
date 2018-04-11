@@ -15,7 +15,7 @@ module Agents
         'with_header' => 'true',
         'data_path' => '$.data',
         'data_key' => 'data',
-        'encoding' => ''
+        'encoding' => 'ISO-8859-1:UTF-8'
       }
     end
 
@@ -206,11 +206,19 @@ module Agents
     end
 
     def encode(io)
-      string = io.respond_to?(:read) ? io.read.sub("\xEF\xBB\xBF", "") : io
+      string = sanitize_io(io)
       return string if interpolated['encoding'].blank?
       encodings = interpolated['encoding'].split(':').reverse
       # We use src:dst for param, but #encode! uses dst:src
       string.encode!(*encodings, invalid: :replace)
+    end
+
+    def sanitize_io(io)
+      return io unless io.respond_to?(:read)
+      string =  io.read
+      string.sub!("\xEF\xBB\xBF", "")
+      string.sub!("\\u{feff}", "")
+      string
     end
   end
 end

@@ -18,6 +18,7 @@ describe Agents::ChattermillResponseAgent do
       'organization_subdomain' => 'foo',
       'expected_receive_period_in_days' => 1,
       'comment' => '{{ data.comment }}',
+      'score' => '{{ data.score }}',
       'segments' => segments.to_json,
       'user_meta' => user_meta.to_json,
       'extra_fields' => '{}',
@@ -42,9 +43,12 @@ describe Agents::ChattermillResponseAgent do
     @event.payload = {
       'somekey' => 'somevalue',
       'data' => {
-        'comment' => 'Test Comment'
+        'comment' => 'Test Comment',
+        'score' => 4
       }
     }
+    @event.save
+
     @requests = 0
     @sent_requests = Hash.new { |hash, method| hash[method] = [] }
 
@@ -118,15 +122,19 @@ describe Agents::ChattermillResponseAgent do
 
       context 'when memory is not empty' do
         before do
-          other_event = Event.new
-          other_event.agent = agents(:jane_weather_agent)
-          other_event.payload = {
+          another_event = Event.new
+          another_event.agent = agents(:jane_weather_agent)
+          another_event.payload = {
             'somekey' => 'somevalue',
             'data' => {
-              'comment' => 'Test Comment 2'
+              'comment' => 'Test Comment 2',
+              'score' => 1
             }
           }
-          @checker.memory['events'] = [@event.id, other_event.id]
+          another_event.save
+
+          @checker.receive([@event, another_event])
+          @checker.save!
         end
 
         it "makes POST requests" do
@@ -185,6 +193,7 @@ describe Agents::ChattermillResponseAgent do
 
         expected = {
           'comment' => 'Test Comment',
+          'score' => '4',
           'segments' => { 'segment_id' => { 'type' => 'text', 'name' => 'Segment Id', 'value' => '' } },
           'user_meta' => user_meta,
           'dataset_id' => 1
@@ -384,6 +393,23 @@ describe Agents::ChattermillResponseAgent do
             expect(@sent_requests[:post].first.data).to eq expected
           end
         end
+
+        describe "when raise a Request Timeout" do
+          it 'emit events' do
+            @checker.options['emit_events'] = 'true'
+            stub_request(:any, /:/).to_raise(Faraday::TimeoutError)
+
+            stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
+            stub.any_instance_of(Slack::Notifier).ping { true }
+
+            expect(@checker.events.count).to eq(0)
+            @checker.receive([@event])
+
+            expect(@checker.events.count).to eq(1)
+            expect(@checker.events.first.payload["body"]).to eq("Request timeout")
+            expect(@checker.events.first.payload["status"]).to eq(408)
+          end
+        end
       end
     end
 
@@ -507,7 +533,7 @@ describe Agents::ChattermillResponseAgent do
       end
 
       it "emit events if buffer has expired" do
-        @checker.memory['events'] = [@event.id]
+        @checker.receive([@event])
         @checker.save!
 
         3.times do |i|
@@ -535,6 +561,27 @@ describe Agents::ChattermillResponseAgent do
         expect(@checker.events.first.payload["body"]).to eq("error")
         expect(@checker.events.last.payload["body"]).to eq("error")
         expect(@checker.memory['events'].length).to eq(0)
+      end
+
+      describe "when raise a Request Timeout" do
+        it 'emit events' do
+          stub_request(:any, /:/).to_raise(Faraday::TimeoutError)
+
+          stub(ENV).[]('SLACK_WEBHOOK_URL') { 'http://slack.webhook/abc' }
+          stub.any_instance_of(Slack::Notifier).ping { true }
+
+          expect(@checker.events.count).to eq(0)
+          @checker.receive([@event, @event1])
+          @checker.save!
+
+          expect(@checker.memory['events'].length).to eq(2)
+          @checker.check
+
+          expect(@checker.memory['events'].length).to eq(0)
+          expect(@checker.memory['in_process']).to be false
+          expect(@checker.memory['check_counter']).to eq(0)
+          expect(@checker.events.count).to eq(2)
+        end
       end
     end
   end

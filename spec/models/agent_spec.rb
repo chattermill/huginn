@@ -957,7 +957,7 @@ describe Agent do
       agent.destroy
 
       expect(agent.events.count).to eq(0)
-      expect(agent.tokens.count).to eq(0)      
+      expect(agent.tokens.count).to eq(0)
     end
   end
 end
