@@ -4,6 +4,7 @@ require 'date'
 module Agents
   class WebsiteAgent < Agent
     include WebRequestConcern
+    include DeduplicationConcern
 
     can_dry_run!
     can_order_created_events!
@@ -415,7 +416,7 @@ module Agents
       doc = parse(body)
 
       if extract_full_json?
-        if store_payload!(previous_payloads(1), doc)
+        if store_payload?(previous_payloads(1), doc)
           log "Storing new result for '#{name}': #{doc.inspect}"
           create_event payload: existing_payload.merge(doc)
         end
@@ -435,7 +436,7 @@ module Agents
       num_tuples = output.size or
         raise "At least one non-repeat key is required"
 
-      old_events = previous_payloads num_tuples
+      old_events = previous_payloads(num_tuples)
 
       template = options['template'].presence
 
@@ -446,7 +447,7 @@ module Agents
           result.update(interpolate_options(template, extracted))
         end
 
-        if store_payload!(old_events, result)
+        if store_payload?(old_events, result)
           log "Storing new parsed result for '#{name}': #{result.inspect}"
           create_event payload: existing_payload.merge(result)
         end
@@ -493,39 +494,6 @@ module Agents
       }
     rescue => e
       error "Error when handling event data: #{e.message}\n#{e.backtrace.join("\n")}", inbound_event: event
-    end
-
-    # This method returns true if the result should be stored as a new event.
-    # If mode is set to 'on_change', this method may return false and update an existing
-    # event to expire further in the future.
-    def store_payload!(old_events, result)
-      case interpolated['mode'].presence
-      when 'on_change'
-        result_json = result.to_json
-        if found = old_events.find { |event| event.payload.to_json == result_json }
-          found.update!(expires_at: new_event_expiration_date)
-          false
-        else
-          true
-        end
-      when 'all', 'merge', ''
-        true
-      else
-        raise "Illegal options[mode]: #{interpolated['mode']}"
-      end
-    end
-
-    def previous_payloads(num_events)
-      if interpolated['uniqueness_look_back'].present?
-        look_back = interpolated['uniqueness_look_back'].to_i
-      else
-        # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-        look_back = UNIQUENESS_FACTOR * num_events
-        if look_back < UNIQUENESS_LOOK_BACK
-          look_back = UNIQUENESS_LOOK_BACK
-        end
-      end
-      events.order("id desc").limit(look_back) if interpolated['mode'] == "on_change"
     end
 
     def extract_full_json?

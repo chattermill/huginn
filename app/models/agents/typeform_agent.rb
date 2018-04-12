@@ -3,6 +3,7 @@
 module Agents
   class TypeformAgent < Agent
     include FormConfigurable
+    include DeduplicationConcern
 
     UNIQUENESS_LOOK_BACK = 500
     UNIQUENESS_FACTOR = 1
@@ -113,7 +114,7 @@ module Agents
       if typeform_events.any?
         old_events = previous_payloads(typeform_events.size)
         typeform_events.each do |e|
-          if store_payload!(old_events, e)
+          if store_payload?(old_events, e)
             log "Storing new result for '#{name}': #{e.inspect}"
             create_event payload: e
           end
@@ -122,39 +123,6 @@ module Agents
     end
 
     private
-
-    def previous_payloads(num_events)
-      if interpolated['uniqueness_look_back'].present?
-        look_back = interpolated['uniqueness_look_back'].to_i
-      else
-        # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-        look_back = UNIQUENESS_FACTOR * num_events
-        look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
-      end
-
-      events.order('id desc nulls last').limit(look_back) if interpolated['mode'] == 'on_change'
-    end
-
-    # This method returns true if the result should be stored as a new event.
-    # If mode is set to 'on_change', this method may return false and update an
-    # existing event to expire further in the future.
-    # Also, it will retrive asignee and/or ticket if the event should be stored.
-    def store_payload!(old_events, result)
-      case interpolated['mode'].presence
-      when 'on_change'
-        result_json = result.to_json
-        if found = old_events.find { |event| event.payload.to_json == result_json }
-          found.update!(expires_at: new_event_expiration_date)
-          false
-        else
-          true
-        end
-      when 'all', 'merge', ''
-        true
-      else
-        raise "Illegal options[mode]: #{interpolated['mode']}"
-      end
-    end
 
     def typeform_events
       @typeform_events ||= typeform.complete_entries(params).responses.map { |r| transform_typeform_responses(r) }

@@ -384,7 +384,7 @@ describe Agents::ZendeskSatisfactionRatingsAgent do
 
       it 'returns a list of old events limited by received events' do
         expect(@agent.events.count).to eq(3)
-        expect(@agent.send(:previous_payloads, 1).count).to eq(3)
+        expect(@agent.send(:previous_payloads, 3).count).to eq(3)
       end
 
 

@@ -125,70 +125,69 @@ describe SurveyMonkeyParser do
     end
 
     it "returns a full_response attribute with all response answers" do
-    expected = {
-      '759363655' => {
-        id: '759363655',
-        family: 'single_choice',
-        subtype: 'vertical',
-        question: 'Did we answer your question?',
-        answers: {
-          'Did we answer your question?' => 'No'
-        }
-      },
-      '759363654' => {
-        id: '759363654',
-        family: 'matrix',
-        subtype: 'rating',
-        question: 'In the following area, how would you evaluate the agent who answered you?',
-        answers: {
-          'Enthusiasm' => 'Very bad 0',
-          'Professionalism' => 'Very bad 0',
-          'Understanding of your needs' => 'Good 3',
-          'Clarity of answer' => 'Very bad 0',
-          'Patience' => 'Very bad 0'
-        }
-      },
-      '759363652' => {
-        id: '759363652',
-        family: 'single_choice',
-        subtype: 'vertical',
-        question: 'In general, what do you think of the answer you have received?',
-        answers: {
-          'In general, what do you think of the answer you have received?' => 'Excellent 5'
-        }
-      },
-      '759363658' => {
-        id: '759363658',
-        family: 'open_ended',
-        subtype: 'essay',
-        question: 'How could we improve the service?',
-        answers: {
-          'How could we improve the service?' => 'Dreadful customer service'
-        }
-      },
-      '759363659' => {
-        id: '759363659',
-        family: 'open_ended',
-        subtype: 'essay',
-        question: 'What would be your suggestions to improve Vivastreet ?',
-        answers: {
-          'What would be your suggestions to improve Vivastreet ?' => 'Get new staff that are not useless '
-        }
-      },
-      '759363657' => {
-        id: '759363657',
-        family: 'open_ended',
-        subtype: 'multi',
-        question: 'If you wish, enter your contact information below so we can contact you if necessary:',
-        answers: {
-          'Email address' => 'me@foo.com',
-          'Telephone number' => '12345'
-        }
-      },
-    }
-    expect(response.key?('full_response')).to be true
-    expect(response['full_response']).to eq(expected)
-  end
-
+      expected = {
+        '759363655' => {
+          id: '759363655',
+          family: 'single_choice',
+          subtype: 'vertical',
+          question: 'Did we answer your question?',
+          answers: {
+            'Did we answer your question?' => 'No'
+          }
+        },
+        '759363654' => {
+          id: '759363654',
+          family: 'matrix',
+          subtype: 'rating',
+          question: 'In the following area, how would you evaluate the agent who answered you?',
+          answers: {
+            'Enthusiasm' => 'Very bad 0',
+            'Professionalism' => 'Very bad 0',
+            'Understanding of your needs' => 'Good 3',
+            'Clarity of answer' => 'Very bad 0',
+            'Patience' => 'Very bad 0'
+          }
+        },
+        '759363652' => {
+          id: '759363652',
+          family: 'single_choice',
+          subtype: 'vertical',
+          question: 'In general, what do you think of the answer you have received?',
+          answers: {
+            'In general, what do you think of the answer you have received?' => 'Excellent 5'
+          }
+        },
+        '759363658' => {
+          id: '759363658',
+          family: 'open_ended',
+          subtype: 'essay',
+          question: 'How could we improve the service?',
+          answers: {
+            'How could we improve the service?' => 'Dreadful customer service'
+          }
+        },
+        '759363659' => {
+          id: '759363659',
+          family: 'open_ended',
+          subtype: 'essay',
+          question: 'What would be your suggestions to improve Vivastreet ?',
+          answers: {
+            'What would be your suggestions to improve Vivastreet ?' => 'Get new staff that are not useless '
+          }
+        },
+        '759363657' => {
+          id: '759363657',
+          family: 'open_ended',
+          subtype: 'multi',
+          question: 'If you wish, enter your contact information below so we can contact you if necessary:',
+          answers: {
+            'Email address' => 'me@foo.com',
+            'Telephone number' => '12345'
+          }
+        },
+      }
+      expect(response.key?('full_response')).to be true
+      expect(response['full_response']).to eq(expected)
+    end
   end
 end

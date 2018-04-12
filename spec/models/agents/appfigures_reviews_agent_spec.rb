@@ -105,6 +105,7 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
 
         expect { @agent.check }.to change { Event.count }.by(1)
         expect(@agent.events.count).to eq(2)
+        expect(@agent.tokens.count).to eq(2)
       end
 
       it 'emits correct payload' do
@@ -200,16 +201,16 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
     describe 'store_payload' do
       it 'returns true when mode is all or merge' do
         @agent.options['mode'] = 'all'
-        expect(@agent.send(:store_payload!, [], 'key: 123')).to be true
+        expect(@agent.send(:store_payload?, [], 'key: 123')).to be true
 
         @agent.options['mode'] = 'merge'
-        expect(@agent.send(:store_payload!, [], 'key: 123')).to be true
+        expect(@agent.send(:store_payload?, [], 'key: 123')).to be true
       end
 
       it 'raises an expception when mode is invalid' do
         @agent.options['mode'] = 'xyz'
         expect {
-          @agent.send(:store_payload!, [], 'key: 123')
+          @agent.send(:store_payload?, [], 'key: 123')
         }.to raise_error('Illegal options[mode]: xyz')
       end
 
@@ -224,11 +225,11 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
         end
 
         it 'returns false if events exist' do
-          expect(@agent.send(:store_payload!, @agent.events, 'comment' => 'somevalue')).to be false
+          expect(@agent.send(:store_payload?, @agent.tokens, 'comment' => 'somevalue')).to be false
         end
 
         it 'returns true if events does not exist' do
-          expect(@agent.send(:store_payload!, @agent.events, 'comment' => 'othervalue')).to be true
+          expect(@agent.send(:store_payload?, @agent.tokens, 'comment' => 'othervalue')).to be true
         end
       end
     end
@@ -247,14 +248,14 @@ describe Agents::AppfiguresReviewsAgent, :vcr do
 
         it 'returns a list of old events limited by uniqueness_look_back' do
           expect(@agent.events.count).to eq(3)
-          expect(@agent.send(:previous_payloads, 1).count).to eq(2)
+          expect(@agent.send(:previous_payloads, 3).count).to eq(2)
         end
       end
 
       context 'when uniqueness_look_back is not present' do
         it 'returns a list of old events limited by received events' do
           expect(@agent.events.count).to eq(3)
-          expect(@agent.send(:previous_payloads, 1).count).to eq(3)
+          expect(@agent.send(:previous_payloads, 3).count).to eq(3)
         end
       end
 

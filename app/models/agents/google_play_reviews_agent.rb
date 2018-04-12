@@ -3,6 +3,7 @@ require 'google/apis/androidpublisher_v2'
 module Agents
   class GooglePlayReviewsAgent < Agent
     include FormConfigurable
+    include DeduplicationConcern
 
     UNIQUENESS_LOOK_BACK = 500
     UNIQUENESS_FACTOR = 5
@@ -139,10 +140,12 @@ module Agents
     end
 
     def check
+      return unless retrieve_reviews.any?
+
+      old_events = previous_payloads(retrieve_reviews.size)
       retrieve_reviews.each do |review|
         payload = prepare_event(review)
-
-        if store_payload!(previous_payloads(1), payload)
+        if store_payload?(old_events, payload)
           log "Storing new result for '#{name}': #{review.inspect}"
           create_event payload: payload
         end
@@ -155,34 +158,6 @@ module Agents
       JSON.parse(options[key])
     rescue
       errors.add(:base, "The '#{key}' option is an invalid JSON.")
-    end
-
-    def previous_payloads(num_events)
-      # Larger of UNIQUENESS_FACTOR * num_events and UNIQUENESS_LOOK_BACK
-      look_back = UNIQUENESS_FACTOR * num_events
-      look_back = UNIQUENESS_LOOK_BACK if look_back < UNIQUENESS_LOOK_BACK
-
-      events.order('id desc').limit(look_back) if interpolated['mode'] == 'on_change'
-    end
-
-    # This method returns true if the result should be stored as a new event.
-    # If mode is set to 'on_change', this method may return false and update an
-    # existing event to expire further in the future.
-    # Also, it will retrive asignee and/or ticket if the event should be stored.
-    def store_payload!(old_events, result)
-      case interpolated['mode'].presence
-      when 'on_change'
-        if found = old_events.find { |event| event.payload.to_json == result.to_json }
-          found.update!(expires_at: new_event_expiration_date)
-          false
-        else
-          true
-        end
-      when 'all', 'merge', ''
-        true
-      else
-        raise "Illegal options[mode]: #{interpolated['mode']}"
-      end
     end
 
     def prepare_event(review)
@@ -205,7 +180,7 @@ module Agents
         translation_language: interpolated['translation_language'].presence
       }
 
-      google_play_api.list_reviews(interpolated['package_name'], params).reviews
+      @retrieve_reviews ||= google_play_api.list_reviews(interpolated['package_name'], params).reviews
     end
 
     def google_play_api
