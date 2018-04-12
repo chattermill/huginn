@@ -83,6 +83,8 @@ describe Event do
       expect(Event.find_by_id(non_expiring_event.id)).not_to be_nil
       expect(agents(:bob_weather_agent).reload.events_count).to eq(initial_bob_count)
       expect(agents(:jane_weather_agent).reload.events_count).to eq(initial_jane_count)
+      expect(agents(:bob_weather_agent).reload.tokens.count).to eq(initial_bob_count)
+      expect(agents(:jane_weather_agent).reload.tokens.count).to eq(initial_jane_count)
 
       current_time = 119.minutes.from_now # move almost 2 hours into the future
       Event.cleanup_expired!
@@ -93,6 +95,8 @@ describe Event do
       expect(Event.find_by_id(non_expiring_event.id)).not_to be_nil
       expect(agents(:bob_weather_agent).reload.events_count).to eq(initial_bob_count - 1)
       expect(agents(:jane_weather_agent).reload.events_count).to eq(initial_jane_count - 1)
+      expect(agents(:bob_weather_agent).reload.tokens.count).to eq(initial_bob_count - 1)
+      expect(agents(:jane_weather_agent).reload.tokens.count).to eq(initial_jane_count - 1)
 
       current_time = 2.minutes.from_now # move 2 minutes further into the future
       Event.cleanup_expired!
@@ -101,6 +105,8 @@ describe Event do
       expect(Event.find_by_id(non_expiring_event.id)).not_to be_nil
       expect(agents(:bob_weather_agent).reload.events_count).to eq(initial_bob_count - 1)
       expect(agents(:jane_weather_agent).reload.events_count).to eq(initial_jane_count - 2)
+      expect(agents(:bob_weather_agent).reload.tokens.count).to eq(initial_bob_count - 1)
+      expect(agents(:jane_weather_agent).reload.tokens.count).to eq(initial_jane_count - 2)
     end
 
     it "doesn't touch Events with no expired_at" do
@@ -114,9 +120,11 @@ describe Event do
 
       Event.cleanup_expired!
       expect(Event.find_by_id(event.id)).not_to be_nil
+      expect(DeduplicationToken.find_by_event_id(event.id)).not_to be_nil
       current_time = 2.days.from_now
       Event.cleanup_expired!
       expect(Event.find_by_id(event.id)).not_to be_nil
+      expect(DeduplicationToken.find_by_event_id(event.id)).not_to be_nil
     end
 
     it "always keeps the latest Event regardless of its expires_at value only if the database is MySQL" do
@@ -130,6 +138,7 @@ describe Event do
         expect(Event.all.pluck(:id)).to eq([event2.id])
       else
         expect(Event.all.pluck(:id)).to be_empty
+        expect(DeduplicationToken.count).to eq(0)
       end
     end
   end
@@ -143,6 +152,18 @@ describe Event do
 
       expect(agent_logs(:log_for_jane_website_agent).reload.outbound_event_id).to be_present
       expect(agent_logs(:log_for_bob_website_agent).reload.outbound_event_id).to be_nil
+    end
+
+    it "delete token related" do
+      event = agents(:jane_weather_agent).events.create!(payload: {"a": "123"})
+      agents(:jane_weather_agent).events.create!(payload: {"b": "123"})
+
+      expect(agents(:jane_weather_agent).tokens.count).to eq(2)
+
+      agents(:jane_weather_agent).events.first.destroy
+
+      expect(agents(:jane_weather_agent).tokens.count).to eq(1)
+      expect(agents(:jane_weather_agent).tokens.take.event_id).to eq(event.id)
     end
   end
 
@@ -171,6 +192,23 @@ describe Event do
           event.update_attribute :payload, { 'hello' => 'world' }
         }.not_to change { agents(:jane_weather_agent).reload.last_event_at }
       end
+    end
+  end
+
+  describe "save_deduplication_token callback" do
+    let(:event) do
+      event = Event.new agent: agents(:jane_weather_agent)
+      event.payload = { 'somekey' => 'somevalue' }
+      event
+    end
+
+    it 'save token' do
+      event.save!
+      agent = event.agent
+      expected = Digest::SHA256.hexdigest(event.payload.to_json)
+
+      expect(agent.tokens.count).to eq(1)
+      expect(agent.tokens.first.token).to eq(expected)
     end
   end
 end

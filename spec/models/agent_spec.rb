@@ -944,6 +944,22 @@ describe Agent do
       }.not_to change { agent2.events.count }
     end
   end
+
+  describe "after destroy" do
+    it "remove deduplication tokens" do
+      agent = agents(:bob_manual_event_agent)
+      event1 = agent.create_event :payload => { 'hi' => 'there' }
+      event2 = agent.create_event :payload => { 'hello' => 'there' }
+
+      expect(agent.events.count).to eq(2)
+      expect(agent.tokens.count).to eq(2)
+
+      agent.destroy
+
+      expect(agent.events.count).to eq(0)
+      expect(agent.tokens.count).to eq(0)
+    end
+  end
 end
 
 describe AgentDrop do

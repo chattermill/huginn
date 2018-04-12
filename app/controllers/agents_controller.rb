@@ -77,6 +77,7 @@ class AgentsController < ApplicationController
 
   def remove_events
     @agent = current_user.agents.find(params[:id])
+    @agent.tokens.destroy_all
     @agent.events.delete_all
 
     respond_to do |format|

@@ -625,6 +625,7 @@ describe Agents::WebsiteAgent do
         expect(@checker.reload).not_to be_working # There is a recent error
 
         stubbed_time = 20.minutes.from_now
+        @checker.tokens.destroy_all
         @checker.events.delete_all
         @checker.check
         expect(@checker.reload).to be_working # There is a newer event now
