@@ -52,7 +52,8 @@ jobs:
       - run:
           name: Load PostgreSQL database structure
           command: |
-            docker exec -it ${CIRCLE_PROJECT_REPONAME} bundle exec rake db:create && bundle exec rake db:migrate
+            docker exec -it ${CIRCLE_PROJECT_REPONAME} bundle exec rake db:create
+            docker exec -it ${CIRCLE_PROJECT_REPONAME} bundle exec rake db:migrate
 
       - run:
           name: Fulfill rspec examples
