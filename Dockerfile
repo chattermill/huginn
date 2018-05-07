@@ -4,7 +4,7 @@ ARG RAILS_ENV
 ENV RAILS_ENV production
 ENV BACKGROUND_JOB_PROCESSOR sidekiq
 ENV DATABASE_ADAPTER postgresql
-ENV ADDITIONAL_GEMS
+ENV ADDITIONAL_GEMS ""
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
