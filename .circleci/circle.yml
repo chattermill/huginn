@@ -1,0 +1,146 @@
+version: 2
+jobs:
+  build:
+    working_directory: ~/huginn
+    docker:
+      - image: circleci/ruby:2.2.2:latest
+        environment:
+          POSTGRES_IMAGE: postgres:10.1
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: huginn_test
+          REDIS_IMAGE: redis:latest
+          RAILS_ENV: test
+          DOCKER_USER: docker-cm-reg
+          DOCKER_PASS: +p6t/eYYFfGyfezO8+I81HPaTrYaB0jhUh0rZnZqFSk=
+          DOCKER_REPO: ci-docker-repository.chattermill.xyz
+          DOCKER_REPO_PRODUCTION: ci-docker-repository.production.chattermill.xyz
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - restore_cache:
+          keys:
+            - hudginn-gems-{{ checksum "Gemfile.lock" }}
+            - hudginn-gems-
+      - run:
+          name: Build an application Dockerfile
+          command: |
+            docker build --build-arg RAILS_ENV=${RAILS_ENV} -t ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} .
+
+      - run:
+          name: Start PostgreSQL container
+          command: |
+            docker run -d --name postgres -e POSTGRES_DB=${POSTGRES_DB} -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} ${POSTGRES_IMAGE}
+
+      - run:
+          name: Start Redis container
+          command: |
+            docker run -d --name redis ${REDIS_IMAGE}
+
+      - run:
+          name: Start Application in test environment (with linked databases)
+          command: |
+            docker run -dit --name ${CIRCLE_PROJECT_REPONAME} \
+              --link postgres:postgres \
+              -e POSTGRES_DB=${POSTGRES_DB} \
+              -e POSTGRES_USER=${POSTGRES_USER} \
+              -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD} \
+              -e RAILS_ENV=${RAILS_ENV} \
+              $CIRCLE_PROJECT_REPONAME:${CIRCLE_SHA1} /bin/bash
+
+      - run:
+          name: Fulfill rubocop cops
+          command: |
+            docker exec -it ${CIRCLE_PROJECT_REPONAME} bundle exec rubocop -R
+
+      - run:
+          name: Load PostgreSQL database structure
+          command: |
+            docker exec -it ${CIRCLE_PROJECT_REPONAME} bundle exec rake db:structure:load --trace
+
+      - run:
+          name: Fulfill rspec examples
+          command: |
+            docker exec -it ${CIRCLE_PROJECT_REPONAME} bundle exec rspec --profile 10 --format progress
+
+      - run:
+          name: Prepare gems for saving them all in shared cache
+          command: |
+            mkdir -p bundle
+            docker cp ${CIRCLE_PROJECT_REPONAME}:/bundle .
+          when: on_success
+      - save_cache:
+          key: hudginn-gems-{{ checksum "Gemfile.lock" }}
+          paths:
+            - bundle
+          when: on_success
+      - run:
+          name: Push application image into Docker registry
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+              docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${DOCKER_REPO}
+              docker tag ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+              docker push ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+              docker tag ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:latest
+              docker push ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:latest
+            fi
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${DOCKER_REPO_PRODUCTION}
+              docker tag ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} ${DOCKER_REPO_PRODUCTION}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+              docker push ${DOCKER_REPO_PRODUCTION}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+              docker tag ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} ${DOCKER_REPO_PRODUCTION}/${CIRCLE_PROJECT_REPONAME}:master
+              docker push ${DOCKER_REPO_PRODUCTION}/${CIRCLE_PROJECT_REPONAME}:master
+            fi
+          when: on_success
+
+      - restore_cache:
+          keys:
+            - kubectl-a-v1.9.3
+      - run:
+          name: Configure kubectl
+          command: |
+            if [ ! -e "./kubectl" ]; then
+              curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.9.3/bin/linux/amd64/kubectl
+              chmod +x kubectl
+            fi
+
+            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+              mkdir -p ~/.kube && cp ./.circleci/kube-config-staging ~/.kube/config
+            fi
+
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              mkdir -p ~/.kube && cp ./.circleci/kube-config-production ~/.kube/config
+            fi
+          when: on_success
+      - save_cache:
+          key: kubectl-a-v1.9.3
+          paths:
+            - ./kubectl
+
+      - run:
+          name: Deploy on Kubernetes cluster
+          no_output_timeout: 30m
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            fi
+            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
+            fi
+            if [ "${CIRCLE_BRANCH}" == "master" ] || [ "${CIRCLE_BRANCH}" == "staging" ]; then
+            fi
+          when: on_success
+
+      - run:
+          name: Clean up registry repository
+          command: |
+            if [ "${CIRCLE_BRANCH}" == "master" ]; then
+              ./clean_up_unused_containers.sh
+            fi
+          when: on_success
+
+experimental:
+  notify:
+    branches:
+      only:
+        - staging
+        - master
