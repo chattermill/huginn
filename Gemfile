@@ -10,13 +10,13 @@ git_source(:github) do |repo_name|
 end if Gem::Version.new(Bundler::VERSION) < Gem::Version.new('2')
 
 # Load vendored dotenv gem and .env file
-require File.join(File.dirname(__FILE__), 'lib/gemfile_helper.rb')
-GemfileHelper.load_dotenv do |dotenv_dir|
-  path dotenv_dir do
-    gem 'dotenv'
-    gem 'dotenv-rails'
-  end
-end
+# require File.join(File.dirname(__FILE__), 'lib/gemfile_helper.rb')
+# GemfileHelper.load_dotenv do |dotenv_dir|
+#   path dotenv_dir do
+#     gem 'dotenv'
+#     gem 'dotenv-rails'
+#   end
+# end
 
 # Introduces a scope for gem loading based on a condition
 def if_true(condition)
