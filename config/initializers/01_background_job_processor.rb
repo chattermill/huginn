@@ -33,14 +33,20 @@ elsif Rails.configuration.active_job.queue_adapter == :sidekiq
 
   Sidekiq::Web.set :sessions, false
 
+  redis = if ENV['REDIS_HOST'].present?
+            "redis://#{ENV['REDIS_HOST']}:6379/1"
+          end
+
+  redis = ENV['REDIS_URL'].presence || redis.presence || 'redis://localhost:6379/1'
+
   Sidekiq.configure_server do |config|
-    config.redis = { url: ENV['REDIS_URL'].presence || 'redis://localhost:6379/1' }
+    config.redis = { url: redis }
     config.failures_max_count = (ENV['FAILED_JOBS_TO_KEEP'].presence || 100).to_i
     config.failures_default_mode = :all
   end
 
   Sidekiq.configure_client do |config|
-    config.redis = { url: ENV['REDIS_URL'].presence || 'redis://localhost:6379/1' }
+    config.redis = { url: redis }
     config.default_worker_options = {queue: 'default', retry: 5}
   end
 end
