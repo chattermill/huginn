@@ -3,7 +3,7 @@ jobs:
   build:
     working_directory: ~/huginn
     docker:
-      - image: circleci/2.3-node
+      - image: circleci/ruby:2.3-node
         environment:
           POSTGRES_IMAGE: postgres:10.1
           POSTGRES_USER: postgres
