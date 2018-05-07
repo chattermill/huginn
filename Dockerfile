@@ -5,6 +5,9 @@ ENV RAILS_ENV production
 ENV BACKGROUND_JOB_PROCESSOR sidekiq
 ENV DATABASE_ADAPTER postgresql
 ENV ADDITIONAL_GEMS ""
+ENV LC_ALL C.UTF-8
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US.UTF-8
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends \
