@@ -32,10 +32,9 @@ elsif Rails.configuration.active_job.queue_adapter == :sidekiq
   require 'sidekiq/web'
 
   Sidekiq::Web.set :sessions, false
-  puts ENV.inspect
 
-  redis = if ENV['REDIS_HOST'].present?
-            "redis://#{ENV['REDIS_HOST']}:6379/1"
+  redis = if ENV['REDIS_PORT'].present?
+            ENV['REDIS_PORT']
           end
 
   redis = ENV['REDIS_URL'].presence || redis.presence || 'redis://localhost:6379/1'
