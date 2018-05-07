@@ -172,7 +172,7 @@ group :development do
     gem 'spring-watcher-listen', '~> 2.0.0'
   end
 
-  group :test do
+  group :test, :production do
     gem 'coveralls', '~> 0.8.12', require: false
     gem 'capybara', '~> 2.13.0'
     gem 'capybara-screenshot'
