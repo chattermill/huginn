@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.3-node
         environment:
-          POSTGRES_IMAGE: postgres:10.1
+          POSTGRES_IMAGE: postgres:9.6.1
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: huginn_test
