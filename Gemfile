@@ -13,8 +13,8 @@ end if Gem::Version.new(Bundler::VERSION) < Gem::Version.new('2')
 # require File.join(File.dirname(__FILE__), 'lib/gemfile_helper.rb')
 # GemfileHelper.load_dotenv do |dotenv_dir|
 #   path dotenv_dir do
-#     gem 'dotenv'
-#     gem 'dotenv-rails'
+    gem 'dotenv'
+    gem 'dotenv-rails'
 #   end
 # end
 
