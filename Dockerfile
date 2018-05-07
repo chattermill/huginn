@@ -1,4 +1,4 @@
-FROM ruby:2.2.2:latest
+FROM ruby:2.3.1:latest
 
 ARG RAILS_ENV
 ENV RAILS_ENV production
