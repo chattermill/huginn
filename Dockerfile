@@ -1,4 +1,4 @@
-FROM ruby:2.3.1
+FROM ruby:2.5.1
 
 ARG RAILS_ENV
 ENV RAILS_ENV production
@@ -33,6 +33,7 @@ RUN phantomjs --version
 COPY . .
 
 RUN gem install bundler \
+  && bundle config disable_checksum_validation true \
   && bundle install --path /bundle
 
 RUN bundle exec rake assets:precompile
