@@ -99,14 +99,23 @@ unless Gem::Version.new(Bundler::VERSION) >= Gem::Version.new('1.5.0')
   exit 1
 end
 
+if_true(!ENV['BACKGROUND_JOB_PROCESSOR'] || ENV['BACKGROUND_JOB_PROCESSOR'] == 'delayed_job') do
+  gem 'delayed_job', '~> 4.1.4'
+  gem 'delayed_job_active_record', github: 'dsander/delayed_job_active_record', branch: 'rails5'
+end
+
+if_true(ENV['BACKGROUND_JOB_PROCESSOR'] == 'sidekiq') do
+  gem 'sidekiq', '~> 4.2.3', require: false
+  gem 'sidekiq-failures', '~> 0.4.5', require: false
+  gem 'sidekiq-unique-jobs', require: false
+end
+
 gem 'ace-rails-ap', '~> 4.1.0'
 gem 'bootstrap-kaminari-views', '~> 0.0.3'
 gem 'bundler', '>= 1.5.0'
 gem 'chronic', require: false
 gem 'coffee-rails', '~> 4.2'
 gem 'daemons', '~> 1.1.9'
-gem 'delayed_job', '~> 4.1.4'
-gem 'delayed_job_active_record', github: 'dsander/delayed_job_active_record', branch: 'rails5'
 gem 'devise', '~> 4.4.1'
 gem 'em-http-request', '~> 1.1.2'
 gem 'faraday', '~> 0.9'
@@ -116,7 +125,7 @@ gem 'font-awesome-sass', '~> 4.7.0'
 gem 'foreman', '~> 0.63.0'
 gem 'geokit', '~> 1.8.4'
 gem 'geokit-rails', '~> 2.2.0'
-gem 'hashie', '= 3.0.0'
+gem 'hashie', '~> 3.5.6'
 gem 'httparty', '~> 0.13'
 gem 'httmultiparty', '~> 0.3.16'
 gem 'jquery-rails', '~> 4.2.1'
@@ -139,7 +148,6 @@ gem 'rufus-scheduler', '~> 3.4.2', require: false
 gem 'sass-rails', '~> 5.0'
 gem 'select2-rails', '~> 3.5.4'
 gem 'spectrum-rails'
-gem 'therubyracer', '~> 0.12.3'
 gem 'typhoeus', '~> 0.6.3'
 gem 'uglifier', '~> 2.7.2'
 
