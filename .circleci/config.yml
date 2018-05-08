@@ -109,7 +109,8 @@ jobs:
           no_output_timeout: 30m
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-              echo "master"
+              ./kubectl set image deployment/${CIRCLE_PROJECT_REPONAME} ${CIRCLE_PROJECT_REPONAME}=${DOCKER_REPO_PRODUCTION}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
+              ./kubectl rollout status deployment/${CIRCLE_PROJECT_REPONAME}
             fi
           when: on_success
 

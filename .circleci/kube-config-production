@@ -1,0 +1,20 @@
+apiVersion: v1
+clusters:
+- cluster:
+    insecure-skip-tls-verify: true
+    server: https://138.68.140.105:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    namespace: default
+    user: github
+  name: kubernetes
+current-context: kubernetes
+kind: Config
+preferences: {}
+users:
+- name: github
+  user:
+    as-user-extra: {}
+    token: 691ccc8a166c0f8d98e49e749b6c0c025ad020cd
