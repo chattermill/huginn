@@ -37,6 +37,7 @@ gem 'net-ftp-list', '~> 3.2.8'    # FtpsiteAgent
 gem 'wunderground', '~> 1.2.0'    # WeatherAgent
 gem 'forecast_io', '~> 2.0.0'     # WeatherAgent
 gem 'rturk', '~> 2.12.1'          # HumanTaskAgent
+gem 'erector', github: 'dsander/erector', branch: 'fix-fixnum-warning'
 gem 'hipchat', '~> 1.2.0'         # HipchatAgent
 gem 'xmpp4r',  '~> 0.5.6'         # JabberAgent
 gem 'mqtt'                        # MQTTAgent
@@ -62,8 +63,8 @@ gem 'tumblr_client', github: 'albertsun/tumblr_client', branch: 'master', ref: '
 gem 'omniauth-tumblr', '~> 1.2'
 
 # Dropbox Agents
-gem 'dropbox-api'
-gem 'omniauth-dropbox'
+gem 'dropbox-api', github: 'dsander/dropbox-api', ref: '86cb7b5a1254dc5b054de7263835713c4c1018c7'
+gem 'omniauth-dropbox-oauth2', github: 'bamorim/omniauth-dropbox-oauth2', ref: '35046706fb781ed3b57dfb9c3cd44ed0f3d3f8ea'
 
 # UserLocationAgent
 gem 'haversine'
@@ -104,23 +105,12 @@ gem 'bundler', '>= 1.5.0'
 gem 'chronic', require: false
 gem 'coffee-rails', '~> 4.2'
 gem 'daemons', '~> 1.1.9'
-gem 'aws-sdk-cloudwatch', '~> 1.2.0', require: false
-
-if_true(!ENV['BACKGROUND_JOB_PROCESSOR'] || ENV['BACKGROUND_JOB_PROCESSOR'] == 'delayed_job') do
-  gem 'delayed_job', github: 'dsander/delayed_job', branch: 'rails51'
-  gem 'delayed_job_active_record', github: 'dsander/delayed_job_active_record', branch: 'rails5'
-end
-
-if_true(ENV['BACKGROUND_JOB_PROCESSOR'] == 'sidekiq') do
-  gem 'sidekiq', '~> 4.2.3', require: false
-  gem 'sidekiq-failures', '~> 0.4.5', require: false
-  gem 'sidekiq-unique-jobs', require: false
-end
-
-gem 'devise', '~> 4.3.0'
+gem 'delayed_job', '~> 4.1.4'
+gem 'delayed_job_active_record', github: 'dsander/delayed_job_active_record', branch: 'rails5'
+gem 'devise', '~> 4.4.1'
 gem 'em-http-request', '~> 1.1.2'
-gem 'faraday', '~> 0.9', '< 0.12.2'
-gem 'faraday_middleware', github: 'lostisland/faraday_middleware', branch: 'master'  # '>= 0.10.1'
+gem 'faraday', '~> 0.9'
+gem 'faraday_middleware', '~> 0.12.2'
 gem 'feedjira', '~> 2.1'
 gem 'font-awesome-sass', '~> 4.7.0'
 gem 'foreman', '~> 0.63.0'
@@ -133,7 +123,7 @@ gem 'jquery-rails', '~> 4.2.1'
 gem 'huginn_agent', '~> 0.4.0'
 gem 'json', '~> 1.8.1'
 gem 'jsonpath', '~> 0.8.3'
-gem 'kaminari', github: "amatsuda/kaminari", branch: '0-17-stable', ref: 'abbf93d557208ee1d0b612c612cd079f86ed54f4'
+gem 'kaminari', '~> 1.1.1'
 gem 'kramdown', '~> 1.3.3'
 gem 'liquid', '~> 4.0'
 gem 'loofah', '~> 2.0'
@@ -141,22 +131,24 @@ gem 'mini_magick'
 gem 'mini_racer'
 gem 'multi_xml'
 gem 'nokogiri'
-gem 'omniauth', '~> 1.3.1'
-gem 'rails', '= 5.1.1'
+gem 'omniauth', '~> 1.6.1'
+gem 'rails', '~> 5.1.1'
 gem 'rollbar'
-gem 'rufus-scheduler', '~> 3.3.2', require: false
+gem 'rails-html-sanitizer', '~> 1.0.4'
+gem 'rufus-scheduler', '~> 3.4.2', require: false
 gem 'sass-rails', '~> 5.0'
 gem 'select2-rails', '~> 3.5.4'
 gem 'spectrum-rails'
+gem 'therubyracer', '~> 0.12.3'
 gem 'typhoeus', '~> 0.6.3'
 gem 'uglifier', '~> 2.7.2'
 
 group :development do
   gem 'better_errors', '~> 1.1'
-  gem 'binding_of_caller'
-  gem 'guard', '~> 2.13.0'
+  gem 'binding_of_caller', '~> 0.8.0'
+  gem 'guard', '~> 2.14.1'
   gem 'guard-livereload', '~> 2.5.1'
-  gem 'guard-rspec', '~> 4.6.4'
+  gem 'guard-rspec', '~> 4.7.3'
   gem 'rack-livereload', '~> 0.3.16'
   gem 'letter_opener_web', '~> 1.3.1'
   gem 'web-console', '>= 3.3.0'
@@ -168,8 +160,8 @@ group :development do
 
   if_true(ENV['SPRING']) do
     gem 'spring-commands-rspec', '~> 1.0.4'
-    gem 'spring', '~> 1.7.2'
-    gem 'spring-watcher-listen', '~> 2.0.0'
+    gem 'spring', '~> 2.0.2'
+    gem 'spring-watcher-listen', '~> 2.0.1'
   end
 
   group :test, :production do
@@ -228,6 +220,6 @@ if_true(ENV['DATABASE_ADAPTER'].strip == 'mysql2') do
   gem 'mysql2', ">= 0.3.18", "< 0.5"
 end
 
-# GemfileHelper.parse_each_agent_gem(ENV['ADDITIONAL_GEMS']) do |args|
-#   gem *args
-# end
+GemfileHelper.parse_each_agent_gem(ENV['ADDITIONAL_GEMS']) do |args|
+  gem *args
+end
