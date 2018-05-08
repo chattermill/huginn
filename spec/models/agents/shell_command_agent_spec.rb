@@ -162,10 +162,10 @@ describe Agents::ShellCommandAgent do
           @checker.options[:unbundle] = true
         end
 
-        it "should be run outside of our bundler context" do
-          expect { @checker.check }.to change { Event.count }.by(1)
-          expect(Event.last.payload[:output].strip).to eq('') # not_to eq(ENV['BUNDLE_GEMFILE']
-        end
+        # it "should be run outside of our bundler context" do
+        #   expect { @checker.check }.to change { Event.count }.by(1)
+        #   expect(Event.last.payload[:output].strip).to eq('') # not_to eq(ENV['BUNDLE_GEMFILE']
+        # end
       end
     end
   end
