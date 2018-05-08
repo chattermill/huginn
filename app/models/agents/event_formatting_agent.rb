@@ -151,7 +151,7 @@ module Agents
           next
         end
 
-        regexp, path, to = matcher.values_at(*%w[regexp path to])
+        regexp, path, to = matcher.stringify_keys.values_at(*%w[regexp path to])
 
         if regexp.present?
           begin

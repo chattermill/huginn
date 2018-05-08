@@ -108,6 +108,7 @@ module Agents
 
     def unwrap_tco_urls text, tweet_json
       tweet_json[:entities][:urls].each do |url|
+        url = url.symbolize_keys
         text.gsub! url[:url], url[:expanded_url]
       end
       text

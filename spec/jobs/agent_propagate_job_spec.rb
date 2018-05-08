@@ -1,6 +1,10 @@
 require 'rails_helper'
 
 describe AgentPropagateJob do
+  before :each do
+    Sidekiq::Queue.new('propagation').clear
+  end
+
   it "calls Agent.receive! when run" do
     mock(Agent).receive!
     AgentPropagateJob.new.perform

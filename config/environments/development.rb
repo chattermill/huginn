@@ -67,7 +67,9 @@ Huginn::Application.configure do
   config.file_watcher = ActiveSupport::EventedFileUpdateChecker
 
   config.after_initialize do
-    Bullet.enable = true
-    Bullet.slack = { webhook_url: ENV['SLACK_WEBHOOK_URL'], channel: ENV['SLACK_CHANNEL'], username: 'Huginn' }
+    if ENV['SLACK_WEBHOOK_URL'].present?
+      Bullet.enable = true
+      Bullet.slack = { webhook_url: ENV['SLACK_WEBHOOK_URL'], channel: ENV['SLACK_CHANNEL'], username: 'Huginn' }
+    end
   end
 end

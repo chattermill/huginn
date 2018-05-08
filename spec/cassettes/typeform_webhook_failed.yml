@@ -117,4 +117,199 @@ http_interactions:
       string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
     http_version: 
   recorded_at: Tue, 03 Apr 2018 19:11:44 GMT
-recorded_with: VCR 3.0.3
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061893705
+    body:
+      encoding: UTF-8
+      string: '{"url":"https:///users/902541635/web_requests/1061893705/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 08 May 2018 10:13:29 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - a9547d7d86fc4fa43db487a9ee9a0180
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Tue, 08 May 2018 10:13:29 GMT
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061894022
+    body:
+      encoding: UTF-8
+      string: '{"url":"https:///users/902541635/web_requests/1061894022/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 08 May 2018 10:20:10 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - b176b98aae1e07a7bb7b03421c5de1a7
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Tue, 08 May 2018 10:20:10 GMT
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061893225
+    body:
+      encoding: UTF-8
+      string: '{"url":"https:///users/902541635/web_requests/1061893225/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 08 May 2018 11:18:01 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - b5648ca28873d1479bca7ef116b47826
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Tue, 08 May 2018 11:18:01 GMT
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061892717
+    body:
+      encoding: UTF-8
+      string: '{"url":"https:///users/902541635/web_requests/1061892717/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 08 May 2018 12:33:12 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - 9c59ebf3884e96e3ea8cf1b32986f713
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Tue, 08 May 2018 12:33:12 GMT
+- request:
+    method: put
+    uri: https://api.typeform.com/forms/jOyEkB/webhooks/agent_1061893875
+    body:
+      encoding: UTF-8
+      string: '{"url":"https:///users/902541635/web_requests/1061893875/foobar","enabled":true}'
+    headers:
+      User-Agent:
+      - Huginn - https://github.com/huginn/huginn
+      Content-Type:
+      - application/json; charset=utf-8
+      Authorization:
+      - Bearer 123
+      Accept-Encoding:
+      - gzip,deflate
+  response:
+    status:
+      code: 403
+      message: Forbidden
+    headers:
+      Access-Control-Expose-Headers:
+      - Location, X-Request-Id
+      Content-Type:
+      - text/plain; charset=utf-8
+      Date:
+      - Tue, 08 May 2018 12:55:00 GMT
+      Server:
+      - nginx
+      X-Request-Id:
+      - 11139a0aa387424b3d52c57383157d04
+      Content-Length:
+      - '70'
+      Connection:
+      - keep-alive
+    body:
+      encoding: UTF-8
+      string: '{"code":"AUTHENTICATION_FAILED","description":"Authentication failed"}'
+    http_version: 
+  recorded_at: Tue, 08 May 2018 12:55:00 GMT
+recorded_with: VCR 4.0.0

@@ -92,6 +92,7 @@ describe AgentsController do
 
   describe "POST propagate" do
     before(:each) do
+      Sidekiq::Queue.new('propagation').clear
       sign_in users(:bob)
     end
 

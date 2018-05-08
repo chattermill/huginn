@@ -46,16 +46,17 @@ gem 'hypdf', '~> 1.0.10'          # PDFInfoAgent
 
 # Weibo Agents
 # FIXME needs to loosen omniauth dependency, add rest-client
-gem 'weibo_2', github: 'albertsun/weibo_2', branch: 'master'
+gem 'weibo_2', github: 'albertsun/weibo_2', branch: 'master', ref: 'ac38d04434747c4b88e86c5337cd436d00c34349'
 
 # GoogleCalendarPublishAgent and GoogleTranslateAgent
-gem 'google-api-client', '~> 0.13'
-gem 'google-cloud-translate', '~> 1.0.0', require: 'google/cloud/translate'
+gem 'google-api-client', '= 0.13'
+gem 'google-cloud-translate', '= 1.0.0', require: 'google/cloud/translate'
+gem 'googleauth', '=0.5.2'
 
 # Twitter Agents
-gem 'twitter', github: 'sferik/twitter' # Must to be loaded before cantino-twitter-stream.
-gem 'twitter-stream', github: 'cantino/twitter-stream', branch: 'huginn'
-gem 'omniauth-twitter', '~> 1.3.0'
+gem 'twitter', github: 'sferik/twitter', ref: 'd11707edf4abd13f7ada0eef57fc1eaa1062d75b' # Must to be loaded before cantino-twitter-stream.
+gem 'twitter-stream', github: 'cantino/twitter-stream', branch: 'huginn', ref: 'f7e7edb0bae013bffabf3598e7147773d9fd370f'
+gem 'omniauth-twitter', '= 1.3.0'
 
 # Tumblr Agents
 # until merge of https://github.com/tumblr/tumblr_client/pull/61
@@ -118,8 +119,8 @@ gem 'coffee-rails', '~> 4.2'
 gem 'daemons', '~> 1.1.9'
 gem 'devise', '~> 4.4.1'
 gem 'em-http-request', '~> 1.1.2'
-gem 'faraday', '~> 0.9'
-gem 'faraday_middleware', '~> 0.12.2'
+gem 'faraday', '= 0.12'
+gem 'faraday_middleware', '>= 0.12.2'
 gem 'feedjira', '~> 2.1'
 gem 'font-awesome-sass', '~> 4.7.0'
 gem 'foreman', '~> 0.63.0'

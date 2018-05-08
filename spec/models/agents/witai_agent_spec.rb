@@ -65,7 +65,7 @@ describe Agents::WitaiAgent do
 
     it 'checks the integrity of new event' do
       @checker.receive([@event])
-      expect(Event.last.payload[:outcomes][0][:_text]).to eq(@event.payload[:message][:content])
+      expect(Event.last.payload[:outcomes][0]["_text"]).to eq(@event.payload[:message][:content])
     end
   end
 end
