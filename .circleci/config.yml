@@ -5,7 +5,7 @@ jobs:
     docker:
       - image: circleci/ruby:2.3-node
         environment:
-          POSTGRES_IMAGE: postgres:9.6.1
+          POSTGRES_IMAGE: postgres:10.1
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: huginn_test
@@ -75,13 +75,6 @@ jobs:
       - run:
           name: Push application image into Docker registry
           command: |
-            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-              docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${DOCKER_REPO}
-              docker tag ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
-              docker push ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
-              docker tag ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:latest
-              docker push ${DOCKER_REPO}/${CIRCLE_PROJECT_REPONAME}:latest
-            fi
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               docker login -u ${DOCKER_USER} -p ${DOCKER_PASS} ${DOCKER_REPO_PRODUCTION}
               docker tag ${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1} ${DOCKER_REPO_PRODUCTION}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_SHA1}
@@ -102,10 +95,6 @@ jobs:
               chmod +x kubectl
             fi
 
-            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-              mkdir -p ~/.kube && cp ./.circleci/kube-config-staging ~/.kube/config
-            fi
-
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
               mkdir -p ~/.kube && cp ./.circleci/kube-config-production ~/.kube/config
             fi
@@ -120,10 +109,7 @@ jobs:
           no_output_timeout: 30m
           command: |
             if [ "${CIRCLE_BRANCH}" == "master" ]; then
-            fi
-            if [ "${CIRCLE_BRANCH}" == "staging" ]; then
-            fi
-            if [ "${CIRCLE_BRANCH}" == "master" ] || [ "${CIRCLE_BRANCH}" == "staging" ]; then
+              echo "master"
             fi
           when: on_success
 
@@ -139,5 +125,4 @@ experimental:
   notify:
     branches:
       only:
-        - staging
         - master
